@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 
 const menuItems = [
-  { label: '지도', submenu: ['민원 분류', '차량 조회', '지역 통계'] },
-  { label: '차량 관리', submenu: ['차량 정보', '차량 동선'] },
-  { label: '민원', submenu: ['내역 / 관리', '민원 등록'] },
-  { label: '통계', submenu: ['전체 통계'] },
+  { label: "지도", submenu: ["민원 분류", "차량 조회", "지역 통계"] },
+  { label: "차량 관리", submenu: ["차량 정보", "차량 동선"] },
+  { label: "민원", submenu: ["내역 / 관리", "민원 등록"] },
+  { label: "통계", submenu: ["전체 통계"] },
 ];
 
 export default function Header() {
@@ -27,7 +27,9 @@ export default function Header() {
           {menuItems.map((item, idx) => (
             <div key={idx} className="relative flex flex-col items-center">
               {/* 상단 메뉴 텍스트 */}
-              <div className={`cursor-pointer px-2 pb-4 border-b-2 font-bold text-xl ${showDropdown ? 'border-black' : 'border-white'}`}>
+              <div
+                className={`cursor-pointer px-2 pb-4 border-b-2 font-bold text-xl ${showDropdown ? "border-black" : "border-white"}`}
+              >
                 {item.label}
               </div>
 
@@ -46,15 +48,13 @@ export default function Header() {
               )}
             </div>
           ))}
-
         </nav>
-        
+
         {/* 오른쪽 메뉴 */}
         <div className="flex space-x-4 text-base absolute top-0 right-2 cursor-pointer">
           <div className="hover:text-gray-400">마이페이지</div>
           <div className="hover:text-gray-400">로그아웃</div>
         </div>
-
       </div>
 
       {showDropdown && (

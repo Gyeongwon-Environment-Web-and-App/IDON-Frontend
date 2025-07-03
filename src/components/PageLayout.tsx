@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 interface Tab {
   label: string;
@@ -14,7 +14,14 @@ interface PageLayoutProps {
   children: React.ReactNode;
 }
 
-const PageLayout: React.FC<PageLayoutProps> = ({ title, icon, tabs, activeTab, onTabClick, children }) => {
+const PageLayout: React.FC<PageLayoutProps> = ({
+  title,
+  icon,
+  tabs,
+  activeTab,
+  onTabClick,
+  children,
+}) => {
   return (
     <div className="flex">
       <div className="h-full">
@@ -25,7 +32,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({ title, icon, tabs, activeTab, o
           {tabs.map((tab) => (
             <div
               key={tab.value}
-              className={`text-center py-2 cursor-pointer border-b border-[#9f9f9f] ${activeTab === tab.value ? 'text-green-600 font-bold' : ''}`}
+              className={`text-center py-2 cursor-pointer border-b border-[#9f9f9f] ${activeTab === tab.value ? "text-green-600 font-bold" : ""}`}
               onClick={() => onTabClick(tab.value)}
             >
               {tab.label}
