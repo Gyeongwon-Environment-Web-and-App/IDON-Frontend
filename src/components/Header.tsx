@@ -14,7 +14,10 @@ export default function Header() {
     <header className="relative w-screen h-[8rem] bg-white py-3">
       <div className="relative max-w-7xl mx-auto h-full flex items-end justify-between px-6 pt-4">
         {/* 로고 */}
-        <div className="w-10 h-10 border border-black cursor-pointer" />
+        <div className="w-[10vw] h-[8vh] border border-black cursor-pointer ml-20 pl-10" />
+        {/* 
+        // !임시로고
+        */}
 
         {/* 메뉴 */}
         <nav

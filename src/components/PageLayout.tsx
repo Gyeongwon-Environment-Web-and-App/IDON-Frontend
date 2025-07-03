@@ -17,27 +17,29 @@ interface PageLayoutProps {
 const PageLayout: React.FC<PageLayoutProps> = ({ title, icon, tabs, activeTab, onTabClick, children }) => {
   return (
     <div className="flex">
-      <aside className="w-[160px] min-h-screen border-r">
-        <div className="bg-green-500 text-white font-bold text-center py-3">
+      <div className="h-full">
+        <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-center py-3">
           {title}
         </div>
-        {tabs.map((tab) => (
-          <div
-            key={tab.value}
-            className={`text-center py-2 cursor-pointer border-b ${activeTab === tab.value ? 'text-green-600 font-bold' : ''}`}
-            onClick={() => onTabClick(tab.value)}
-          >
-            {tab.label}
-          </div>
-        ))}
-      </aside>
+        <aside className="w-[160px] h-[60vh] bg-[#fdfdfd] box-border border border-[#9f9f9f]">
+          {tabs.map((tab) => (
+            <div
+              key={tab.value}
+              className={`text-center py-2 cursor-pointer border-b border-[#9f9f9f] ${activeTab === tab.value ? 'text-green-600 font-bold' : ''}`}
+              onClick={() => onTabClick(tab.value)}
+            >
+              {tab.label}
+            </div>
+          ))}
+        </aside>
+      </div>
 
       {/* 우측 콘텐츠 */}
       <main className="flex-1 p-6">
         <h2 className="text-xl font-bold flex items-center gap-2">
           {title} {icon}
         </h2>
-        <hr className="my-2 border-gray-300" />
+        <hr className="my-2 border-under" />
         {children}
       </main>
     </div>
