@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import underArrow from "../assets/icons/under_arrow.svg";
 import frown from "../assets/icons/frown.svg";
 import frownRed from "../assets/icons/frown_red.svg";
+import FileAttach from "./FileAttach";
 
 interface ComplaintFormData {
   address: string;
@@ -36,12 +37,18 @@ export default function ComplaintForm({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.address.trim() || !formData.selectedRoute.trim() || !formData.selectedTrash.trim()) {
-      window.alert("필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)")
+    if (
+      !formData.address.trim() ||
+      !formData.selectedRoute.trim() ||
+      !formData.selectedTrash.trim()
+    ) {
+      window.alert(
+        "필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)"
+      );
       return;
     }
     onSubmit();
-  }
+  };
 
   return (
     <div className="overflow-y-auto max-h-[66vh] scrollbar-hide">
@@ -129,7 +136,9 @@ export default function ComplaintForm({
             placeholder={focus.routeInput ? "" : "직접 입력"}
             className={`col-span-1 border border-light-border px-3 py-2 mt-5 rounded w-full text-center outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "mb-5" : ""}`}
             value={
-              !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(formData.selectedRoute)
+              !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(
+                formData.selectedRoute
+              )
                 ? formData.selectedRoute
                 : ""
             }
@@ -205,9 +214,11 @@ export default function ComplaintForm({
           <input
             type="text"
             value={
-              !["재활용", "일반", "음식물", "기타"].includes(formData.selectedTrash)
-              ? formData.selectedTrash
-              : ""
+              !["재활용", "일반", "음식물", "기타"].includes(
+                formData.selectedTrash
+              )
+                ? formData.selectedTrash
+                : ""
             }
             placeholder={focus.trashInput ? "" : "직접 입력"}
             className={`col-span-1 border border-light-border px-3 py-2 my-5 rounded w-full text-center outline-none font-bold`}
@@ -245,17 +256,7 @@ export default function ComplaintForm({
           <div className="col-span-2"></div>
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold text-[1rem] py-5">
-            파일 첨부
-          </label>
-          <button
-            type="button"
-            className="w-[200px] col-span-2 border border-light-border px-3 py-2 rounded text-center outline-none font-bold my-5"
-            value={formData.trashDetail}
-          >
-            파일 선택
-          </button>
-          <div className="col-span-2"></div>
+          <FileAttach />
 
           {/* 민원 내용 */}
           <label className="col-span-1 font-bold text-[1rem] mt-5 self-start">
@@ -278,7 +279,7 @@ export default function ComplaintForm({
               id="malicious"
               className="w-5 h-5 accent-red"
               checked={formData.isMalicious}
-              onChange={(e) => 
+              onChange={(e) =>
                 setFormData((f) => ({ ...f, isMalicious: e.target.checked }))
               }
             />
@@ -290,7 +291,11 @@ export default function ComplaintForm({
                 src={formData.isMalicious ? frownRed : frown}
                 alt="찡그린 표정"
                 className="w-6 h-6 mr-1"
-                style={formData.isMalicious ? { position: "relative", top: "1px" } : {}}
+                style={
+                  formData.isMalicious
+                    ? { position: "relative", top: "1px" }
+                    : {}
+                }
               />
               민원 다발 주소
             </label>
