@@ -12,6 +12,7 @@ interface PageLayoutProps {
   activeTab: string;
   onTabClick: (value: string) => void;
   children: React.ReactNode;
+  tabTitle: string;
 }
 
 const PageLayout: React.FC<PageLayoutProps> = ({
@@ -21,14 +22,15 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   activeTab,
   onTabClick,
   children,
+  tabTitle,
 }) => {
   return (
-    <div className="flex">
-      <div className="h-full">
-        <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-center py-3">
+    <div className="flex w-screen mx-[17rem]">
+      <div className="h-[66vh]">
+        <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-lg text-center py-3">
           {title}
         </div>
-        <aside className="w-[160px] h-[60vh] bg-[#fdfdfd] box-border border border-[#9f9f9f]">
+        <aside className="w-[160px] bg-[#fdfdfd] box-border border border-[#9f9f9f] h-[73vh]">
           {tabs.map((tab) => (
             <div
               key={tab.value}
@@ -42,12 +44,14 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </div>
 
       {/* 우측 콘텐츠 */}
-      <main className="flex-1 p-6">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          {title} {icon}
+      <main className="flex-1 p-6 border border-green-500 ml-[4rem]">
+        <h2 className="text-3xl font-bold flex items-center gap-2">
+          {tabTitle} {icon}
         </h2>
-        <hr className="my-2 border-under" />
-        {children}
+        <hr className="my-4 border-under border-[1.1px]" />
+        <div className="mt-3">
+          {children}
+        </div>
       </main>
     </div>
   );

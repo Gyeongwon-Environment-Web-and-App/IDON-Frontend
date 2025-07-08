@@ -12,16 +12,16 @@ export default function Header() {
 
   return (
     <header className="relative w-screen h-[8rem] bg-white py-3">
-      <div className="relative max-w-7xl mx-auto h-full flex items-end justify-between px-6 pt-4">
+      <div className="relative h-full flex items-end justify-between mx-[17rem] pt-4">
         {/* 로고 */}
-        <div className="w-[10vw] h-[8vh] border border-black cursor-pointer ml-20 pl-10" />
+        <div className="w-[10vw] h-[8vh] border border-black cursor-pointer" />
         {/* 
         // !임시로고
         */}
 
         {/* 메뉴 */}
         <nav
-          className="relative flex space-x-16 mb-0 pb-0 px-10"
+          className="relative flex space-x-16 mb-0 pb-0 px-10 mr-[8rem]"
           onMouseEnter={() => setShowDropdown(true)}
         >
           {menuItems.map((item, idx) => (

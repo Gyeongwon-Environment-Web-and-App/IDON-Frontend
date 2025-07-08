@@ -1,30 +1,107 @@
 import React, { useState } from "react";
 import PageLayout from "../components/PageLayout";
 import editIcon from "../assets/icons/edit.svg";
+import folderIcon from "../assets/icons/folder.svg";
+import Header from "../components/Header";
+import ComplaintForm from "../components/ComplaintForm";
+import ComplaintConfirm from "../components/ComplaintConfirm";
+
+function formatDateTime(date: Date) {
+  // 연, 월, 일
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  // 오전/오후, 시, 분
+  let hour = date.getHours();
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  const isAM = hour < 12;
+  const ampm = isAM ? "오전" : "오후";
+  if (!isAM) hour = hour === 12 ? 12 : hour - 12;
+  if (hour === 0) hour = 12;
+
+  return {
+    date: `${year} . ${month}. ${day}`,
+    time: `${ampm} ${hour}:${minute}`,
+  };
+}
+
+function DateTimeBox() {
+  const [now] = useState(new Date());
+  const { date, time } = formatDateTime(now);
+
+  return (
+    <div className="flex items-center gap-2 px-4 py-2 border-b border-light-border">
+      <span className="font-bold text-lg">{date}</span>
+      <span className="text-gray-400 text-sm">{time}</span>
+      <button className="border border-darker-green ml-2 px-2 py-1 text-xs rounded-[2.77px] bg-darker-green text-white cursor-text">
+        수정하기
+      </button>
+    </div>
+  );
+}
+
+function onSubmit() {
+
+}
 
 const ComplaintManage = () => {
   const [activeTab, setActiveTab] = useState("register");
+  const [formData, setFormData] = useState({
+    address: "",
+    routeInput: "",
+    selectedRoute: "",
+    phone: "",
+    selectedTrash: "",
+    trashInput: "",
+    trashDetail: "",
+    content: "",
+    isMalicious: false,
+  });
+  const [showConfirm, setShowConfirm] = useState(false);
 
   return (
-    <div className="w-screen h-[90vh] flex justify-center mt-10">
-      <PageLayout
-        title="민원 등록"
-        icon={<img src={editIcon} alt="icon" className="w-7 h-7" />}
-        tabs={[
-          { label: "내역 / 관리", value: "manage" },
-          { label: "민원 등록", value: "register" },
-        ]}
-        activeTab={activeTab}
-        onTabClick={setActiveTab}
-      >
-        {/* 민원 등록 콘텐츠 */}
-        <div className="">
-          {activeTab === "manage" && <div>민원 내역 및 관리 화면</div>}
-          {activeTab === "register" && (
-            <div>민원 등록 폼{/* 여기에 form 요소들 추가 */}</div>
-          )}
-        </div>
-      </PageLayout>
+    <div className="w-screen h-screen pt-10">
+      <Header />
+      <div className="flex justify-center items-center py-5 border border-red">
+        <PageLayout
+          title="민원"
+          icon={
+            activeTab === "manage" ? (
+              <img src={folderIcon} alt="icon" className="w-7 h-7" />
+            ) : (
+              <img src={editIcon} alt="icon" className="w-7 h-7" />
+            )
+          }
+          tabs={[
+            { label: "내역 / 관리", value: "manage" },
+            { label: "민원 등록", value: "register" },
+          ]}
+          activeTab={activeTab}
+          onTabClick={setActiveTab}
+          tabTitle={activeTab === "manage" ? "민원 내역 / 관리" : "민원 등록"}
+        >
+          {/* 민원 등록 콘텐츠 */}
+          <div>
+            {activeTab === "manage" && <></>}
+            {activeTab === "register" &&
+              (!showConfirm ? (
+                <ComplaintForm
+                  dateTimeBox={<DateTimeBox />}
+                  formData={formData}
+                  setFormData={setFormData}
+                  onSubmit={() => setShowConfirm(true)}
+                />
+              ) : (
+                <ComplaintConfirm
+                  dateTimeBox={<DateTimeBox />}
+                  formData={formData}
+                  onSubmit={onSubmit}
+                />
+              ))}
+          </div>
+        </PageLayout>
+      </div>
     </div>
   );
 };
