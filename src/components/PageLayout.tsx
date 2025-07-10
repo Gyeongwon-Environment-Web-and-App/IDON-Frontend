@@ -26,11 +26,11 @@ const PageLayout: React.FC<PageLayoutProps> = ({
 }) => {
   return (
     <div className="flex w-screen mx-[17rem]">
-      <div className="h-[66vh]">
+      <div className="max-h-[90vh]">
         <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-lg text-center py-3">
           {title}
         </div>
-        <aside className="w-[160px] bg-[#fdfdfd] box-border border border-[#9f9f9f] h-[73vh]">
+        <aside className="w-[160px] bg-[#fdfdfd] box-border border border-[#9f9f9f] h-[90%]">
           {tabs.map((tab) => (
             <div
               key={tab.value}
@@ -44,7 +44,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </div>
 
       {/* 우측 콘텐츠 */}
-      <main className="flex-1 p-6 border border-green-500 ml-[4rem]">
+      <main className="flex-1 p-6 ml-[4rem]">
         <h2 className="text-3xl font-bold flex items-center gap-2">
           {tabTitle} {icon}
         </h2>

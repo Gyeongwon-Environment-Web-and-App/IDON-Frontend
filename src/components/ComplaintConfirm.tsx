@@ -1,4 +1,8 @@
 import React from "react";
+import general from "../assets/icons/general.svg"
+import recycle from "../assets/icons/recycle.svg"
+import other from "../assets/icons/other.svg"
+import food from "../assets/icons/food.svg"
 
 interface ComplaintFormData {
   address: string;
@@ -26,15 +30,18 @@ export default function ComplaintConfirm({
   console.log(formData);
 
   return (
-    <div className="overflow-y-auto max-h-[66vh] scrollbar-hide">
+    <div className="">
       <form className="border border-light-border rounded-[15px]">
-        <div className="mt-0 mpx-5">{dateTimeBox}</div>
+        <div className="mt-0 mpx-5">
+          {dateTimeBox}
+        </div>
         <div className="flex justify-between px-10 my-10 text-[1rem] font-bold w-full">
-          <section className="mr-[3rem] w-[70%] border border-blue-500">
+          <section className="mr-[3rem] w-[70%]">
             <p className="text-dark-gray">
               민원 종류 -{" "}
               <span className="text-black my-5">
-                {formData.selectedTrash} ({formData.trashDetail})
+                {formData.selectedTrash}
+                {formData.trashDetail && ` (${formData.trashDetail})`}
               </span>
             </p>
             <p className="text-dark-gray my-5">
@@ -55,13 +62,16 @@ export default function ComplaintConfirm({
               </span>
             </p>
           </section>
-          <section className="border border-red text-center">
+          <section className="w-[23%] text-center">
             <p className="text-dark-gr py-3">담당 기사님 실시간 정보</p>
-            <div className="bg-efefef rounded w-[12rem] h-[7rem] py-3"></div>
+            <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
+              {/* 실시간 지도 */}
+            </div>
             <div className="flex justify-between pt-3 pb-2">
               {/* 재활용 등 쓰레기 태그 */}
               {/* 기사님 정보 가져오기 */}
-              <div>
+              <div className="flex">
+                <img src={formData.selectedTrash === '음식물' ? food : formData.selectedTrash === '재활용' ? recycle : formData.selectedTrash === '기타' ? other : formData.selectedTrash === '일반' ? general : ''} className="w-2/8 mr-2"alt="쓰레기 종류 태그" />
                 <p className="text-black">김승대 기사님</p>
               </div>
               <p className="text-light-green">운행중</p>

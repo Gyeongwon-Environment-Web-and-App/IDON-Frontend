@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PageLayout from "../components/PageLayout";
 import editIcon from "../assets/icons/edit.svg";
 import folderIcon from "../assets/icons/folder.svg";
+import attentionRed from "../assets/icons/attention_red.svg";
 import Header from "../components/Header";
 import ComplaintForm from "../components/ComplaintForm";
 import ComplaintConfirm from "../components/ComplaintConfirm";
@@ -26,24 +27,38 @@ function formatDateTime(date: Date) {
   };
 }
 
-function DateTimeBox() {
+function DateTimeBox({
+  visible,
+  repeat,
+}: {
+  visible: boolean;
+  repeat: boolean;
+}) {
   const [now] = useState(new Date());
   const { date, time } = formatDateTime(now);
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 border-b border-light-border">
-      <span className="font-bold text-lg">{date}</span>
-      <span className="text-gray-400 text-sm">{time}</span>
-      <button className="border border-darker-green ml-2 px-2 py-1 text-xs rounded-[2.77px] bg-darker-green text-white cursor-text">
-        수정하기
-      </button>
+    <div className="flex items-center justify-between gap-2 px-6 py-3 border-b border-light-border w-full">
+      <div className="flex justify-between items-center">
+        <span className="font-bold text-xl mr-2">{date}</span>
+        <span className="text-gray-400 text-sm">{time}</span>
+        {visible && (
+          <button className="border border-darker-green ml-2 px-2 py-1 text-xs rounded-[2.77px] bg-darker-green text-white cursor-text">
+            수정하기
+          </button>
+        )}
+      </div>
+      {repeat && (
+        <div className="flex items-center">
+          <img src={attentionRed} alt="반복 민원 아이콘" className="w-6 h-6" />
+          <p className="text-red ml-1">반복 민원</p>
+        </div>
+      )}
     </div>
   );
 }
 
-function onSubmit() {
-
-}
+function onSubmit() {}
 
 const ComplaintManage = () => {
   const [activeTab, setActiveTab] = useState("register");
@@ -63,7 +78,7 @@ const ComplaintManage = () => {
   return (
     <div className="w-screen h-screen pt-10">
       <Header />
-      <div className="flex justify-center items-center py-5 border border-red">
+      <div className="flex justify-center items-center py-5">
         <PageLayout
           title="민원"
           icon={
@@ -87,14 +102,19 @@ const ComplaintManage = () => {
             {activeTab === "register" &&
               (!showConfirm ? (
                 <ComplaintForm
-                  dateTimeBox={<DateTimeBox />}
+                  dateTimeBox={<DateTimeBox visible={true} repeat={false} />}
                   formData={formData}
                   setFormData={setFormData}
                   onSubmit={() => setShowConfirm(true)}
                 />
               ) : (
                 <ComplaintConfirm
-                  dateTimeBox={<DateTimeBox />}
+                  dateTimeBox={
+                    <DateTimeBox
+                      visible={false}
+                      repeat={formData.isMalicious}
+                    />
+                  }
                   formData={formData}
                   onSubmit={onSubmit}
                 />

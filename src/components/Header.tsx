@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const menuItems = [
   { label: "지도", submenu: ["민원 분류", "차량 조회", "지역 통계"] },
@@ -21,7 +21,7 @@ export default function Header() {
 
         {/* 메뉴 */}
         <nav
-          className="relative flex space-x-16 mb-0 pb-0 px-10 mr-[8rem]"
+          className="relative flex space-x-16 mb-0 pb-0 px-10 mr-[9rem]"
           onMouseEnter={() => setShowDropdown(true)}
         >
           {menuItems.map((item, idx) => (

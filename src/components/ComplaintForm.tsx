@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import underArrow from "../assets/icons/under_arrow.svg";
-import frown from "../assets/icons/frown.svg";
-import frownRed from "../assets/icons/frown_red.svg";
+import attention from "../assets/icons/attention.svg";
 import FileAttach from "./FileAttach";
 
 interface ComplaintFormData {
@@ -51,7 +50,7 @@ export default function ComplaintForm({
   };
 
   return (
-    <div className="overflow-y-auto max-h-[66vh] scrollbar-hide">
+    <div className="">
       <form className="border border-light-border rounded-[15px]">
         <div className="mt-0 mpx-5">{dateTimeBox}</div>
         <div className="max-w-4xl mx-10 my-10 grid grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-4 items-center text-sm">
@@ -287,17 +286,8 @@ export default function ComplaintForm({
               htmlFor="malicious"
               className={`flex items-center text-[1rem] ${formData.isMalicious ? "text-red" : ""}`}
             >
-              <img
-                src={formData.isMalicious ? frownRed : frown}
-                alt="찡그린 표정"
-                className="w-6 h-6 mr-1"
-                style={
-                  formData.isMalicious
-                    ? { position: "relative", top: "1px" }
-                    : {}
-                }
-              />
-              민원 다발 주소
+              <img src={attention} alt="찡그린 표정" className="w-6 h-6 mr-1" />
+              반복 민원
             </label>
           </div>
         </div>
