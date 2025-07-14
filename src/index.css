@@ -76,8 +76,6 @@ button {
   }
 }
 
-
-
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -134,8 +132,6 @@ button {
   }
 }
 
-
-
 @layer base {
   * {
     @apply border-border;
@@ -143,4 +139,42 @@ button {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+.custom-calendar [data-selected-single="true"] {
+  background-color: #00BA13 !important;
+  color: white !important;
+  border-radius: 9999px !important;
+}
+
+.custom-calendar .rdp-day {
+  font-size: 1rem;
+  padding: 0.3rem;
+}
+
+.custom-calendar .bg-accent {
+  background-color: white;
+}
+
+.custom-calendar [data-today="true"] {
+  color: #00BA13 !important;
+}
+
+.custom-calendar [data-today="true"]:hover,
+.custom-calendar [data-today="true"]:focus,
+.custom-calendar [data-today="true"]:active {
+  background-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .rdp-day:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.custom-calendar .rdp-weekdays th {
+  font-size: 1rem !important;
+  color: black;
+  text-transform: none;
 }
