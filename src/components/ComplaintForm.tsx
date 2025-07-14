@@ -3,19 +3,7 @@ import underArrow from "../assets/icons/under_arrow.svg";
 import attention from "../assets/icons/attention.svg";
 import attentionRed from "../assets/icons/attention_red.svg";
 import FileAttach from "./FileAttach";
-
-interface ComplaintFormData {
-  address: string;
-  routeInput: string;
-  selectedRoute: string;
-  phone: string;
-  selectedTrash: string;
-  trashInput: string;
-  trashDetail: string;
-  content: string;
-  isMalicious: boolean;
-  forwardTargets: string[];
-}
+import type { ComplaintFormData } from "../types/complaint";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
@@ -257,7 +245,7 @@ export default function ComplaintForm({
           <div className="col-span-2"></div>
 
           {/* 파일 첨부 */}
-          <FileAttach />
+          <FileAttach formData={formData} setFormData={setFormData} />
 
           {/* 민원 내용 */}
           <label className="col-span-1 font-bold text-[1rem] mt-5 self-start">

@@ -1,22 +1,11 @@
 import React from "react";
 import TextForward from "./TextForward";
-import general from "../assets/icons/general.svg"
-import recycle from "../assets/icons/recycle.svg"
-import other from "../assets/icons/other.svg"
-import food from "../assets/icons/food.svg"
-
-interface ComplaintFormData {
-  address: string;
-  routeInput: string;
-  selectedRoute: string;
-  phone: string;
-  selectedTrash: string;
-  trashInput: string;
-  trashDetail: string;
-  content: string;
-  isMalicious: boolean;
-  forwardTargets: string[];
-}
+import general from "../assets/icons/general.svg";
+import recycle from "../assets/icons/recycle.svg";
+import other from "../assets/icons/other.svg";
+import food from "../assets/icons/food.svg";
+import X from "../assets/icons/X.svg";
+import type { ComplaintFormData } from "../types/complaint";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
@@ -31,14 +20,23 @@ export default function ComplaintConfirm({
   setFormData,
   onSubmit,
 }: ComplaintConfirmProps) {
-  console.log(formData);
+  console.log("uploadedFiles length:", formData.uploadedFiles.length);
+  console.log("uploadedFiles:", formData.uploadedFiles);
+
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
 
   return (
     <div className="">
       <form className="border border-light-border rounded-[15px]">
-        <div className="mt-0 mpx-5">
-          {dateTimeBox}
-        </div>
+        <div className="mt-0 mpx-5">{dateTimeBox}</div>
         <div className="flex justify-between px-10 mt-10 mb-5 text-[1rem] font-bold w-full">
           <section className="mr-[3rem] w-[70%]">
             <p className="text-dark-gray">
@@ -65,7 +63,68 @@ export default function ComplaintConfirm({
                 {formData.content}{" "}
               </span>
             </p>
+            
+            {/* 업로드된 파일 미리보기 */}
+            {formData.uploadedFiles.length > 0 && (
+              <div className="mt-5 border border-light-border w-full rounded overflow-hidden text-gray-text">
+                <div className="text-dark-gray font-normal text-sm flex justify-between bg-[#FAFAFB] px-2 py-1">
+                  <div className="flex">
+                    <img src={X} alt="닫기 아이콘" className="mr-2" />
+                    파일명
+                  </div>
+                  <p>용량</p>
+                </div>
+                <div className="flex gap-3 px-2 py-2">
+                  {formData.uploadedFiles.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between w-full"
+                    >
+                      <div className="relative flex items-center">
+                        <img
+                          src={X}
+                          alt="닫기 아이콘"
+                          className="mr-2 cursor-pointer"
+                          onClick={() => {
+                            setFormData((prev) => ({
+                              ...prev,
+                              uploadedFiles: prev.uploadedFiles.filter(
+                                (_, i) => i !== index
+                              ),
+                            }));
+                          }}
+                        />
+                        {file.type.startsWith("image/") ? (
+                          <div className="w-8 h-8 rounded overflow-hidden relative group mr-2">
+                            <img
+                              src={file.url}
+                              alt={file.name}
+                              className="w-8 h-8 object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src =
+                                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OCA1NkM1Mi40MTgzIDU2IDU2IDUyLjQxODMgNT2gNDhDNTYgNTYuNDE4MyA1Mi40MTgzIDYwIDQ4IDYwQzQzLjU4MTcgNjAgNDAgNTYuNDE4MyA0MCA1MkM0MCA0Ny41ODE3IDQzLjU4MTcgNDQgNDggNDRaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik02NCA2NEgzMkMyOS43OTQ5IDY0IDI4IDYyLjIwNTEgMjggNjBWMzJDMjggMjkuNzk0OSAyOS43OTQ5IDI4IDMyIDI4SDY0QzY2LjIwNTEgMjggNjggMjkuNzk0OSA2OCAzMlY2MEM2OCA2Mi4yMDUxIDY2LjIwNTEgNjQgNjQgNjRaIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K";
+                              }}
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-8 h-8 text-[2rem] rounded flex items-center justify-center relative group mr-2">
+                            📄
+                          </div>
+                        )}
+                        <p className="text-xs text-center font-medium pl-1">
+                          {file.name}
+                        </p>
+                      </div>
+                      <p className="text-xs ml-2 font-medium">
+                        {formatFileSize(file.size)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </section>
+
           <section className="w-[23%] text-center">
             <p className="text-dark-gr py-3">담당 기사님 실시간 정보</p>
             <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
@@ -75,7 +134,21 @@ export default function ComplaintConfirm({
               {/* 재활용 등 쓰레기 태그 */}
               {/* 기사님 정보 가져오기 */}
               <div className="flex">
-                <img src={formData.selectedTrash === '음식물' ? food : formData.selectedTrash === '재활용' ? recycle : formData.selectedTrash === '기타' ? other : formData.selectedTrash === '일반' ? general : ''} className="w-2/8 mr-2"alt="쓰레기 종류 태그" />
+                <img
+                  src={
+                    formData.selectedTrash === "음식물"
+                      ? food
+                      : formData.selectedTrash === "재활용"
+                        ? recycle
+                        : formData.selectedTrash === "기타"
+                          ? other
+                          : formData.selectedTrash === "일반"
+                            ? general
+                            : ""
+                  }
+                  className="w-2/8 mr-2"
+                  alt="쓰레기 종류 태그"
+                />
                 <p className="text-black">김승대 기사님</p>
               </div>
               <p className="text-light-green">운행중</p>
@@ -89,7 +162,7 @@ export default function ComplaintConfirm({
         </div>
         <div className="flex items-center justify-center my-8">
           <TextForward
-            options={['소장님께 전달', '클린팀에게 전달', '담당 기사님께 전달']}
+            options={["소장님께 전달", "클린팀에게 전달", "담당 기사님께 전달"]}
             selectedValues={formData.forwardTargets}
             onChange={(updatedList) =>
               setFormData((prev) => ({ ...prev, forwardTargets: updatedList }))

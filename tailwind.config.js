@@ -10,6 +10,7 @@ module.exports = {
         "darker-green": "#3CB64C",
         "light-green": "#00BA13",
         "lighter-green": "#C4FFCA",
+        "gray-text": "#757575",
         red: "#FF0000",
 
         // !---------------shadcn----------------

@@ -1,11 +1,18 @@
 import React, { useRef, useState } from "react";
-import axios, { AxiosError } from "axios";
+import type { ComplaintFormData } from "../types/complaint";
 
-const FileAttach = () => {
+interface FileAttachProps {
+  formData: ComplaintFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ComplaintFormData>>;
+}
+
+const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
   const [uploading, setUploading] = useState(false);
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileUploadFail, setFileUploadFail] = useState(false);
+
+  console.log("fileAttach:formData's address", formData.address);
 
   const handleFileClick = () => {
     fileInputRef.current?.click();
@@ -18,35 +25,44 @@ const FileAttach = () => {
     setUploadedFileName(null); // 이전 업로드 상태 초기화
     setUploading(true);
 
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
     try {
-      const res = await axios.post("http://localhost:5000/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      // 백엔드 없이 로컬에서 파일 처리
+      const fileReader = new FileReader();
 
-      setUploadedFileName(selectedFile.name);
-      if (!res) {
-        throw new Error("파일 전송 실패", res)
-      }
+      fileReader.onload = (event) => {
+        const fileUrl = event.target?.result as string;
+
+        // formData에 파일 정보 추가
+        const newFile = {
+          name: selectedFile.name,
+          url: fileUrl, // FileReader로 생성된 로컬 URL
+          type: selectedFile.type,
+          size: selectedFile.size,
+        };
+
+        console.log("새로 추가된 파일:", newFile);
+        console.log("파일 크기:", selectedFile.size, "바이트");
+
+        setFormData((prev) => ({
+          ...prev,
+          uploadedFiles: [...prev.uploadedFiles, newFile],
+        }));
+
+        setUploadedFileName(selectedFile.name);
+        setUploading(false);
+      };
+
+      fileReader.onerror = () => {
+        setFileUploadFail(true);
+        setUploading(false);
+        console.error("파일 읽기 실패");
+      };
+
+      // 파일을 Data URL로 읽기
+      fileReader.readAsDataURL(selectedFile);
     } catch (err: unknown) {
-      const error = err as AxiosError;
-      setFileUploadFail(true)
-      if (error.response) {
-        // 서버가 응답했으나 에러(404, 500 등)
-        console.error("에러 코드:", error.response.status);
-        console.error("에러 메시지:", error.response.data);
-      } else if (error.request) {
-        // 요청은 갔으나 응답이 없음
-        console.error("응답 없음", error.request);
-      } else {
-        // 기타 에러
-        console.error("에러 발생", error.message);
-      }
-    } finally {
+      setFileUploadFail(true);
+      console.error("파일 처리 중 에러 발생:", err);
       setUploading(false);
     }
   };
@@ -74,10 +90,10 @@ const FileAttach = () => {
           {uploading
             ? "업로드 중..."
             : uploadedFileName
-            ? `${uploadedFileName}`
-            : fileUploadFail
-            ? "업로드 실패"
-            : "선택된 파일 없음"}
+              ? `${uploadedFileName}`
+              : fileUploadFail
+                ? "업로드 실패"
+                : "선택된 파일 없음"}
         </span>
       </div>
       <div className="col-span-1"></div>

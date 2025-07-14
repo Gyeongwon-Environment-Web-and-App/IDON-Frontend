@@ -7,6 +7,7 @@ import {
 import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
 import attentionRed from "../assets/icons/attention_red.svg";
+import redo from "../assets/icons/redo.svg";
 
 function formatDateTime(date: Date) {
   // 연, 월, 일
@@ -31,9 +32,14 @@ function formatDateTime(date: Date) {
 interface DateTimeBoxProps {
   visible: boolean;
   repeat: boolean;
+  onBack?: () => void;
 }
 
-export default function DateTimeBox({ visible, repeat }: DateTimeBoxProps) {
+export default function DateTimeBox({
+  visible,
+  repeat,
+  onBack,
+}: DateTimeBoxProps) {
   const [now] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(now);
   const [open, setOpen] = useState(false);
@@ -46,7 +52,7 @@ export default function DateTimeBox({ visible, repeat }: DateTimeBoxProps) {
           {selectedDate ? formatDateTime(selectedDate).date : date}
         </span>
         <span className="text-gray-400 text-sm">{time}</span>
-        {visible && (
+        {visible ? (
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button className="border border-darker-green ml-2 px-2 py-1 text-xs rounded-[2.77px] bg-darker-green text-white cursor-pointer">
@@ -81,6 +87,15 @@ export default function DateTimeBox({ visible, repeat }: DateTimeBoxProps) {
               />
             </PopoverContent>
           </Popover>
+        ) : (
+          <>
+            <img
+              src={redo}
+              alt="뒤로가기 아이콘"
+              className="ml-2 cursor-pointer bg-efefef rounded"
+              onClick={onBack}
+            />
+          </>
         )}
       </div>
       {repeat && (
