@@ -1,4 +1,5 @@
 import React from "react";
+import TextForward from "./TextForward";
 import general from "../assets/icons/general.svg"
 import recycle from "../assets/icons/recycle.svg"
 import other from "../assets/icons/other.svg"
@@ -14,17 +15,20 @@ interface ComplaintFormData {
   trashDetail: string;
   content: string;
   isMalicious: boolean;
+  forwardTargets: string[];
 }
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
   formData: ComplaintFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ComplaintFormData>>;
   onSubmit: () => void;
 }
 
 export default function ComplaintConfirm({
   formData,
   dateTimeBox,
+  setFormData,
   onSubmit,
 }: ComplaintConfirmProps) {
   console.log(formData);
@@ -35,7 +39,7 @@ export default function ComplaintConfirm({
         <div className="mt-0 mpx-5">
           {dateTimeBox}
         </div>
-        <div className="flex justify-between px-10 my-10 text-[1rem] font-bold w-full">
+        <div className="flex justify-between px-10 mt-10 mb-5 text-[1rem] font-bold w-full">
           <section className="mr-[3rem] w-[70%]">
             <p className="text-dark-gray">
               민원 종류 -{" "}
@@ -82,6 +86,15 @@ export default function ComplaintConfirm({
               <p className="py-1">843거 4296</p>
             </div>
           </section>
+        </div>
+        <div className="flex items-center justify-center my-8">
+          <TextForward
+            options={['소장님께 전달', '클린팀에게 전달', '담당 기사님께 전달']}
+            selectedValues={formData.forwardTargets}
+            onChange={(updatedList) =>
+              setFormData((prev) => ({ ...prev, forwardTargets: updatedList }))
+            }
+          />
         </div>
       </form>
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import underArrow from "../assets/icons/under_arrow.svg";
 import attention from "../assets/icons/attention.svg";
+import attentionRed from "../assets/icons/attention_red.svg";
 import FileAttach from "./FileAttach";
 
 interface ComplaintFormData {
@@ -13,6 +14,7 @@ interface ComplaintFormData {
   trashDetail: string;
   content: string;
   isMalicious: boolean;
+  forwardTargets: string[];
 }
 
 interface ComplaintFormProps {
@@ -286,7 +288,11 @@ export default function ComplaintForm({
               htmlFor="malicious"
               className={`flex items-center text-[1rem] ${formData.isMalicious ? "text-red" : ""}`}
             >
-              <img src={attention} alt="찡그린 표정" className="w-6 h-6 mr-1" />
+              <img
+                src={formData.isMalicious ? attentionRed : attention}
+                alt="찡그린 표정"
+                className="w-6 h-6 mr-1"
+              />
               반복 민원
             </label>
           </div>
