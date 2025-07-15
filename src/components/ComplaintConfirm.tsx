@@ -63,18 +63,18 @@ export default function ComplaintConfirm({
                 {formData.content}{" "}
               </span>
             </p>
-            
+
             {/* 업로드된 파일 미리보기 */}
             {formData.uploadedFiles.length > 0 && (
               <div className="mt-5 border border-light-border w-full rounded overflow-hidden text-gray-text">
-                <div className="text-dark-gray font-normal text-sm flex justify-between bg-[#FAFAFB] px-2 py-1">
+                <div className="font-normal text-sm flex justify-between bg-[#FAFAFB] px-2 py-1">
                   <div className="flex">
                     <img src={X} alt="닫기 아이콘" className="mr-2" />
                     파일명
                   </div>
                   <p>용량</p>
                 </div>
-                <div className="flex gap-3 px-2 py-2">
+                <div className="flex flex-col gap-3 px-2 py-2">
                   {formData.uploadedFiles.map((file, index) => (
                     <div
                       key={index}
@@ -84,7 +84,7 @@ export default function ComplaintConfirm({
                         <img
                           src={X}
                           alt="닫기 아이콘"
-                          className="mr-2 cursor-pointer"
+                          className="mr-[6px] pt-[0.5px] pl-[0.5px] cursor-pointer"
                           onClick={() => {
                             setFormData((prev) => ({
                               ...prev,
@@ -107,7 +107,7 @@ export default function ComplaintConfirm({
                             />
                           </div>
                         ) : (
-                          <div className="w-8 h-8 text-[2rem] rounded flex items-center justify-center relative group mr-2">
+                          <div className="w-7 h-7 text-[1.7rem] flex items-center justify-center mr-2">
                             📄
                           </div>
                         )}
