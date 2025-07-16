@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
-import PageLayout from "../components/PageLayout";
+import axios from "axios";
+import type { ComplaintFormData } from "../types/complaint";
 import editIcon from "../assets/icons/edit.svg";
 import folderIcon from "../assets/icons/folder.svg";
+import PageLayout from "../components/PageLayout";
 import Header from "../components/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import DateTimeBox from "../components/DateTimeBox";
-import axios from "axios";
-import type { ComplaintFormData } from "../types/complaint";
+import Popup from "@/components/Popup";
 
 const ComplaintManage = () => {
   const initialFormData: ComplaintFormData = {
@@ -32,6 +33,7 @@ const ComplaintManage = () => {
   const [formData, setFormData] = useState(initialFormData);
   const [showConfirm, setShowConfirm] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  const [isPopupOpen, setIsPopupOpen] = useState(false);
 
   // 폼 데이터 변경 감지
   useEffect(() => {
@@ -115,7 +117,7 @@ const ComplaintManage = () => {
       );
 
       console.log("민원 제출 성공:", response.data);
-      alert("민원이 성공적으로 제출되었습니다!");
+      setIsPopupOpen(true)
 
       // 5. 폼 초기화
       setFormData(initialFormData);
@@ -127,7 +129,25 @@ const ComplaintManage = () => {
   };
 
   return (
-    <div className="w-screen h-screen pt-10">
+    <div className="w-screen h-screen pt-10 relative">
+      {isPopupOpen && (
+        <Popup
+          message={<>
+            <p>민원 전송이</p>
+            <p>완료되었습니다.</p>
+          </>}
+          yesNo={false}
+          onFirstClick={() => {
+            // ! navigate to map
+            console.log('first click')
+          }}
+          onSecondClick={() => {
+            // ! navigate to complaint list
+            console.log('second click')
+          }}
+          toHome={true}
+        />
+      )}
       <Header />
       <div className="flex justify-center items-center py-5">
         <PageLayout
