@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import underArrow from "../assets/icons/functions/under_arrow.svg";
 import attention from "../assets/icons/attention.svg";
 import attentionRed from "../assets/icons/attention_red.svg";
-import FileAttach from "./FileAttach";
-import type { ComplaintFormData } from "../types/complaint";
+import FileAttach from "../FileAttach";
+import type { ComplaintFormData } from "../../types/complaint";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
