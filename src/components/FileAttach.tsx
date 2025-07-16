@@ -13,7 +13,8 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
   const [fileUploadFail, setFileUploadFail] = useState(false);
 
   console.log("fileAttach:formData's address", formData.address);
-
+  console.log("fileAttach:uploaded file name", uploadedFileName);
+  
   const handleFileClick = () => {
     fileInputRef.current?.click();
   };
@@ -89,8 +90,8 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
         <span className="ml-5">
           {uploading
             ? "업로드 중..."
-            : uploadedFileName
-              ? `${uploadedFileName}`
+            : formData.uploadedFiles.length > 0
+              ? formData.uploadedFiles[formData.uploadedFiles.length - 1].name
               : fileUploadFail
                 ? "업로드 실패"
                 : "선택된 파일 없음"}

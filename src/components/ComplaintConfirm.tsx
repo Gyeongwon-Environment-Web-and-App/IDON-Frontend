@@ -1,10 +1,10 @@
 import React from "react";
 import TextForward from "./TextForward";
-import general from "../assets/icons/general.svg";
-import recycle from "../assets/icons/recycle.svg";
-import other from "../assets/icons/other.svg";
-import food from "../assets/icons/food.svg";
-import X from "../assets/icons/X.svg";
+import general from "../assets/icons/tags/general.svg";
+import recycle from "../assets/icons/tags/recycle.svg";
+import other from "../assets/icons/tags/other.svg";
+import food from "../assets/icons/tags/food.svg";
+import X from "../assets/icons/functions/X.svg";
 import type { ComplaintFormData } from "../types/complaint";
 
 interface ComplaintConfirmProps {

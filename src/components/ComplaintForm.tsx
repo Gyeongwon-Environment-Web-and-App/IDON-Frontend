@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import underArrow from "../assets/icons/under_arrow.svg";
+import underArrow from "../assets/icons/functions/under_arrow.svg";
 import attention from "../assets/icons/attention.svg";
 import attentionRed from "../assets/icons/attention_red.svg";
 import FileAttach from "./FileAttach";
