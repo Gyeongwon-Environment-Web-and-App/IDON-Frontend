@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import mdLogo from "../assets/icons/logo/mid_logo.svg";
 
 const Login: React.FC = () => {
   const [serial, setSerial] = useState("");
@@ -31,7 +32,7 @@ const Login: React.FC = () => {
   return (
     <div className="flex items-center justify-center min-h-screen w-screen" style={{ padding: "10%" }}>
       <div className="h-full flex items-center justify-center w-1/2">
-        <h2 className="text-2xl font-bold mb-6 text-center">로고위치</h2>
+        <img className="text-2xl font-bold mb-6 text-center" src={mdLogo} alt="중간 크기 경원환경개발 초록색 로고" />
       </div>
       <div className="w-1/2">
         <form
