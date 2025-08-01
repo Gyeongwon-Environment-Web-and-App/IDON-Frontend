@@ -39,11 +39,9 @@ export default function Header() {
 
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
-  console.log(window.innerWidth);
-
   return (
     <header className="relative w-screen h-[7rem] bg-white py-3">
-      <div className="relative md:h-full border border-red flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
+      <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
         {/* 로고 */}
         <div
           className="cursor-pointer mb-2 md:ml-4"
@@ -69,7 +67,7 @@ export default function Header() {
           onMouseEnter={() => setShowDropdown(true)}
         >
           {menuItems.map((item, idx) => (
-            <div key={idx} className="relative flex flex-col items-center border-blue-500 border box-border">
+            <div key={idx} className="relative flex flex-col items-center box-border">
               {/* 상단 메뉴 텍스트 */}
               <div
                 className={`cursor-pointer px-4 pt-7 pb-4 border-b-2 font-bold lg:text-xl text-md ${showDropdown ? "border-black" : "border-white"}`}

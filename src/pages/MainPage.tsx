@@ -82,13 +82,14 @@ const MainPage: React.FC = () => {
       </div>
 
       {/* 화면 하단 */}
-      <div className="absolute flex top-[55%] w-screen px-80 pt-10">
+      <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[55%] w-screen 2xl:px-80 pt-10">
+        <p className="md:hidden font-bold text-lg px-10 pt-5 pb-3">메인 메뉴</p>
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="grid grid-cols-2 gap-8 w-[55rem] mr-10 mx-auto">
+        <div className="flex flex-wrap justify-center xs:gap-0.5 w-sm:gap-4 md:gap-8 md:w-[60rem] md:mr-10 md:mb-10 items-center px-2">
           {menuButtons.map((button, index) => (
             <button
               key={index}
-              className={`rounded-md w-full h-[10rem] h-1000:h-[12rem] flex justify-around items-center bg-white shadow-custom ${
+              className={`rounded-xl w-[10.5rem] md:w-[25rem] h-[10rem] h-1000:h-[12rem] flex flex-col-reverse md:flex-row justify-around items-start md:items-center bg-white md:border-none md:shadow-custom border-[1.5px] border-[#C8C8C8] p-0 px-2 md:px-5 py-5 md:py-0 ${
                 button.title === "민원 등록" || button.title === "민원 관리"
                   ? "hover:shadow-[#C8F2CE]"
                   : button.title === "지도"
@@ -99,16 +100,28 @@ const MainPage: React.FC = () => {
               }`}
               onClick={() => handleCardClick(button.route)}
             >
-              <div className="flex flex-col justify-between text-left">
-                <p className="font-bold text-2xl mb-2">{button.title}</p>
-                <p>{button.description}</p>
+              <div className="ml-1 flex flex-col justify-between text-left">
+                <p className="font-bold text-xl md:text-2xl mb-1">
+                  {button.title}
+                </p>
+                <p className="text-xs md:text-lg md:hidden lg:block sm:block text-4e4e4e">
+                  {button.description}
+                </p>
               </div>
-              <img src={button.icon} alt={button.alt} />
+              <img
+                src={button.icon}
+                alt={button.alt}
+                className="h-[3rem] md:h-20"
+              />
             </button>
           ))}
         </div>
-        <div className="border border-red">
-          현재 개발 중입니다. 공지사항페이지들어갈자리
+        <div className="mx-auto border border-red h-full max-w-60 my-10">
+          현재 개발 중입니다. 공지사항페이지들어갈자리 공지사항페이지들어갈자리
+          공지사항페이지들어갈자리 공지사항페이지들어갈자리
+          공지사항페이지들어갈자리 공지사항페이지들어갈자리
+          공지사항페이지들어갈자리 공지사항페이지들어갈자리
+          공지사항페이지들어갈자리
         </div>
       </div>
     </div>
