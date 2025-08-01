@@ -85,7 +85,7 @@ const MainPage: React.FC = () => {
       <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[55%] w-screen 2xl:px-80 pt-10">
         <p className="md:hidden font-bold text-lg px-10 pt-5 pb-3">메인 메뉴</p>
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="flex flex-wrap justify-center xs:gap-0.5 w-sm:gap-4 md:gap-8 md:w-[60rem] md:mr-10 md:mb-10 items-center px-2">
+        <div className="flex flex-wrap justify-center xxs:gap-0.5 xs:gap-4 md:gap-8 md:w-[60rem] 2xl:w-[150rem]md:mr-10 md:mb-10 items-center px-2 border border-red">
           {menuButtons.map((button, index) => (
             <button
               key={index}

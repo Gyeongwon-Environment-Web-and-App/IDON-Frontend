@@ -3,19 +3,21 @@ module.exports = {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
-			screens: {
-				'h-800': {'raw': '(min-height: 800px)'},
-				'h-900': {'raw': '(min-height: 900px)'},
-				'h-1000': {'raw': '(min-height: 1000px)'},
-				'xs': '360px',
-				'w-sm': '390px',
-			},
+      screens: {
+        xxs: "360px",
+				xs: "390px",
+        sm: "640px",
+        md: "768px",
+        lg: "1024px",
+        xl: "1280px",
+        "2xl": "1536px",
+      },
       colors: {
         efefef: "#EFEFEF",
         under: "#868686",
         d9d9d9: "#D9D9D9",
         bababa: "#BABABA",
-				"4e4e4e": "#4E4E4E",
+        "4e4e4e": "#4E4E4E",
         "light-border": "#ACACAC",
         "darker-green": "#3CB64C",
         "light-green": "#00BA13",
