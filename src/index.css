@@ -13,6 +13,18 @@
     /* IE, Edge */
     -ms-overflow-style: none;
   }
+
+  .text-shadow {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
+  .text-shadow-lg {
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+  }
+
+  .text-shadow-xl {
+    text-shadow: 6px 6px 12px rgba(0, 0, 0, 0.8);
+  }
 }
 @layer components {
   .btn-option {
@@ -158,7 +170,7 @@ button {
 }
 
 .custom-calendar [data-selected-single="true"] {
-  background-color: #00BA13 !important;
+  background-color: #00ba13 !important;
   color: white !important;
   border-radius: 9999px !important;
 }
@@ -173,7 +185,7 @@ button {
 }
 
 .custom-calendar [data-today="true"] {
-  color: #00BA13 !important;
+  color: #00ba13 !important;
 }
 
 .custom-calendar [data-today="true"]:hover,

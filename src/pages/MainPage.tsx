@@ -48,7 +48,7 @@ const MainPage: React.FC = () => {
   ];
 
   return (
-    <div className="w-screen h-screen overflow-auto absolute top-0 pt-5 text-center">
+    <div className="w-screen h-screen overflow-auto absolute top-0 text-center">
       <Header />
       {/* 배경 이미지 공간 */}
       <div className="w-screen overflow-hidden absolute">
@@ -58,7 +58,7 @@ const MainPage: React.FC = () => {
           className="h-[43vh] w-full object-cover object-center transition-all duration-500 sm:scale-100 md:scale-105 lg:scale-110 xl:scale-125"
         />
         {/* 좌우 화살표 버튼 */}
-        <button className="absolute top-[50%] left-[20%] -translate-y-[50%] cursor-pointer z-10">
+        <button className="absolute top-[50%] left-[20%] -translate-y-[50%] cursor-pointer z-5">
           <img
             src={leftArrow}
             alt="왼쪽 이동 화살표"
@@ -73,21 +73,30 @@ const MainPage: React.FC = () => {
           />
         </button>
 
-        <div className="absolute left-[22%] bottom-20 font-bold text-white text-[1.7rem] text-center">
-          <p className="relative mb-2">미래의 쾌적한 삶을 위해,</p>
-          <p className="relative left-[8rem]">경원환경이 함께합니다</p>
+        <div className="absolute left-[23%] bottom-20 font-bold text-white text-[1.7rem] text-center ">
+          <p className="relative mb-2 text-shadow">미래의 쾌적한 삶을 위해,</p>
+          <p className="relative left-[8rem] text-shadow">
+            경원환경이 함께합니다
+          </p>
         </div>
       </div>
 
       {/* 화면 하단 */}
-      <div className="absolute flex top-[56%] w-screen px-96 pt-10">
+      <div className="absolute flex top-[55%] w-screen px-80 pt-10">
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="grid grid-cols-2 gap-8 max-w-6xl mx-auto">
+        <div className="grid grid-cols-2 gap-8 w-[55rem] mr-10 mx-auto">
           {menuButtons.map((button, index) => (
             <button
               key={index}
-              className="rounded-md w-full h-[12rem] flex justify-around items-center bg-white"
-              style={{ boxShadow: "0px 0px 9.69px 4.85px #A4A4A440" }}
+              className={`rounded-md w-full h-[10rem] h-1000:h-[12rem] flex justify-around items-center bg-white shadow-custom ${
+                button.title === "민원 등록" || button.title === "민원 관리"
+                  ? "hover:shadow-[#C8F2CE]"
+                  : button.title === "지도"
+                    ? "hover:shadow-[#D4EDFF]"
+                    : button.title === "차량 조회"
+                      ? "hover:shadow-[#6666664D]"
+                      : ""
+              }`}
               onClick={() => handleCardClick(button.route)}
             >
               <div className="flex flex-col justify-between text-left">
@@ -99,7 +108,7 @@ const MainPage: React.FC = () => {
           ))}
         </div>
         <div className="border border-red">
-          현재 개발 중입니다. 공지사항페이지들어갈자리...
+          현재 개발 중입니다. 공지사항페이지들어갈자리
         </div>
       </div>
     </div>

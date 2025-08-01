@@ -129,7 +129,7 @@ const ComplaintManage = () => {
   };
 
   return (
-    <div className="w-screen h-screen pt-5 relative">
+    <div className="w-screen h-screen relative">
       {isPopupOpen && (
         <Popup
           message={<>
