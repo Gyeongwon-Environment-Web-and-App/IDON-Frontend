@@ -151,7 +151,7 @@ const ComplaintManage = () => {
         />
       )}
       <Header />
-      <div className="flex justify-center items-center xxs:py-5">
+      <div className="flex md:justify-center md:items-center justify-start items-start md:pt-5 pb-5 w-full">
         <PageLayout
           title="민원"
           icon={

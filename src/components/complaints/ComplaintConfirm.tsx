@@ -34,32 +34,32 @@ export default function ComplaintConfirm({
   };
 
   return (
-    <div className="overflow-y-auto overflow-x-hidden">
+    <div className="overflow-y-auto overflow-x-hidden w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
         <div className="mt-0 mpx-5">{dateTimeBox}</div>
-        <div className="flex flex-col 2xl:flex-row md:justify-between items-center px-2 md:px-10 mt-5 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
-          <section className="md:mr-[3rem] md:w-[70%] w-full">
+        <div className="flex flex-col lg:flex-row md:justify-between items-center px-1 md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
+          <section className="md:mr-[3rem] md:w-[65%] w-full">
             <p className="text-dark-gray">
               민원 종류 -{" "}
-              <span className="text-black my-2 md:my-5">
+              <span className="text-black my-3 md:my-5">
                 {formData.selectedTrash}
                 {formData.trashDetail && ` (${formData.trashDetail})`}
               </span>
             </p>
-            <p className="text-dark-gray my-2 md:my-5">
+            <p className="text-dark-gray my-3 md:my-5">
               민원 접수 종류 -{" "}
               <span className="text-black">
                 {formData.selectedRoute}{" "}
                 {formData.phone ? `(${formData.phone})` : ""}
               </span>
             </p>
-            <p className="text-dark-gray my-2 md:my-5">
+            <p className="text-dark-gray my-3 md:my-5">
               민원 발생 주소 -{" "}
               <span className="text-black">{formData.address} </span>
             </p>
-            <p className="text-dark-gray my-2 md:my-5 flex flex-col w-full">
+            <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
               민원 내용
-              <span className="text-black mt-5 p-5 bg-efefef rounded h-[7rem]">
+              <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
                 {formData.content}{" "}
               </span>
             </p>
@@ -125,8 +125,10 @@ export default function ComplaintConfirm({
             )}
           </section>
 
-          <section className="md:w-[23%] w-full md:text-center text-left">
-            <p className="text-dark-gray py-3">담당 기사님 실시간 정보</p>
+          <section className="md:w-[25%] w-full md:text-center text-left">
+            <p className="text-dark-gray py-2 md:py-3">
+              담당 기사님 실시간 정보
+            </p>
             <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
               {/* 실시간 지도 */}
             </div>

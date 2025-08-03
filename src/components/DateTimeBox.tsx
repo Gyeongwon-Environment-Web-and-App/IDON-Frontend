@@ -46,9 +46,9 @@ export default function DateTimeBox({
   const { date, time } = formatDateTime(selectedDate || now);
 
   return (
-    <div className="flex items-center md:justify-between justify-center gap-2 px-6 py-3 border-b border-light-border w-full">
+    <div className="flex items-center md:justify-between justify-center md:gap-2 px-2 md:px-6 py-3 border-b border-light-border w-full">
       <div className="flex justify-between items-center">
-        <span className="font-bold xs:text-xl text-lg mr-2">
+        <span className="font-bold xs:text-xl text-md mr-2">
           {selectedDate ? formatDateTime(selectedDate).date : date}
         </span>
         <span className="text-gray-400 text-sm">{time}</span>
@@ -92,7 +92,7 @@ export default function DateTimeBox({
             <img
               src={redo}
               alt="뒤로가기 아이콘"
-              className="ml-2 cursor-pointer bg-efefef rounded"
+              className="ml-2 cursor-pointer bg-efefef rounded xxs:mr-4 md:mr-0"
               onClick={onBack}
             />
           </>
@@ -100,8 +100,8 @@ export default function DateTimeBox({
       </div>
       {repeat && (
         <div className="flex items-center">
-          <img src={attentionRed} alt="반복 민원 아이콘" className="w-6 h-6" />
-          <p className="text-red ml-1">반복 민원</p>
+          <img src={attentionRed} alt="반복 민원 아이콘" className="w-5 h-5 md:w-6 md:h-6" />
+          <p className="text-red text-sm ml-1">반복 민원</p>
         </div>
       )}
     </div>

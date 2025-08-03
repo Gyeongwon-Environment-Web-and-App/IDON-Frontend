@@ -40,9 +40,9 @@ const TextForward: React.FC<TextForwardProps> = ({
           return (
             <button
               key={option}
-              className={`w-full px-0 rounded-lg border border-black font-bold text-sm transition-all ${
+              className={`w-full px-0 rounded-lg border border-dark-gray font-bold text-sm transition-all ${
                 isSelected
-                  ? "bg-lighter-green text-black"
+                  ? "bg-lighter-green text-dark-gray"
                   : "bg-white text-black"
               }`}
               onClick={() => handleMobileClick(option)}
