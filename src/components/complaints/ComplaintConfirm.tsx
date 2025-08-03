@@ -34,30 +34,30 @@ export default function ComplaintConfirm({
   };
 
   return (
-    <div className="">
-      <form className="border border-light-border rounded-[15px]">
+    <div className="overflow-y-auto overflow-x-hidden">
+      <form className="md:border md:border-light-border rounded-[15px]">
         <div className="mt-0 mpx-5">{dateTimeBox}</div>
-        <div className="flex justify-between px-10 mt-10 mb-5 text-[1rem] font-bold w-full">
-          <section className="mr-[3rem] w-[70%]">
+        <div className="flex flex-col 2xl:flex-row md:justify-between items-center px-2 md:px-10 mt-5 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
+          <section className="md:mr-[3rem] md:w-[70%] w-full">
             <p className="text-dark-gray">
               민원 종류 -{" "}
-              <span className="text-black my-5">
+              <span className="text-black my-2 md:my-5">
                 {formData.selectedTrash}
                 {formData.trashDetail && ` (${formData.trashDetail})`}
               </span>
             </p>
-            <p className="text-dark-gray my-5">
+            <p className="text-dark-gray my-2 md:my-5">
               민원 접수 종류 -{" "}
               <span className="text-black">
                 {formData.selectedRoute}{" "}
                 {formData.phone ? `(${formData.phone})` : ""}
               </span>
             </p>
-            <p className="text-dark-gray my-5">
+            <p className="text-dark-gray my-2 md:my-5">
               민원 발생 주소 -{" "}
               <span className="text-black">{formData.address} </span>
             </p>
-            <p className="text-dark-gray my-5 flex flex-col w-full">
+            <p className="text-dark-gray my-2 md:my-5 flex flex-col w-full">
               민원 내용
               <span className="text-black mt-5 p-5 bg-efefef rounded h-[7rem]">
                 {formData.content}{" "}
@@ -125,12 +125,12 @@ export default function ComplaintConfirm({
             )}
           </section>
 
-          <section className="w-[23%] text-center">
-            <p className="text-dark-gr py-3">담당 기사님 실시간 정보</p>
+          <section className="md:w-[23%] w-full md:text-center text-left">
+            <p className="text-dark-gray py-3">담당 기사님 실시간 정보</p>
             <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
               {/* 실시간 지도 */}
             </div>
-            <div className="flex justify-between pt-3 pb-2">
+            <div className="flex md:justify-between justify-start pt-3 pb-2">
               {/* 재활용 등 쓰레기 태그 */}
               {/* 기사님 정보 가져오기 */}
               <div className="flex">
@@ -146,23 +146,26 @@ export default function ComplaintConfirm({
                             ? general
                             : ""
                   }
-                  className="w-2/8 mr-2"
+                  className="w-1/3 mr-2"
                   alt="쓰레기 종류 태그"
                 />
-                <p className="text-black">김승대 기사님</p>
+                <p className="text-black 3xl:text-base text-sm">
+                  김승대 기사님
+                </p>
               </div>
-              <p className="text-light-green">운행중</p>
+              <p className="text-light-green 3xl:text-base text-sm">운행중</p>
             </div>
             <div className="text-sm text-left text-dark-gary font-normal">
-              <p className="py-1">010-1234-5678</p>
-              <p className="py-1">방학1동 - 재활용 1조</p>
-              <p className="py-1">843거 4296</p>
+              <p className="md:py-1">010-1234-5678</p>
+              <p className="md:py-1">방학1동 - 재활용 1조</p>
+              <p className="md:py-1">843거 4296</p>
             </div>
           </section>
         </div>
         <div className="flex items-center justify-center my-8">
           <TextForward
             options={["소장님께 전달", "클린팀에게 전달", "담당 기사님께 전달"]}
+            mobileOptions={["소장님", "클린팀", "담당 기사님"]} // 모바일용 짧은 텍스트
             selectedValues={formData.forwardTargets}
             onChange={(updatedList) =>
               setFormData((prev) => ({ ...prev, forwardTargets: updatedList }))

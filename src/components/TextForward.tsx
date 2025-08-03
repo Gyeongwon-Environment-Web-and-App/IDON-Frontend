@@ -1,16 +1,23 @@
 import React from "react";
+import { useIsMobile } from "@/hooks/use-mobile"; // 기존 훅 사용
 
 interface TextForwardProps {
   options: string[];
   selectedValues: string[];
   onChange: (updated: string[]) => void;
+  // 모바일용 텍스트 추가
+  mobileOptions?: string[];
 }
 
 const TextForward: React.FC<TextForwardProps> = ({
   options,
   selectedValues,
   onChange,
+  mobileOptions = options, // 기본값은 기존 options
 }) => {
+  const isMobile = useIsMobile();
+  const displayOptions = isMobile ? mobileOptions : options;
+
   const handleCheckboxChange = (option: string) => {
     const isChecked = selectedValues.includes(option);
     const updated = isChecked
@@ -20,12 +27,43 @@ const TextForward: React.FC<TextForwardProps> = ({
     onChange(updated);
   };
 
+  const handleMobileClick = (option: string) => {
+    handleCheckboxChange(option);
+  };
+
+  // 모바일 버전
+  if (isMobile) {
+    return (
+      <div className="flex gap-3 w-full">
+        {displayOptions.map((option) => {
+          const isSelected = selectedValues.includes(option);
+          return (
+            <button
+              key={option}
+              className={`w-full px-0 rounded-lg border border-black font-bold text-sm transition-all ${
+                isSelected
+                  ? "bg-lighter-green text-black"
+                  : "bg-white text-black"
+              }`}
+              onClick={() => handleMobileClick(option)}
+            >
+              {option}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // 데스크탑 버전 (기존 코드)
   return (
     <div className="flex gap-10">
       {options.map((option) => (
-        <div className="border border-black rounded px-8 py-2 text-base font-bold w-[14rem] flex items-center justify-center">
+        <div
+          key={option}
+          className="border border-black rounded px-8 py-2 text-base font-bold w-[14rem] flex items-center justify-center"
+        >
           <label
-            key={option}
             className="flex items-center cursor-pointer"
             onClick={() => handleCheckboxChange(option)}
           >

@@ -194,7 +194,7 @@ export default function Header() {
 
       {showDropdown && (
         <div
-          className="hidden sm:block absolute top-[6.25rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition border border-red"
+          className="hidden sm:block absolute top-[6.25rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
           onMouseLeave={() => setShowDropdown(false)}
         />
       )}

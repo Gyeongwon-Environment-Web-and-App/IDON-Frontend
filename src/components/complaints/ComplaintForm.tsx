@@ -42,6 +42,7 @@ export default function ComplaintForm({
   return (
     <div className="overflow-y-auto overflow-x-hidden max-w-screen">
       <form className="md:border md:border-light-border rounded-[15px]">
+        {/* <h2 className="font-bold text-xl text-dark-gray py-3 md:hidden">민원 등록</h2> */}
         <div className="mt-0 md:px-5">{dateTimeBox}</div>
         <div className="max-w-4xl md:mx-10 md:my-10 my-5 grid grid-cols-3 md:grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-1 md:gap-x-4 gap-y-3 md:gap-y-0 items-start md:items-center text-sm">
           {/* 민원 발생 주소 */}
@@ -89,7 +90,7 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.selectedRoute !== "경원환경" ? "mb:mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
@@ -126,7 +127,7 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.routeInput ? "" : "직접 입력"}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "mb:mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
             value={
               !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(
                 formData.selectedRoute
@@ -149,6 +150,7 @@ export default function ComplaintForm({
               }))
             }
           />
+          <div className="h-5 md:hidden"></div>
 
           {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
           {formData.selectedRoute === "경원환경" && (
