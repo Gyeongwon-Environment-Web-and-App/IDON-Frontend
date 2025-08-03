@@ -7,6 +7,8 @@ import {
   SheetContent,
   SheetTrigger,
   SheetClose,
+  SheetTitle,
+  SheetDescription,
 } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
 import topArrow from "../assets/icons/functions/top_arrow.svg";
@@ -40,7 +42,7 @@ export default function Header() {
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
   return (
-    <header className="relative w-screen h-[7rem] bg-white py-3">
+    <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50">
       <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
         {/* 로고 */}
         <div
@@ -67,7 +69,10 @@ export default function Header() {
           onMouseEnter={() => setShowDropdown(true)}
         >
           {menuItems.map((item, idx) => (
-            <div key={idx} className="relative flex flex-col items-center box-border">
+            <div
+              key={idx}
+              className="relative flex flex-col items-center box-border"
+            >
               {/* 상단 메뉴 텍스트 */}
               <div
                 className={`cursor-pointer px-4 pt-7 pb-4 border-b-2 font-bold lg:text-xl text-md ${showDropdown ? "border-black" : "border-white"}`}
@@ -94,16 +99,39 @@ export default function Header() {
 
         {/* 모바일 햄버거 메뉴 - md 미만에서만 표시 */}
         <div className="md:hidden overflow-auto">
-          <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <Sheet
+            open={mobileMenuOpen}
+            onOpenChange={(open) => {
+              setMobileMenuOpen(open);
+            }}
+          >
             <SheetTrigger asChild>
-              <button className="p-2 hover:bg-gray-100 rounded-md">
+              <button
+                className="p-2 hover:bg-gray-100 rounded-md"
+                onClick={() => {
+                  setMobileMenuOpen(true);
+                }}
+              >
                 <Menu className="h-6 w-6" />
               </button>
             </SheetTrigger>
             <SheetContent
               side="left"
-              className="w-[300px] sm:w-[400px] relative h-screen [&>button:first-child]:hidden !p-0 border-none"
+              className="w-[300px] sm:w-[400px] relative h-screen [&>button:first-child]:hidden !p-0 border-none z-[9999]"
+              style={{
+                left: 0,
+                right: "auto",
+                transform: "translateX(0)",
+                position: "fixed",
+                zIndex: 9999,
+              }}
             >
+              {/* 접근성을 위한 제목과 설명 */}
+              <SheetTitle className="sr-only">모바일 메뉴</SheetTitle>
+              <SheetDescription className="sr-only">
+                네비게이션 메뉴를 선택하세요
+              </SheetDescription>
+
               {/* 커스텀 X 버튼 */}
               <SheetClose asChild>
                 <button className="absolute -right-[3.5rem] top-6 p-3 bg-red-500 hover:bg-red-600 transition-colors z-50">
@@ -159,14 +187,14 @@ export default function Header() {
         </div>
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
-        <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
+        <div className="hidden sm:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
           <div className="hover:text-gray-400">로그아웃</div>
         </div>
       </div>
 
       {showDropdown && (
         <div
-          className="hidden md:flex absolute top-[6.25rem] left-0 w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
+          className="hidden sm:block absolute top-[6.25rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition border border-red"
           onMouseLeave={() => setShowDropdown(false)}
         />
       )}

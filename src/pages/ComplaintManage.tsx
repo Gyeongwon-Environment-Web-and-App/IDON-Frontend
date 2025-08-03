@@ -117,7 +117,7 @@ const ComplaintManage = () => {
       );
 
       console.log("민원 제출 성공:", response.data);
-      setIsPopupOpen(true)
+      setIsPopupOpen(true);
 
       // 5. 폼 초기화
       setFormData(initialFormData);
@@ -132,24 +132,26 @@ const ComplaintManage = () => {
     <div className="w-screen h-screen relative">
       {isPopupOpen && (
         <Popup
-          message={<>
-            <p>민원 전송이</p>
-            <p>완료되었습니다.</p>
-          </>}
+          message={
+            <>
+              <p>민원 전송이</p>
+              <p>완료되었습니다.</p>
+            </>
+          }
           yesNo={false}
           onFirstClick={() => {
             // ! navigate to map
-            console.log('first click')
+            console.log("first click");
           }}
           onSecondClick={() => {
             // ! navigate to complaint list
-            console.log('second click')
+            console.log("second click");
           }}
           toHome={true}
         />
       )}
       <Header />
-      <div className="flex justify-center items-center py-5">
+      <div className="flex justify-center items-center xxs:py-5">
         <PageLayout
           title="민원"
           icon={

@@ -40,19 +40,24 @@ export default function ComplaintForm({
   };
 
   return (
-    <div className="">
-      <form className="border border-light-border rounded-[15px]">
-        <div className="mt-0 mpx-5">{dateTimeBox}</div>
-        <div className="max-w-4xl mx-10 my-10 grid grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-4 items-center text-sm">
+    <div className="overflow-y-auto overflow-x-hidden max-w-screen">
+      <form className="md:border md:border-light-border rounded-[15px]">
+        <div className="mt-0 md:px-5">{dateTimeBox}</div>
+        <div className="max-w-4xl md:mx-10 md:my-10 my-5 grid grid-cols-3 md:grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-1 md:gap-x-4 gap-y-3 md:gap-y-0 items-start md:items-center text-sm">
           {/* 민원 발생 주소 */}
-          <label htmlFor="address" className="col-span-1 font-bold text-[1rem]">
+          <label
+            htmlFor="address"
+            className="md:col-span-1 col-span-3 font-bold md:text-[1rem] text-base md:mb-1 -mb-3"
+          >
             민원 발생 주소
             <span className="text-red pr-0"> *</span>
           </label>
+          <div className="block md:hidden col-span-2"></div>
+
           <input
             type="text"
             id="address"
-            className="col-span-3 border border-light-border px-3 py-2 rounded w-full outline-none"
+            className="col-span-2 md:col-span-3 border border-light-border px-3 py-2 rounded w-full outline-none"
             value={formData.address}
             onChange={(e) =>
               setFormData((f: ComplaintFormData) => ({
@@ -69,10 +74,10 @@ export default function ComplaintForm({
           </button>
 
           {/* 지도 확인 */}
-          <div className="col-span-1"></div>
+          <div className="hidden md:block md:col-span-1"></div>
           <button
             type="button"
-            className="w-full text-left font-bold bg-lighter-green border col-span-4 border-light-green px-4 mt-2 mb-5 rounded focus:outline-none flex"
+            className="w-full text-left font-bold bg-lighter-green border md:col-span-4 col-span-3 border-light-green px-4 -mt-1 md:mt-2 md:mb-5 rounded focus:outline-none flex"
           >
             지도에서 민원 위치 확인하기
             <img
@@ -84,46 +89,44 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`col-span-1 font-bold text-[1rem] pt-5 ${formData.selectedRoute !== "경원환경" ? "mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.selectedRoute !== "경원환경" ? "mb:mb-5" : ""}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 mt-5 border border-light-border rounded ${formData.selectedRoute !== "경원환경" ? "mb-5" : ""}`}
+            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
           >
-            {["경원환경", "다산콜(120)", "구청", "주민센터"].map(
-              (label, idx, arr) => (
-                <button
-                  key={label}
-                  type="button"
-                  className={`
+            {["경원환경", "120", "구청", "주민센터"].map((label, idx, arr) => (
+              <button
+                key={label}
+                type="button"
+                className={`
                   flex-1 px-4 font-bold
                   ${formData.selectedRoute === label ? "bg-lighter-green" : ""}
                   ${idx === 0 ? "rounded-l" : ""}
                   ${idx === arr.length - 1 ? "rounded-r" : ""}
                   focus:outline-none
                 `}
-                  style={{
-                    borderRight:
-                      idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
-                  }}
-                  onClick={() =>
-                    setFormData((f: ComplaintFormData) => ({
-                      ...f,
-                      selectedRoute: label,
-                    }))
-                  }
-                >
-                  {label}
-                </button>
-              )
-            )}
+                style={{
+                  borderRight:
+                    idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
+                }}
+                onClick={() =>
+                  setFormData((f: ComplaintFormData) => ({
+                    ...f,
+                    selectedRoute: label,
+                  }))
+                }
+              >
+                {label}
+              </button>
+            ))}
           </div>
           <input
             type="text"
             placeholder={focus.routeInput ? "" : "직접 입력"}
-            className={`col-span-1 border border-light-border px-3 py-2 mt-5 rounded w-full text-center outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "mb:mb-5" : ""}`}
             value={
               !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(
                 formData.selectedRoute
@@ -147,14 +150,15 @@ export default function ComplaintForm({
             }
           />
 
-          {/* 직접 전화번호 입력 */}
+          {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
           {formData.selectedRoute === "경원환경" && (
             <>
-              <div className="col-span-1"></div>
+              <div className="hidden md:block md:col-span-1"></div>
               <input
+                id="경원환경 직접 전화번호 입력"
                 type="text"
                 value={formData.phone}
-                className="col-span-4 w-full text-left font-bold border border-light-border px-4 py-2 mt-2 mb-5 rounded focus:outline-none flex"
+                className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 py-2 mt-2 mb-5 rounded focus:outline-none"
                 placeholder="직접 전화번호 입력"
                 onChange={(e) => {
                   setFormData((f: ComplaintFormData) => ({
@@ -167,12 +171,12 @@ export default function ComplaintForm({
           )}
 
           {/* 민원 종류 선택 */}
-          <label className="col-span-1 font-bold text-[1rem] py-5">
+          <label className="md:col-span-1 col-span-3 font-bold text-[1rem] md:py-5 py-0">
             민원 종류 선택
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 my-5 border border-light-border rounded`}
+            className={`flex col-span-3 md:my-5 text-[0.73rem] md:text-sm border border-light-border rounded`}
           >
             {["재활용", "일반", "음식물", "기타"].map((label, idx, arr) => (
               <button
@@ -210,7 +214,7 @@ export default function ComplaintForm({
                 : ""
             }
             placeholder={focus.trashInput ? "" : "직접 입력"}
-            className={`col-span-1 border border-light-border px-3 py-2 my-5 rounded w-full text-center outline-none font-bold`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
             onFocus={() => setFocus((f) => ({ ...f, trashInput: true }))}
             onBlur={() => setFocus((f) => ({ ...f, trashInput: false }))}
             onChange={(e) =>
@@ -228,13 +232,13 @@ export default function ComplaintForm({
           />
 
           {/* 쓰레기 상세 종류 */}
-          <label className="col-span-1 font-bold text-[1rem] py-5">
+          <label className="md:col-span-1 col-span-3 font-bold text-[1rem] py-5">
             쓰레기 상세 종류
           </label>
           <input
             type="text"
             placeholder={focus.input3 ? "" : "입력란"}
-            className="w-[200px] col-span-2 border border-light-border px-3 py-2 rounded text-center outline-none font-bold my-5"
+            className="w-full md:w-[200px] md:col-span-1 col-span-3 border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold md:my-5 -mt-5"
             onFocus={() => setFocus((f) => ({ ...f, input3: true }))}
             onBlur={() => setFocus((f) => ({ ...f, input3: false }))}
             value={formData.trashDetail}
@@ -242,27 +246,27 @@ export default function ComplaintForm({
               setFormData((f) => ({ ...f, trashDetail: e.target.value }))
             }
           />
-          <div className="col-span-2"></div>
+          <div className="hidden md:block md:col-span-3"></div>
 
           {/* 파일 첨부 */}
           <FileAttach formData={formData} setFormData={setFormData} />
 
           {/* 민원 내용 */}
-          <label className="col-span-1 font-bold text-[1rem] mt-5 self-start">
+          <label className="md:col-span-1 col-span-3 font-bold text-[1rem] md:mt-5 self-start">
             민원 내용
           </label>
           <textarea
             id="content"
             value={formData.content}
-            className="col-span-4 border border-light-border px-3 py-2 mt-5 rounded w-full h-40 resize-none outline-none"
+            className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none outline-none"
             onChange={(e) => {
               setFormData((f) => ({ ...f, content: e.target.value }));
             }}
           />
 
           {/* 악성 민원 체크 */}
-          <div className="col-span-1"></div>
-          <div className="col-span-2 flex items-center gap-2 row-span-1 mt-5">
+          <div className="hidden md:block md:col-span-1"></div>
+          <div className="md:col-span-1 col-span-2 flex items-center gap-2 row-span-1 md:mt-5">
             <input
               type="checkbox"
               id="malicious"

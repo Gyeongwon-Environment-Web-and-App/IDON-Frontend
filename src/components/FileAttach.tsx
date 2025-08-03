@@ -14,7 +14,7 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
 
   console.log("fileAttach:formData's address", formData.address);
   console.log("fileAttach:uploaded file name", uploadedFileName);
-  
+
   const handleFileClick = () => {
     fileInputRef.current?.click();
   };
@@ -70,7 +70,7 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
 
   return (
     <>
-      <label className="col-span-1 font-bold text-[1rem] py-5">파일 첨부</label>
+      <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">파일 첨부</label>
       <div className="col-span-3">
         <input
           type="file"
@@ -82,7 +82,7 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
         <button
           type="button"
           onClick={handleFileClick}
-          className="w-[200px] border border-light-border px-3 py-2 rounded text-center outline-none font-bold my-5"
+          className="md:w-[200px] border border-light-border md:px-3 py-2 rounded text-center outline-none font-bold md:my-5"
         >
           파일 선택
         </button>

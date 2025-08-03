@@ -30,21 +30,21 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen w-screen" style={{ padding: "10%" }}>
-      <div className="h-full flex items-center justify-center w-1/2">
+    <div className="flex flex-col md:flex-row items-center justify-center min-h-screen w-screen">
+      <div className="h-full flex items-center justify-center w-2/3 md:w-1/2">
         <img className="text-2xl font-bold mb-6 text-center" src={mdLogo} alt="중간 크기 경원환경개발 초록색 로고" />
       </div>
-      <div className="w-1/2">
+      <div className="md:w-2/4 md:pr-20">
         <form
           onSubmit={handleSubmit}
           className="bg-white p-8 max-w-screen"
         >
-          <h2 className="text-2xl font-bold mb-6">로그인</h2>
+          <h2 className="text-3xl font-bold mb-6">로그인</h2>
           <div className="mb-4">
             <input
               id="serial"
               type="text"
-              className={`w-full px-3 py-2 border rounded focus:outline-none transition-colors duration-200 ${
+              className={`w-full px-5 py-3 text-xl border rounded focus:outline-none transition-colors duration-200 ${
                 isFocused
                   ? error
                     ? "border-[#FF3D3D] outline-[#FF3D3D]"
@@ -75,13 +75,13 @@ const Login: React.FC = () => {
               onChange={e => setAutoLogin(e.target.checked)}
               className="mr-2"
             />
-            <label htmlFor="autoLogin" className="text-gray-500 select-none">
+            <label htmlFor="autoLogin" className="text-gray-500 select-none text-lg">
               자동 로그인
             </label>
           </div>
           <button
             type="submit"
-            className={`w-full py-2 rounded transition outline-none border-none focus:outline-none ${
+            className={`w-full py-2 text-lg rounded transition outline-none border-none focus:outline-none ${
               serial
                 ? "bg-[#00BA13] text-white hover:bg-green-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
