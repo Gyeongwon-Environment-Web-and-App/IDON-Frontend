@@ -41,6 +41,15 @@ export default function Header() {
 
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
+  const logout = () => {
+    localStorage.removeItem('userData');
+    localStorage.removeItem('serial_no');
+    sessionStorage.removeItem('userData');
+    sessionStorage.removeItem('serial_no');
+    alert('로그아웃 되었습니다.');
+    navigate('/login');
+  };
+
   return (
     <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50">
       <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
@@ -143,7 +152,7 @@ export default function Header() {
               <div className="text-sm bg-[#77BF7E] text-right pt-10">
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => logout()}
                 >
                   로그아웃
                 </button>
@@ -188,7 +197,7 @@ export default function Header() {
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
         <div className="hidden sm:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
-          <div className="hover:text-gray-400">로그아웃</div>
+          <button className="hover:text-gray-400" onClick={() => logout()}>로그아웃</button>
         </div>
       </div>
 

@@ -1,27 +1,79 @@
 import React, { useState } from "react";
 import mdLogo from "../assets/icons/logo/mid_logo.svg";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Login: React.FC = () => {
   const [serial, setSerial] = useState("");
   const [autoLogin, setAutoLogin] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // 시리얼번호 유효성 검사 (임시: 4자리 이상이면 통과)
-  const validateSerial = (value: string) => {
-    //! 실제 검증 로직
-    return value.length >= 4;
+  const navigate = useNavigate();
+
+  // 로그인 API 호출 함수
+  const loginWithSerial = async (serial_no: number) => {
+    try {
+      const response = await axios.get(`http://49.50.128.88:3000/user/login/${serial_no}`);
+      
+      if (response.status === 200) {
+        // 로그인 성공
+        const userData = response.data;
+        
+        // 로컬 스토리지에 사용자 정보 저장 (자동 로그인용)
+        if (autoLogin) {
+          localStorage.setItem('userData', JSON.stringify(userData));
+          localStorage.setItem('serial_no', serial_no.toString());
+        }
+        
+        // 세션 스토리지에 사용자 정보 저장
+        sessionStorage.setItem('userData', JSON.stringify(userData));
+        sessionStorage.setItem('serial_no', serial_no.toString());
+        
+        return { success: true, data: userData };
+      }
+    } catch (error) {
+      console.error('로그인 실패:', error);
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 404) {
+          return { success: false, message: '존재하지 않는 시리얼 번호입니다.' };
+        } else if (error.response?.status === 400) {
+          return { success: false, message: '잘못된 요청입니다.' };
+        } else {
+          return { success: false, message: '서버 오류가 발생했습니다.' };
+        }
+      }
+      
+      return { success: false, message: '로그인 중 오류가 발생했습니다.' };
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateSerial(serial)) {
-      setError(true);
-      return;
+    
+    setLoading(true); // 로딩 상태 추가
+
+    try {
+      const serialNo = parseInt(serial);
+      const result = await loginWithSerial(serialNo);
+
+      if (result && result.success) {
+        // 로그인 성공 시 메인 페이지로 이동
+        navigate('/');
+      } else {
+        // 로그인 실패 시 에러 메시지 표시
+        alert(result?.message || '로그인에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('로그인 처리 중 오류:', error);
+      alert('로그인 처리 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
-    setError(false);
-    //! 로그인 처리 로직 추가
-    alert(`시리얼코드: ${serial}\n자동로그인: ${autoLogin ? "예" : "아니오"}`);
+
+    console.log(`시리얼코드: ${serial}\n자동로그인: ${autoLogin ? "예" : "아니오"}`);
   };
 
   const handleSerialChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,9 +138,10 @@ const Login: React.FC = () => {
                 ? "bg-[#00BA13] text-white hover:bg-green-700"
                 : "bg-gray-300 text-gray-500 cursor-not-allowed"
             }`}
-            disabled={!serial}
+            disabled={loading}
+
           >
-            로그인
+            {loading ? "로그인 중..." : "로그인"}
           </button>
         </form>
       </div>
