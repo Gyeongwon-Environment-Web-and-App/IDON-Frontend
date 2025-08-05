@@ -1,4 +1,3 @@
-import React from "react";
 import MapSideMenu from "@/components/MapSideMenu";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
