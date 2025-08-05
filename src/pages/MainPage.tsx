@@ -25,14 +25,14 @@ const MainPage: React.FC = () => {
       title: "민원 관리",
       description: "입력한 민원을 간편하게 관리",
       icon: folder,
-      route: "/",
+      route: "/complaints/table",
       alt: "민원 관리 아이콘",
     },
     {
       title: "민원 등록",
       description: "간편하게 실시간 민원 입력",
       icon: write,
-      route: "/register",
+      route: "/complaints/form",
       alt: "민원 등록 아이콘",
     },
     {

@@ -17,13 +17,30 @@ import bottomArrow from "../assets/icons/functions/bottom_arrow.svg";
 const menuItems = [
   {
     label: "지도",
-    submenu: ["민원 분류", "차량 조회", "구역별 통계", "관할 구역 수정"],
+    submenu: [
+      { name: "민원 분류", route: "/" },
+      { name: "차량 조회", route: "/" },
+      { name: "구역별 통계", route: "/" },
+      { name: "관할 구역 수정", route: "/" },
+    ],
   },
   {
     label: "차량 관리",
-    submenu: ["차량 정보", "차량 등록 / 수정", "기사정보", "기사등록 / 수정"],
+    submenu: [
+      { name: "차량 정보", route: "/" },
+      { name: "차량 등록 / 수정", route: "/" },
+      { name: "기사정보", route: "/" },
+      { name: "기사등록 / 수정", route: "/" },
+    ],
   },
-  { label: "민원", submenu: ["내역 / 관리", "민원 등록 / 수정", "전체 통계"] },
+  {
+    label: "민원",
+    submenu: [
+      { name: "내역 / 관리", route: "/complaints/table" },
+      { name: "민원 등록 / 수정", route: "/complaints/form" },
+      { name: "전체 통계", route: "/" },
+    ],
+  },
   { label: "통계", submenu: [] },
 ];
 
@@ -98,8 +115,9 @@ export default function Header() {
                     <div
                       key={subIdx}
                       className="py-2 hover:text-gray-400 cursor-pointer font-semibold lg:text-lg text-md"
+                      onClick={() => navigate(sub.route)}
                     >
-                      {sub}
+                      {sub.name}
                     </div>
                   ))}
                 </div>
@@ -183,9 +201,12 @@ export default function Header() {
                           <button
                             key={subIdx}
                             className="text-left py-1 text-[#656565] hover:text-gray-600 transition-colors"
-                            onClick={() => setMobileMenuOpen(false)}
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              navigate(sub.route);
+                            }}
                           >
-                            {sub}
+                            {sub.name}
                           </button>
                         ))}
                       </div>

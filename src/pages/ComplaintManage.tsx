@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { ComplaintFormData } from "../types/complaint";
 import editIcon from "../assets/icons/edit.svg";
 import folderIcon from "../assets/icons/folder.svg";
@@ -14,6 +15,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import MobileBottomNav from "@/components/MobileBottomNav";
 
 const ComplaintManage = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const initialFormData: ComplaintFormData = {
     address: "",
     routeInput: "",
@@ -32,12 +36,38 @@ const ComplaintManage = () => {
       size: number;
     }>,
   };
-  const [activeTab, setActiveTab] = useState("register");
+
+  // URL에 따라 기본 탭 설정
+  const getDefaultTab = () => {
+    if (location.pathname.includes("/form")) {
+      return "register";
+    } else if (location.pathname.includes("/table")) {
+      return "manage";
+    }
+    return "register"; // 기본값
+  };
+
+  const [activeTab, setActiveTab] = useState(getDefaultTab());
   const [formData, setFormData] = useState(initialFormData);
   const [showConfirm, setShowConfirm] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const isMobile = useIsMobile();
+
+  // URL 변경 감지하여 탭 업데이트
+  useEffect(() => {
+    const getDefaultTab = () => {
+      if (location.pathname.includes("/form")) {
+        return "register";
+      } else if (location.pathname.includes("/table")) {
+        return "manage";
+      }
+      return "register"; // 기본값
+    };
+
+    const newTab = getDefaultTab();
+    setActiveTab(newTab);
+  }, [location.pathname]);
 
   // 폼 데이터 변경 감지
   useEffect(() => {
@@ -77,6 +107,14 @@ const ComplaintManage = () => {
       );
       if (!confirmLeave) return;
     }
+
+    // URL 업데이트
+    if (nextTab === "manage") {
+      navigate("/complaints/table");
+    } else {
+      navigate("/complaints/form");
+    }
+
     setFormData(initialFormData);
     setActiveTab(nextTab);
   };
