@@ -8,14 +8,18 @@ import truck from "../assets/icons/home_menu/vehicle.svg";
 import folder from "../assets/icons/home_menu/folder.svg";
 import write from "../assets/icons/home_menu/write.svg";
 import mapping from "../assets/icons/home_menu/mapping.svg";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleCardClick = (route: string) => {
     navigate(route);
   };
 
+  // ! 네비게이팅 수정!
   const menuButtons = [
     {
       title: "민원 관리",
@@ -126,6 +130,8 @@ const MainPage: React.FC = () => {
           공지사항페이지들어갈자리
         </div>
       </div>
+
+      {isMobile && <MobileBottomNav />}
     </div>
   );
 };

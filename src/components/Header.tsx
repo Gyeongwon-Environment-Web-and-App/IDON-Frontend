@@ -42,12 +42,14 @@ export default function Header() {
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
   const logout = () => {
-    localStorage.removeItem('userData');
-    localStorage.removeItem('serial_no');
-    sessionStorage.removeItem('userData');
-    sessionStorage.removeItem('serial_no');
-    alert('로그아웃 되었습니다.');
-    navigate('/login');
+    localStorage.removeItem("userData");
+    localStorage.removeItem("serial_no");
+    localStorage.removeItem("userToken");
+    sessionStorage.removeItem("userData");
+    sessionStorage.removeItem("serial_no");
+    sessionStorage.removeItem("userToken");
+    alert("로그아웃 되었습니다.");
+    navigate("/login");
   };
 
   return (
@@ -197,7 +199,9 @@ export default function Header() {
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
         <div className="hidden sm:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
-          <button className="hover:text-gray-400" onClick={() => logout()}>로그아웃</button>
+          <button className="hover:text-gray-400" onClick={() => logout()}>
+            로그아웃
+          </button>
         </div>
       </div>
 

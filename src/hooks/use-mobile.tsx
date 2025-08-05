@@ -1,19 +1,23 @@
-import * as React from "react"
+import { useState, useEffect } from "react";
 
-const MOBILE_BREAKPOINT = 768
+export const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false);
 
-export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
+  useEffect(() => {
+    const checkIsMobile = () => {
+      // Tailwind의 md 브레이크포인트 (768px) 기준
+      setIsMobile(window.innerWidth < 768);
+    };
 
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
+    // 초기 체크
+    checkIsMobile();
 
-  return !!isMobile
-}
+    // 리사이즈 이벤트 리스너
+    window.addEventListener("resize", checkIsMobile);
+
+    // 클린업
+    return () => window.removeEventListener("resize", checkIsMobile);
+  }, []);
+
+  return isMobile;
+};
