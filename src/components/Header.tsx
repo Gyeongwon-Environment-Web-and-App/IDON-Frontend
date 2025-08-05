@@ -1,5 +1,5 @@
 import { useState } from "react";
-import smLogo from "../assets/icons/logo/small_logo.svg";
+import long_logo from "../assets/icons/logo/long_logo.svg";
 import logo from "../assets/icons/logo/logo.svg";
 import { useNavigate } from "react-router-dom";
 import {
@@ -57,18 +57,18 @@ export default function Header() {
       <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
         {/* 로고 */}
         <div
-          className="cursor-pointer mb-2 md:ml-4"
+          className="cursor-pointer mb-2 md:ml-6"
           onClick={() => navigate("/")}
         >
           {/* 작은 화면용 로고 */}
           <img
             src={logo}
             alt="경원환경개발 로고"
-            className="object-center h-[7vh] lg:hidden"
+            className="object-center h-[5vh] lg:hidden"
           />
           {/* 큰 화면용 로고 */}
           <img
-            src={smLogo}
+            src={long_logo}
             alt="경원환경개발 로고"
             className="object-center h-[7vh] hidden lg:block"
           />
@@ -123,7 +123,7 @@ export default function Header() {
                   setMobileMenuOpen(true);
                 }}
               >
-                <Menu className="h-6 w-6" />
+                <Menu className="h-7 w-7 text-[#4C9355]" />
               </button>
             </SheetTrigger>
             <SheetContent

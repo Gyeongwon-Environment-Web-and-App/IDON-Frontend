@@ -37,7 +37,7 @@ export default function ComplaintConfirm({
     <div className="overflow-y-auto overflow-x-hidden w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
         <div className="mt-0 mpx-5">{dateTimeBox}</div>
-        <div className="flex flex-col lg:flex-row md:justify-between items-center px-1 md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
+        <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
           <section className="md:mr-[3rem] md:w-[65%] w-full">
             <p className="text-dark-gray">
               민원 종류 -{" "}

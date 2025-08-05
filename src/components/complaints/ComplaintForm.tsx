@@ -42,8 +42,7 @@ export default function ComplaintForm({
   return (
     <div className="overflow-y-auto overflow-x-hidden max-w-screen w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
-        {/* <h2 className="font-bold text-xl text-dark-gray py-3 md:hidden">민원 등록</h2> */}
-        <div className="mt-0 md:px-5">{dateTimeBox}</div>
+        <div className="mt-0">{dateTimeBox}</div>
         <div className="max-w-4xl md:mx-10 md:my-10 my-2 grid grid-cols-3 md:grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-1 md:gap-x-4 gap-y-3 md:gap-y-0 items-start md:items-center text-sm">
           {/* 민원 발생 주소 */}
           <label

@@ -46,7 +46,7 @@ export default function DateTimeBox({
   const { date, time } = formatDateTime(selectedDate || now);
 
   return (
-    <div className="flex items-center md:justify-between justify-center md:gap-2 px-2 md:px-6 py-3 border-b border-light-border w-full">
+    <div className="flex items-center md:justify-between justify-start md:gap-2 md:px-6 py-3 md:border-b md:border-light-border w-full">
       <div className="flex justify-between items-center">
         <span className="font-bold xs:text-xl text-md mr-2">
           {selectedDate ? formatDateTime(selectedDate).date : date}

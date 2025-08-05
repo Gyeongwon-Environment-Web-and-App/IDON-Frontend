@@ -55,7 +55,7 @@ const MainPage: React.FC = () => {
     <div className="w-screen h-screen overflow-auto absolute top-0 text-center scrollbar-hide">
       <Header />
       {/* 배경 이미지 공간 */}
-      <div className="w-screen overflow-hidden absolute top-[12.5%]">
+      <div className="w-screen overflow-hidden absolute top-[11%]">
         <img
           src={bg1}
           alt="배경 이미지"

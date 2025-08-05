@@ -28,6 +28,10 @@ const TextForward: React.FC<TextForwardProps> = ({
   };
 
   const handleMobileClick = (option: string) => {
+    // 이벤트 전파 중단
+    event?.preventDefault();
+    event?.stopPropagation();
+
     handleCheckboxChange(option);
   };
 

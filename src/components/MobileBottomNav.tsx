@@ -5,8 +5,11 @@ import homeGreen from "../assets/icons/mobile_menu/home_green.svg";
 import mapIcon from "../assets/icons/mobile_menu/mapIcon.svg";
 import mapIconGreen from "../assets/icons/mobile_menu/mapIcon_green.svg";
 import vehicle from "../assets/icons/mobile_menu/vehicle.svg";
+import vehicleGreen from "../assets/icons/mobile_menu/vehicle_green.svg";
 import stats from "../assets/icons/mobile_menu/stats.svg";
+import statsGreen from "../assets/icons/mobile_menu/stats_green.svg";
 import complaint from "../assets/icons/mobile_menu/complaint.svg";
+import complaintGreen from "../assets/icons/mobile_menu/complaint_green.svg";
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -47,14 +50,14 @@ const MobileBottomNav = () => {
       id: "complaint",
       label: "민원",
       icon: complaint,
-      activeIcon: complaint,
+      activeIcon: complaintGreen,
       route: "/register",
     },
     {
       id: "stats",
       label: "통계",
       icon: stats,
-      activeIcon: stats,
+      activeIcon: statsGreen,
       route: "/",
     },
     {
@@ -75,7 +78,7 @@ const MobileBottomNav = () => {
       id: "vehicle",
       label: "차량",
       icon: vehicle,
-      activeIcon: vehicle,
+      activeIcon: vehicleGreen,
       route: "/",
     },
   ];

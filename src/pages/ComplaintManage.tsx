@@ -9,6 +9,8 @@ import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import DateTimeBox from "../components/DateTimeBox";
 import Popup from "@/components/Popup";
+import { useIsMobile } from "@/hooks/use-mobile";
+import MobileBottomNav from "@/components/MobileBottomNav";
 
 const ComplaintManage = () => {
   const initialFormData: ComplaintFormData = {
@@ -34,6 +36,7 @@ const ComplaintManage = () => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   // 폼 데이터 변경 감지
   useEffect(() => {
@@ -151,7 +154,7 @@ const ComplaintManage = () => {
         />
       )}
       <Header />
-      <div className="flex md:justify-center md:items-center justify-start items-start md:pt-5 pb-5 w-full">
+      <div className="flex md:justify-center md:items-center justify-start items-start pt-2 md:pt-5 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="민원"
           icon={
@@ -197,6 +200,7 @@ const ComplaintManage = () => {
           </div>
         </PageLayout>
       </div>
+      {isMobile && <MobileBottomNav />}
     </div>
   );
 };

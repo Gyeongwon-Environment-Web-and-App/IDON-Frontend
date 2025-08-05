@@ -25,7 +25,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   tabTitle,
 }) => {
   return (
-    <div className="flex max-w-screen mx-0 md:mx-2rem 2xl:mx-[17rem] xxs:-pt-5 xs:pt-10 w-full">
+    <div className="flex max-w-screen mx-0 md:mx-[2rem] 2xl:mx-[19rem] xxs:-pt-5 xs:pt-10 w-full">
       <div className="max-h-[90vh] hidden md:block">
         <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-lg text-center py-3">
           {title}
@@ -44,7 +44,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </div>
 
       {/* 우측 콘텐츠 */}
-      <main className="flex-1 px-5 md:px-6 md:py-6 ml-0 xl:ml-[4rem] max-w-[120vh] w-full">
+      <main className="flex-1 px-5 md:px-6 md:py-6 ml-0 xl:ml-10 max-w-[120vh] w-full">
         <h2 className="hidden md:text-3xl font-bold md:flex items-center gap-2">
           {tabTitle} {icon}
         </h2>
