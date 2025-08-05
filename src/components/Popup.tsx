@@ -23,16 +23,16 @@ export default function Popup({
       </div>
 
       {/* 버튼 */}
-      <div className="flex mt-2">
+      <div className={`flex mt-2 ${toHome ? "" : "mb-7"}`}>
         <button
           onClick={onFirstClick}
-          className="px-4 py-2 mr-2 bg-light-green text-white rounded font-semibold text-base"
+          className={`px-4 py-2 mr-2 bg-light-green text-white rounded font-semibold text-base ${yesNo ? "w-[7rem]" : ""}`}
         >
           {yesNo ? "예" : "민원 위치 확인"}
         </button>
         <button
           onClick={onSecondClick}
-          className="px-4 py-2 bg-d9d9d9 text-black rounded font-semibold text-base"
+          className={`px-4 py-2 bg-d9d9d9 text-black rounded font-semibold text-base ${yesNo ? "w-[7rem]" : ""}`}
         >
           {yesNo ? "아니오" : "전체 민원 확인"}
         </button>
@@ -40,7 +40,9 @@ export default function Popup({
 
       {/* 홈으로 돌아가기 문구 */}
       {toHome && (
-        <div className="mt-4 mb-4 text-sm font-semibold text-gray-500 cursor-pointer">홈으로 돌아가기</div>
+        <div className="mt-4 mb-4 text-sm font-semibold text-gray-500 cursor-pointer">
+          홈으로 돌아가기
+        </div>
       )}
     </div>
   );

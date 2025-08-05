@@ -25,8 +25,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
   tabTitle,
 }) => {
   return (
-    <div className="flex max-w-screen mx-0 md:mx-[2rem] 2xl:mx-[19rem] xxs:-pt-5 xs:pt-10 w-full">
-      <div className="max-h-[90vh] hidden md:block">
+    <div className="flex max-w-screen mx-0 md:mx-[2rem] 2xl:mx-[19rem] xxs:-pt-5 xs:pt-10 md:pt-0 w-full">
+      <div className="max-h-[90vh] hidden md:block md:pt-7">
         <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-lg text-center py-3">
           {title}
         </div>

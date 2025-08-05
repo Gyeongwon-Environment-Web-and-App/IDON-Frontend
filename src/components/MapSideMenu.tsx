@@ -7,8 +7,6 @@ import { Sheet, SheetContent } from "@/components/ui/sheet";
 import editIcon from "../assets/icons/edit.svg";
 import truckIcon from "../assets/icons/truck.svg";
 import chartIcon from "../assets/icons/chart.svg";
-import homeIcon from "../assets/icons/home.svg";
-import menuIcon from "../assets/icons/menu.svg";
 
 type SidebarType = "complaint" | "vehicle" | "stats" | "allmenu" | null;
 
@@ -57,23 +55,6 @@ const VerticalMenuBar: React.FC = () => {
             onClick={() => setOpenSidebar("stats")}
           >
             <img src={chartIcon} alt="구역별 통계" className="w-8 h-8" />
-          </button>
-        </div>
-        {/* 하단 버튼 */}
-        <div className="flex flex-col items-center gap-4 pb-6">
-          {/* 홈으로 */}
-          <button
-            className="w-12 h-12 flex items-center justify-center"
-            onClick={() => (window.location.href = "/")}
-          >
-            <img src={homeIcon} alt="홈으로" className="w-6 h-6" />
-          </button>
-          {/* 전체 메뉴 */}
-          <button
-            className="w-12 h-12 flex items-center justify-center"
-            onClick={() => setOpenSidebar("allmenu")}
-          >
-            <img src={menuIcon} alt="전체 메뉴" className="w-6 h-6" />
           </button>
         </div>
       </nav>

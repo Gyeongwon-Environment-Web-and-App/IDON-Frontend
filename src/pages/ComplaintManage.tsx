@@ -7,6 +7,7 @@ import PageLayout from "../components/PageLayout";
 import Header from "../components/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
+import ComplaintTable from "@/components/complaints/ComplaintTable";
 import DateTimeBox from "../components/DateTimeBox";
 import Popup from "@/components/Popup";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -174,7 +175,11 @@ const ComplaintManage = () => {
         >
           {/* 민원 등록 콘텐츠 */}
           <div>
-            {activeTab === "manage" && <></>}
+            {activeTab === "manage" && (
+              <>
+                <ComplaintTable />
+              </>
+            )}
             {activeTab === "register" &&
               (!showConfirm ? (
                 <ComplaintForm
