@@ -71,7 +71,7 @@ export default function Header() {
 
   return (
     <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50">
-      <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] pt-4">
+      <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] mt-[3rem]">
         {/* 로고 */}
         <div
           className="cursor-pointer mb-2 md:ml-6"
@@ -93,7 +93,7 @@ export default function Header() {
 
         {/* 데스크톱 메뉴 - md 이상에서만 표시 */}
         <nav
-          className="hidden md:flex relative space-x-16 mb-0 pb-0 px-10 lg:mr-[9rem] md:mr-[3rem]"
+          className="hidden md:flex relative space-x-16 z-25 mb-0 pb-0 px-10 lg:mr-[9rem] md:mr-[3rem]"
           onMouseEnter={() => setShowDropdown(true)}
         >
           {menuItems.map((item, idx) => (
@@ -163,13 +163,13 @@ export default function Header() {
 
               {/* 커스텀 X 버튼 */}
               <SheetClose asChild>
-                <button className="absolute -right-[3.5rem] top-6 p-3 bg-red-500 hover:bg-red-600 transition-colors z-50">
+                <button className="absolute -right-[3rem] top-[3.5rem] p-3 bg-red-500 hover:bg-red-600 transition-colors z-50">
                   <X className="h-6 w-6 text-white font-bold" />
                 </button>
               </SheetClose>
 
               {/* 로그아웃 버튼 */}
-              <div className="text-sm bg-[#77BF7E] text-right pt-10">
+              <div className="text-sm bg-[#77BF7E] text-right pt-[4rem]">
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
                   onClick={() => logout()}
@@ -228,7 +228,7 @@ export default function Header() {
 
       {showDropdown && (
         <div
-          className="hidden sm:block absolute top-[6.25rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
+          className="hidden sm:block absolute top-[8.8rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
           onMouseLeave={() => setShowDropdown(false)}
         />
       )}

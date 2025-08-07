@@ -51,7 +51,7 @@ const MobileBottomNav = () => {
       label: "민원",
       icon: complaint,
       activeIcon: complaintGreen,
-      route: "/register",
+      route: "/complaints/form",
     },
     {
       id: "stats",

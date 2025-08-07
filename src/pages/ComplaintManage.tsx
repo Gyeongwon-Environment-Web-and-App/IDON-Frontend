@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import type { ComplaintFormData } from "../types/complaint";
 import editIcon from "../assets/icons/edit.svg";
 import folderIcon from "../assets/icons/folder.svg";
+import chartIcon from "../assets/icons/chart.svg";
 import PageLayout from "../components/PageLayout";
 import Header from "../components/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
@@ -193,23 +194,26 @@ const ComplaintManage = () => {
         />
       )}
       <Header />
-      <div className="flex md:justify-center md:items-center justify-start items-start pt-2 md:pt-5 pb-[7rem] md:pb-5 w-full">
+      <div className="flex md:justify-center md:items-center justify-start items-start pt-10 md:pt-5 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="민원"
           icon={
             activeTab === "manage" ? (
-              <img src={folderIcon} alt="icon" className="w-7 h-7" />
+              <img src={folderIcon} alt="민원관리 아이콘" className="w-7 h-7" />
+            ) : activeTab === "register" ? (
+              <img src={editIcon} alt="민원등록 아이콘" className="w-7 h-7" />
             ) : (
-              <img src={editIcon} alt="icon" className="w-7 h-7" />
+              <img src={chartIcon} alt="전체통계 아이콘" className="w-8 h-8" />
             )
           }
           tabs={[
             { label: "내역 / 관리", value: "manage" },
             { label: "민원 등록", value: "register" },
+            { label: "전체 통계", value: "stats" },
           ]}
           activeTab={activeTab}
           onTabClick={handleTabClick}
-          tabTitle={activeTab === "manage" ? "민원 내역 / 관리" : "민원 등록"}
+          tabTitle={activeTab === "manage" ? "민원 내역 / 관리" : activeTab === "register" ? "민원 등록" : "전체 통계"}
         >
           {/* 민원 등록 콘텐츠 */}
           <div>
@@ -240,6 +244,10 @@ const ComplaintManage = () => {
                   onSubmit={onSubmit}
                 />
               ))}
+              {activeTab === "stats" && 
+              (
+                <></>
+              )}
           </div>
         </PageLayout>
       </div>

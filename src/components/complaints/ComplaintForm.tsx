@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import underArrow from "../../assets/icons/functions/under_arrow.svg";
 import attention from "../../assets/icons/attention.svg";
 import attentionRed from "../../assets/icons/attention_red.svg";
 import FileAttach from "../FileAttach";
+import { AddressService } from "../../services/addressService";
 import type { ComplaintFormData } from "../../types/complaint";
 
 interface ComplaintFormProps {
@@ -23,6 +24,80 @@ export default function ComplaintForm({
     trashInput: false,
     input3: false,
   });
+
+  const [showAddressSearch, setShowAddressSearch] = useState(false);
+  const [addresses, setAddresses] = useState<
+    Array<{
+      roadAddress: string;
+      jibunAddress: string;
+      englishAddress: string;
+      x: string;
+      y: string;
+    }>
+  >([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // 주소 검색 기능
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        // 로딩 중이거나 에러가 있을 때는 드롭다운을 유지
+        if (!loading && !error) {
+          setShowAddressSearch(false);
+        }
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [loading, error]);
+
+  // 주소 검색 함수
+  const searchAddresses = async () => {
+    if (!formData.address.trim() || formData.address.length < 2) {
+      setAddresses([]);
+      setError("주소를 2글자 이상 입력해주세요.");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    setShowAddressSearch(true);
+
+    try {
+      const results = await AddressService.searchAddress(formData.address);
+      setAddresses(results);
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "주소 검색에 실패했습니다.";
+
+      // 더 친화적인 에러 메시지로 변환
+      let userFriendlyMessage = errorMessage;
+      if (errorMessage.includes("검색 시간이 초과되었습니다")) {
+        userFriendlyMessage = "검색 시간이 초과되었습니다. 다시 시도해주세요.";
+      } else if (errorMessage.includes("API 키가 유효하지 않습니다")) {
+        userFriendlyMessage =
+          "API 설정에 문제가 있습니다. 관리자에게 문의해주세요.";
+      } else if (errorMessage.includes("API 호출 한도를 초과했습니다")) {
+        userFriendlyMessage =
+          "일일 검색 한도를 초과했습니다. 내일 다시 시도해주세요.";
+      } else if (errorMessage.includes("잘못된 요청입니다")) {
+        userFriendlyMessage = "검색어를 확인해주세요. (예: 시루봉로200길)";
+      }
+
+      setError(userFriendlyMessage);
+      setAddresses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,21 +129,99 @@ export default function ComplaintForm({
           </label>
           <div className="block md:hidden col-span-2"></div>
 
-          <input
-            type="text"
-            id="address"
-            className="col-span-2 md:col-span-3 border border-light-border px-3 py-2 rounded w-full outline-none"
-            value={formData.address}
-            onChange={(e) =>
-              setFormData((f: ComplaintFormData) => ({
-                ...f,
-                address: e.target.value,
-              }))
-            }
-          />
+          <div className="col-span-2 md:col-span-3 relative">
+            <input
+              type="text"
+              id="address"
+              className={`border px-3 py-2 rounded w-full outline-none ${
+                error ? "border-red-500" : "border-light-border"
+              }`}
+              value={formData.address}
+              onChange={(e) => {
+                setFormData((f: ComplaintFormData) => ({
+                  ...f,
+                  address: e.target.value,
+                }));
+                // 입력 시 에러 상태 초기화
+                if (error) setError(null);
+                // 드롭다운 숨기기
+                setShowAddressSearch(false);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  searchAddresses();
+                }
+              }}
+              placeholder="주소를 입력하세요"
+            />
+
+            {/* 주소 검색 드롭다운 */}
+            {showAddressSearch && (
+              <div
+                ref={dropdownRef}
+                className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
+                style={{ top: "100%", left: 0 }}
+              >
+                {loading && (
+                  <div className="p-4 text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-500 mx-auto mb-2"></div>
+                    검색 중... (최대 3초)
+                  </div>
+                )}
+
+                {!loading && !error && addresses.length === 0 && (
+                  <div className="p-4 text-center text-gray-500">
+                    <svg
+                      className="w-5 h-5 mx-auto mb-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    검색 결과가 없습니다.
+                    <br />
+                    <span className="text-xs">다른 키워드로 검색해보세요.</span>
+                  </div>
+                )}
+
+                {!loading &&
+                  !error &&
+                  addresses.length > 0 &&
+                  addresses.map((address, index) => (
+                    <div
+                      key={index}
+                      className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0"
+                      onClick={() => {
+                        // 도로명 주소가 있으면 도로명 주소를, 없으면 지번 주소를 사용
+                        const selectedAddress =
+                          address.roadAddress || address.jibunAddress;
+                        setFormData((f: ComplaintFormData) => ({
+                          ...f,
+                          address: selectedAddress,
+                        }));
+                        setShowAddressSearch(false);
+                      }}
+                    >
+                      <div className="font-medium text-sm text-gray-900">
+                        {address.roadAddress}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {address.jibunAddress}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+          </div>
           <button
             type="button"
             className="col-span-1 border border-light-border px-4 py-2 rounded w-full font-bold"
+            onClick={searchAddresses}
           >
             주소 찾기
           </button>
@@ -77,7 +230,7 @@ export default function ComplaintForm({
           <div className="hidden md:block md:col-span-1"></div>
           <button
             type="button"
-            className="w-full text-left font-bold bg-lighter-green border md:col-span-4 col-span-3 border-light-green px-4 -mt-1 md:mt-2 md:mb-5 rounded focus:outline-none flex"
+            className="w-full text-left font-bold bg-lighter-green border md:col-span-4 col-span-3 border-light-green px-4 -mt-1 md:mt-2 rounded focus:outline-none flex"
           >
             지도에서 민원 위치 확인하기
             <img
@@ -86,6 +239,17 @@ export default function ComplaintForm({
               className="pl-2 w-6 h-5"
             />
           </button>
+
+          {!loading && error && (
+            <>
+              <div className="hidden md:block md:col-span-1"></div>
+              <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
+                <img src={attentionRed} alt="경고 아이콘" className="w-5 h-5 mr-1" />
+                {error}
+              </div>
+              <div className="md:col-span-2"></div>
+            </>
+          )}
 
           {/* 민원 접수 경로 */}
           <label

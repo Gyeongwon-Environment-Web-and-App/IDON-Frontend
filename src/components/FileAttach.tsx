@@ -12,9 +12,6 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileUploadFail, setFileUploadFail] = useState(false);
 
-  console.log("fileAttach:formData's address", formData.address);
-  console.log("fileAttach:uploaded file name", uploadedFileName);
-
   const handleFileClick = () => {
     fileInputRef.current?.click();
   };
