@@ -6,6 +6,7 @@ import other from "../../assets/icons/tags/other.svg";
 import food from "../../assets/icons/tags/food.svg";
 import X from "../../assets/icons/functions/X.svg";
 import type { ComplaintFormData } from "../../types/complaint";
+import { formatAddressWithDong } from "../../services/addressService";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
@@ -55,7 +56,9 @@ export default function ComplaintConfirm({
             </p>
             <p className="text-dark-gray my-3 md:my-5">
               민원 발생 주소 -{" "}
-              <span className="text-black">{formData.address} </span>
+              <span className="text-black">
+                {formatAddressWithDong(formData.address)}{" "}
+              </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
               민원 내용
