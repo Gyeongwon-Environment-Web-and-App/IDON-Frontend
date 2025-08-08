@@ -93,7 +93,7 @@ const MainPage: React.FC = () => {
           메인 메뉴
         </p>
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4 pt-5">
+        <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4 4xl:pt-5">
           {menuButtons.map((button, index) => (
             <button
               key={index}

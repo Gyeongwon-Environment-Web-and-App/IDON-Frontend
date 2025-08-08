@@ -48,7 +48,9 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         <h2 className="hidden md:text-3xl font-bold md:flex items-center gap-2">
           {tabTitle} {icon}
         </h2>
-        <hr className="hidden 2xl:w-[110%] md:block md:my-4 border-under border-[1.1px]" />
+        <hr
+          className={`hidden ${tabTitle === "민원 내역 / 관리" && "2xl:w-[110%]"} md:block md:my-4 border-under border-[1.1px]`}
+        />
         <div className="md:mt-3">{children}</div>
       </main>
     </div>
