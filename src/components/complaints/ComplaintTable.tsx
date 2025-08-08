@@ -203,10 +203,11 @@ const ComplaintTable: React.FC = () => {
   const handleSortChange = (order: "최근" | "옛") => {
     setSortOrder(order);
 
-    // 날짜 파싱 함수
+    // ISO 날짜 문자열을 Date 객체로 변환하는 함수 (시간 제외)
     const parseDate = (dateStr: string) => {
-      const [year, month, day] = dateStr.split(".").map(Number);
-      return new Date(2000 + year, month - 1, day);
+      const date = new Date(dateStr);
+      // 시간을 00:00:00으로 설정하여 날짜만 비교
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate());
     };
 
     // 정렬된 데이터 생성
@@ -217,17 +218,17 @@ const ComplaintTable: React.FC = () => {
       // 날짜가 동일한 경우 연번으로 정렬
       if (dateA.getTime() === dateB.getTime()) {
         if (order === "최근") {
-          return b.number - a.number; // 연번이 적은 것이 위로
+          return b.number - a.number; // 연번이 작은 것이 위로 (1, 2, 3...)
         } else {
-          return a.number - b.number; // 연번이 많은 것이 위로
+          return a.number - b.number; // 연번이 큰 것이 위로 (7, 6, 5...)
         }
       }
 
       // 날짜가 다른 경우 날짜로 정렬
       if (order === "최근") {
-        return dateB.getTime() - dateA.getTime(); // 최신순
+        return dateB.getTime() - dateA.getTime(); // 최신순 (최신 날짜가 위로)
       } else {
-        return dateA.getTime() - dateB.getTime(); // 오래된순
+        return dateA.getTime() - dateB.getTime(); // 오래된순 (오래된 날짜가 위로)
       }
     });
 
