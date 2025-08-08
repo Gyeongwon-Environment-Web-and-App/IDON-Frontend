@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ComplaintFormData } from "../types/complaint";
-import editIcon from "../assets/icons/edit.svg";
-import folderIcon from "../assets/icons/folder.svg";
-import chartIcon from "../assets/icons/chart.svg";
+import { useIsMobile } from "@/hooks/use-mobile";
+import Popup from "../components/forms/Popup";
+import DateTimeBox from "../components/forms/DateTimeBox";
+import MobileBottomNav from "../components/layout/MobileBottomNav";
+import editIcon from "../assets/icons/common/edit.svg";
+import folderIcon from "../assets/icons/common/folder.svg";
+import chartIcon from "../assets/icons/common/chart.svg";
 import PageLayout from "../components/layout/PageLayout";
 import Header from "../components/common/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
-import DateTimeBox from "../components/forms/DateTimeBox";
-import Popup from "@/components/forms/Popup";
-import { useIsMobile } from "@/hooks/use-mobile";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 const ComplaintManage = () => {
   const location = useLocation();

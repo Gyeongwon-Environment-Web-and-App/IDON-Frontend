@@ -28,15 +28,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import calendar from "../../assets/icons/map/calendar.svg";
 import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
-import triangle from "../../assets/icons/complaint_list/triangle.svg";
-import filter from "../../assets/icons/complaint_list/filter.svg";
-import deleteIcon from "../../assets/icons/complaint_list/delete.svg";
-import { complaints as initialComplaints } from "./complaintData";
-import type { Complaint } from "./types/complaint";
+import { complaints as initialComplaints } from "../../data/complaintData";
+import type { Complaint } from "../../types/complaint";
 import Popup from "../forms/Popup";
+import triangle from "../../assets/icons/actions/triangle.svg";
+import filter from "../../assets/icons/actions/filter.svg";
+import deleteIcon from "../../assets/icons/actions/delete.svg";
+import calendar from "../../assets/icons/categories/map_categories/calendar.svg";
 
 const formatDateToYYMMDD = (dateString: string) => {
   try {

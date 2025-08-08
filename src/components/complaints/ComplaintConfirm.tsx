@@ -1,10 +1,10 @@
 import React from "react";
 import TextForward from "../forms/TextForward";
-import general from "../../assets/icons/tags/general.svg";
-import recycle from "../../assets/icons/tags/recycle.svg";
-import other from "../../assets/icons/tags/other.svg";
-import food from "../../assets/icons/tags/food.svg";
-import X from "../../assets/icons/functions/X.svg";
+import general from "../../assets/icons/categories/tags/general.svg";
+import recycle from "../../assets/icons/categories/tags/recycle.svg";
+import other from "../../assets/icons/categories/tags/other.svg";
+import food from "../../assets/icons/categories/tags/food.svg";
+import X from "../../assets/icons/navigation/arrows/X.svg";
 import type { ComplaintFormData } from "../../types/complaint";
 import { formatAddressWithDong } from "../../services/addressService";
 

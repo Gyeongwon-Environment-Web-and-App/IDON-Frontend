@@ -1,4 +1,4 @@
-import type { Complaint } from "./types/complaint";
+import type { Complaint } from "../types/complaint";
 
 // 더미 데이터
 export const complaints: Complaint[] = [

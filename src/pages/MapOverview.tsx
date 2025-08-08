@@ -1,4 +1,4 @@
-import MapSideMenu from "@/components/layout/MapSideMenu";
+import MapSideMenu from "@/components/map/MapSideMenu";
 import { SidebarProvider } from "@/components/ui/sidebar";
 
 export default function MapOverview() {

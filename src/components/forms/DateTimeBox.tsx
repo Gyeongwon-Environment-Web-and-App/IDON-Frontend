@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
-import attentionRed from "../../assets/icons/attention_red.svg";
-import redo from "../../assets/icons/redo.svg";
+import attentionRed from "../../assets/icons/common/attention_red.svg";
+import redo from "../../assets/icons/actions/redo.svg";
 
 function formatDateTime(date: Date) {
   // 연, 월, 일

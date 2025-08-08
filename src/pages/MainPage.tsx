@@ -1,15 +1,15 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import bg1 from "../assets/icons/logo/bg1.png";
 import Header from "@/components/common/Header";
-import leftArrow from "../assets/icons/functions/arrow_left_white.svg";
-import rightArrow from "../assets/icons/functions/arrow_right_white.svg";
-import truck from "../assets/icons/home_menu/vehicle.svg";
-import folder from "../assets/icons/home_menu/folder.svg";
-import write from "../assets/icons/home_menu/write.svg";
-import mapping from "../assets/icons/home_menu/mapping.svg";
 import { useIsMobile } from "@/hooks/use-mobile";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import leftArrow from "../assets/icons/navigation/arrows/arrow_left_white.svg";
+import rightArrow from "../assets/icons/navigation/arrows/arrow_right_white.svg";
+import truck from "../assets/icons/navigation/home_menu/vehicle.svg";
+import folder from "../assets/icons/navigation/home_menu/folder.svg";
+import write from "../assets/icons/navigation/home_menu/write.svg";
+import mapping from "../assets/icons/navigation/home_menu/mapping.svg";
+import bg1 from "../assets/icons/brand/bg1.png";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import mdLogo from "../assets/icons/logo/mid_logo.svg";
+import mdLogo from "../assets/icons/brand/mid_logo.svg";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 

@@ -10,10 +10,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
-import long_logo from "../../assets/icons/logo/long_logo.svg";
-import logo from "../../assets/icons/logo/logo.svg";
-import topArrow from "../../assets/icons/functions/top_arrow.svg";
-import bottomArrow from "../../assets/icons/functions/bottom_arrow.svg";
+import long_logo from "../../assets/icons/brand/long_logo.svg";
+import logo from "../../assets/icons/brand/logo.svg";
+import topArrow from "../../assets/icons/navigation/arrows/top_arrow.svg";
+import bottomArrow from "../../assets/icons/navigation/arrows/bottom_arrow.svg";
 
 const menuItems = [
   {

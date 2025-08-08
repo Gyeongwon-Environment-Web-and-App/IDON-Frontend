@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import home from "../../assets/icons/mobile_menu/home.svg";
-import homeGreen from "../../assets/icons/mobile_menu/home_green.svg";
-import mapIcon from "../../assets/icons/mobile_menu/mapIcon.svg";
-import mapIconGreen from "../../assets/icons/mobile_menu/mapIcon_green.svg";
-import vehicle from "../../assets/icons/mobile_menu/vehicle.svg";
-import vehicleGreen from "../../assets/icons/mobile_menu/vehicle_green.svg";
-import stats from "../../assets/icons/mobile_menu/stats.svg";
-import statsGreen from "../../assets/icons/mobile_menu/stats_green.svg";
-import complaint from "../../assets/icons/mobile_menu/complaint.svg";
-import complaintGreen from "../../assets/icons/mobile_menu/complaint_green.svg";
+import home from "../../assets/icons/navigation/mobile_menu/home.svg";
+import homeGreen from "../../assets/icons/navigation/mobile_menu/home_green.svg";
+import mapIcon from "../../assets/icons/navigation/mobile_menu/mapIcon.svg";
+import mapIconGreen from "../../assets/icons/navigation/mobile_menu/mapIcon_green.svg";
+import vehicle from "../../assets/icons/navigation/mobile_menu/vehicle.svg";
+import vehicleGreen from "../../assets/icons/navigation/mobile_menu/vehicle_green.svg";
+import stats from "../../assets/icons/navigation/mobile_menu/stats.svg";
+import statsGreen from "../../assets/icons/navigation/mobile_menu/stats_green.svg";
+import complaint from "../../assets/icons/navigation/mobile_menu/complaint.svg";
+import complaintGreen from "../../assets/icons/navigation/mobile_menu/complaint_green.svg";
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();

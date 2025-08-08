@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import underArrow from "../../assets/icons/functions/under_arrow.svg";
-import attention from "../../assets/icons/attention.svg";
-import attentionRed from "../../assets/icons/attention_red.svg";
-import FileAttach from "../forms/FileAttach";
 import { AddressService } from "../../services/addressService";
 import type { ComplaintFormData } from "../../types/complaint";
+import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
+import attention from "../../assets/icons/common/attention.svg";
+import attentionRed from "../../assets/icons/common/attention_red.svg";
+import FileAttach from "../forms/FileAttach";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
