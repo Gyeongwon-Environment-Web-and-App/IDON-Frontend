@@ -99,7 +99,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={`text-base text-black ${
+                        className={`text-base text-black cursor-pointer ${
                           !isLastCell ? "border-r border-d9d9d9" : ""
                         }`}
                       >

@@ -11,8 +11,6 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import calendar from "../../assets/icons/map/calendar.svg";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -24,6 +22,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import calendar from "../../assets/icons/map/calendar.svg";
+import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
 import triangle from "../../assets/icons/complaint_list/triangle.svg";
 import filter from "../../assets/icons/complaint_list/filter.svg";
@@ -31,6 +37,20 @@ import deleteIcon from "../../assets/icons/complaint_list/delete.svg";
 import { complaints as initialComplaints } from "./complaintData";
 import type { Complaint } from "./complaintData";
 import Popup from "../Popup";
+
+const formatDateToYYMMDD = (dateString: string) => {
+  try {
+    const date = new Date(dateString);
+    const year = date.getFullYear().toString().slice(-2); // YY
+    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // MM
+    const day = date.getDate().toString().padStart(2, "0"); // DD
+
+    return `${year}.${month}.${day}`;
+  } catch (error) {
+    console.error("날짜 파싱 오류:", error);
+    return dateString; // 파싱 실패 시 원본 반환
+  }
+};
 
 // 컬럼 정의
 const columns: ColumnDef<Complaint>[] = [
@@ -75,7 +95,9 @@ const columns: ColumnDef<Complaint>[] = [
     accessorKey: "date",
     header: "접수 일자",
     cell: ({ row }) => (
-      <div className="text-center">{row.getValue("date")}</div>
+      <div className="text-center">
+        {formatDateToYYMMDD(row.getValue("date"))}
+      </div>
     ),
   },
   {
@@ -86,11 +108,27 @@ const columns: ColumnDef<Complaint>[] = [
     ),
   },
   {
-    accessorKey: "address",
+    accessorKey: "region_nm",
     header: "주소",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("address")}</div>
-    ),
+    cell: ({ row }) => {
+      const address: string = row.original.address;
+      const regionNm: string = row.getValue("region_nm");
+
+      return (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="text-center cursor-pointer">{regionNm}</div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-md break-words text-base text-black">
+                {address}
+              </p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      );
+    },
   },
   {
     accessorKey: "content",
@@ -104,6 +142,13 @@ const columns: ColumnDef<Complaint>[] = [
     header: "연락처",
     cell: ({ row }) => (
       <div className="text-center">{row.getValue("contact")}</div>
+    ),
+  },
+  {
+    accessorKey: "driver",
+    header: "담당 기사",
+    cell: ({ row }) => (
+      <div className="text-center">{row.getValue("driver")}</div>
     ),
   },
   {
@@ -323,7 +368,7 @@ const ComplaintTable: React.FC = () => {
   }));
 
   return (
-    <div className="w-full">
+    <div className="w-full 2xl:w-[110%] overflow-x-auto ">
       {/* 팝업 */}
       {isPopupOpen && (
         <Popup
@@ -472,7 +517,7 @@ const ComplaintTable: React.FC = () => {
       </div>
 
       {/* 테이블 */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
+      <div className="border border-gray-200 rounded-lg overflow-x-auto">
         <DataTable columns={columns} data={complaintsWithCallbacks} />
       </div>
 

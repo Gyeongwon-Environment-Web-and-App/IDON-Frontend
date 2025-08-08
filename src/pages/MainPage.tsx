@@ -59,7 +59,7 @@ const MainPage: React.FC = () => {
         <img
           src={bg1}
           alt="배경 이미지"
-          className="md:h-[43vh] h-[30vh] w-full object-cover object-center transition-all duration-500 sm:scale-100 md:scale-105 lg:scale-110 xl:scale-125"
+          className="md:h-[43vh] h-[30vh] w-screen object-cover object-center transition-all duration-500 sm:scale-100 md:scale-120 lg:scale-110 xl:scale-125"
         />
         {/* 좌우 화살표 버튼 */}
         <button className="hidden md:block absolute top-[50%] left-[20%] -translate-y-[50%] cursor-pointer z-5">
@@ -89,9 +89,9 @@ const MainPage: React.FC = () => {
 
       {/* 화면 하단 */}
       <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[55%] w-screen 2xl:px-80 pt-8 3xl:pt-[3.8rem]">
-        <p className="md:hidden font-bold text-lg px-7 pb-3">메인 메뉴</p>
+        <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">메인 메뉴</p>
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4">
+        <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4 pt-5">
           {menuButtons.map((button, index) => (
             <button
               key={index}

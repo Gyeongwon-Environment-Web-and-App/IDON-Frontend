@@ -26,7 +26,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
 }) => {
   return (
     <div className="flex max-w-screen mx-0 md:mx-[2rem] 2xl:mx-[19rem] xxs:-pt-5 xs:pt-7 w-full">
-      <div className="max-h-[90vh] hidden xl:block xl:pt-3">
+      <div className="max-h-[90vh] hidden 2xl:block 2xl:pt-3">
         <div className="rounded-t-[7px] bg-darker-green text-white font-bold text-lg text-center py-3">
           {title}
         </div>
@@ -48,7 +48,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
         <h2 className="hidden md:text-3xl font-bold md:flex items-center gap-2">
           {tabTitle} {icon}
         </h2>
-        <hr className="hidden md:block md:my-4 border-under border-[1.1px]" />
+        <hr className="hidden 2xl:w-[110%] md:block md:my-4 border-under border-[1.1px]" />
         <div className="md:mt-3">{children}</div>
       </main>
     </div>

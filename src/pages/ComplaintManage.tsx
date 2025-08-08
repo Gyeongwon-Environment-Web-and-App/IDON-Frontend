@@ -187,7 +187,7 @@ const ComplaintManage = () => {
             console.log("first click");
           }}
           onSecondClick={() => {
-            // ! navigate to complaint list
+            navigate('/complaint/table')
             console.log("second click");
           }}
           toHome={true}

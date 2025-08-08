@@ -11,6 +11,7 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import topArrow from "../assets/icons/functions/top_arrow.svg";
 import bottomArrow from "../assets/icons/functions/bottom_arrow.svg";
 
@@ -49,6 +50,7 @@ export default function Header() {
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<number[]>([]);
+  const { logout } = useAuth();
 
   const toggleMenu = (index: number) => {
     setExpandedMenus((prev) =>
@@ -58,15 +60,9 @@ export default function Header() {
 
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
-  const logout = () => {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("serial_no");
-    localStorage.removeItem("userToken");
-    sessionStorage.removeItem("userData");
-    sessionStorage.removeItem("serial_no");
-    sessionStorage.removeItem("userToken");
+  const handleLogout = () => {
+    logout()
     alert("로그아웃 되었습니다.");
-    navigate("/login");
   };
 
   return (
@@ -103,7 +99,7 @@ export default function Header() {
             >
               {/* 상단 메뉴 텍스트 */}
               <div
-                className={`cursor-pointer px-4 pt-7 pb-4 border-b-2 font-bold lg:text-xl text-md ${showDropdown ? "border-black" : "border-white"}`}
+                className={`cursor-pointer px-4 pt-7 pb-4 font-bold lg:text-xl text-md ${showDropdown ? "border-b-2 border-black" : ""}`}
               >
                 {item.label}
               </div>
@@ -172,7 +168,7 @@ export default function Header() {
               <div className="text-sm bg-[#77BF7E] text-right pt-[4rem]">
                 <button
                   className="text-right text-white hover:text-gray-600 transition-colors"
-                  onClick={() => logout()}
+                  onClick={() => handleLogout}
                 >
                   로그아웃
                 </button>
@@ -219,7 +215,7 @@ export default function Header() {
         </div>
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
-        <div className="hidden sm:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
+        <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
           <button className="hover:text-gray-400" onClick={() => logout()}>
             로그아웃
           </button>
