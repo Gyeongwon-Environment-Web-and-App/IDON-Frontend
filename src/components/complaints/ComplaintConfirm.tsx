@@ -1,5 +1,5 @@
 import React from "react";
-import TextForward from "../TextForward";
+import TextForward from "../forms/TextForward";
 import general from "../../assets/icons/tags/general.svg";
 import recycle from "../../assets/icons/tags/recycle.svg";
 import other from "../../assets/icons/tags/other.svg";

@@ -1,7 +1,6 @@
 import { useState } from "react";
-import long_logo from "../assets/icons/logo/long_logo.svg";
-import logo from "../assets/icons/logo/logo.svg";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import {
   Sheet,
   SheetContent,
@@ -11,9 +10,10 @@ import {
   SheetDescription,
 } from "@/components/ui/sheet";
 import { Menu, X } from "lucide-react";
-import { useAuth } from "@/hooks/useAuth";
-import topArrow from "../assets/icons/functions/top_arrow.svg";
-import bottomArrow from "../assets/icons/functions/bottom_arrow.svg";
+import long_logo from "../../assets/icons/logo/long_logo.svg";
+import logo from "../../assets/icons/logo/logo.svg";
+import topArrow from "../../assets/icons/functions/top_arrow.svg";
+import bottomArrow from "../../assets/icons/functions/bottom_arrow.svg";
 
 const menuItems = [
   {
@@ -61,7 +61,7 @@ export default function Header() {
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
   const handleLogout = () => {
-    logout()
+    logout();
     alert("로그아웃 되었습니다.");
   };
 

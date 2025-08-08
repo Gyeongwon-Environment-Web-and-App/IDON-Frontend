@@ -35,8 +35,8 @@ import triangle from "../../assets/icons/complaint_list/triangle.svg";
 import filter from "../../assets/icons/complaint_list/filter.svg";
 import deleteIcon from "../../assets/icons/complaint_list/delete.svg";
 import { complaints as initialComplaints } from "./complaintData";
-import type { Complaint } from "./complaintData";
-import Popup from "../Popup";
+import type { Complaint } from "./types/complaint";
+import Popup from "../forms/Popup";
 
 const formatDateToYYMMDD = (dateString: string) => {
   try {

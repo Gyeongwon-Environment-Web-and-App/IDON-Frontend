@@ -5,15 +5,15 @@ import type { ComplaintFormData } from "../types/complaint";
 import editIcon from "../assets/icons/edit.svg";
 import folderIcon from "../assets/icons/folder.svg";
 import chartIcon from "../assets/icons/chart.svg";
-import PageLayout from "../components/PageLayout";
-import Header from "../components/Header";
+import PageLayout from "../components/layout/PageLayout";
+import Header from "../components/common/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
-import DateTimeBox from "../components/DateTimeBox";
-import Popup from "@/components/Popup";
+import DateTimeBox from "../components/forms/DateTimeBox";
+import Popup from "@/components/forms/Popup";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 const ComplaintManage = () => {
   const location = useLocation();
@@ -187,7 +187,7 @@ const ComplaintManage = () => {
             console.log("first click");
           }}
           onSecondClick={() => {
-            navigate('/complaint/table')
+            navigate("/complaint/table");
             console.log("second click");
           }}
           toHome={true}
@@ -213,7 +213,13 @@ const ComplaintManage = () => {
           ]}
           activeTab={activeTab}
           onTabClick={handleTabClick}
-          tabTitle={activeTab === "manage" ? "민원 내역 / 관리" : activeTab === "register" ? "민원 등록" : "전체 통계"}
+          tabTitle={
+            activeTab === "manage"
+              ? "민원 내역 / 관리"
+              : activeTab === "register"
+                ? "민원 등록"
+                : "전체 통계"
+          }
         >
           {/* 민원 등록 콘텐츠 */}
           <div>
@@ -244,10 +250,7 @@ const ComplaintManage = () => {
                   onSubmit={onSubmit}
                 />
               ))}
-              {activeTab === "stats" && 
-              (
-                <></>
-              )}
+            {activeTab === "stats" && <></>}
           </div>
         </PageLayout>
       </div>

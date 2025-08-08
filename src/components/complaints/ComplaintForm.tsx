@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import underArrow from "../../assets/icons/functions/under_arrow.svg";
 import attention from "../../assets/icons/attention.svg";
 import attentionRed from "../../assets/icons/attention_red.svg";
-import FileAttach from "../FileAttach";
+import FileAttach from "../forms/FileAttach";
 import { AddressService } from "../../services/addressService";
 import type { ComplaintFormData } from "../../types/complaint";
 
@@ -244,7 +244,11 @@ export default function ComplaintForm({
             <>
               <div className="hidden md:block md:col-span-1"></div>
               <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
-                <img src={attentionRed} alt="경고 아이콘" className="w-5 h-5 mr-1" />
+                <img
+                  src={attentionRed}
+                  alt="경고 아이콘"
+                  className="w-5 h-5 mr-1"
+                />
                 {error}
               </div>
               <div className="md:col-span-2"></div>

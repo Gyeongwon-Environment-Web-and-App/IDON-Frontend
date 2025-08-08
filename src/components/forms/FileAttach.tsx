@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import type { ComplaintFormData } from "../types/complaint";
+import type { ComplaintFormData } from "../../types/complaint";
 
 interface FileAttachProps {
   formData: ComplaintFormData;
@@ -67,7 +67,9 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
 
   return (
     <>
-      <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">파일 첨부</label>
+      <label className="col-span-1 font-bold text-[1rem] md:py-5 pt-5">
+        파일 첨부
+      </label>
       <div className="col-span-3">
         <input
           type="file"

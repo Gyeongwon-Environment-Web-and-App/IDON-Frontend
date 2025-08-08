@@ -4,9 +4,9 @@ import React, { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 
 // 아이콘 import
-import editIcon from "../assets/icons/edit.svg";
-import truckIcon from "../assets/icons/truck.svg";
-import chartIcon from "../assets/icons/chart.svg";
+import editIcon from "../../assets/icons/edit.svg";
+import truckIcon from "../../assets/icons/truck.svg";
+import chartIcon from "../../assets/icons/chart.svg";
 
 type SidebarType = "complaint" | "vehicle" | "stats" | "allmenu" | null;
 

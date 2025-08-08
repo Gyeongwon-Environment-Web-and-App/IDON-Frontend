@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import bg1 from "../assets/icons/logo/bg1.png";
-import Header from "@/components/Header";
+import Header from "@/components/common/Header";
 import leftArrow from "../assets/icons/functions/arrow_left_white.svg";
 import rightArrow from "../assets/icons/functions/arrow_right_white.svg";
 import truck from "../assets/icons/home_menu/vehicle.svg";
@@ -9,7 +9,7 @@ import folder from "../assets/icons/home_menu/folder.svg";
 import write from "../assets/icons/home_menu/write.svg";
 import mapping from "../assets/icons/home_menu/mapping.svg";
 import { useIsMobile } from "@/hooks/use-mobile";
-import MobileBottomNav from "@/components/MobileBottomNav";
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
 const MainPage: React.FC = () => {
   const navigate = useNavigate();
@@ -89,7 +89,9 @@ const MainPage: React.FC = () => {
 
       {/* 화면 하단 */}
       <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[55%] w-screen 2xl:px-80 pt-8 3xl:pt-[3.8rem]">
-        <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">메인 메뉴</p>
+        <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">
+          메인 메뉴
+        </p>
         {/* 기능 페이지 이동 버튼들 */}
         <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4 pt-5">
           {menuButtons.map((button, index) => (
