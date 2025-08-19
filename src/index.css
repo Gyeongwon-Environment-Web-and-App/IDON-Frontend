@@ -241,3 +241,27 @@ button {
   color: black;
   text-transform: none;
 }
+
+.custom-calendar [data-range-middle="true"] {
+  background-color: #ceffd4 !important;
+}
+
+.custom-calendar [data-range-start="true"],
+.custom-calendar [data-range-end="true"] {
+  background-color: #00ba13 !important;
+  font-weight: bold;
+}
+
+/* 파이 차트 outline 제거 */
+.recharts-wrapper,
+.recharts-wrapper *,
+.recharts-pie,
+.recharts-pie * {
+  outline: none !important;
+}
+
+.recharts-wrapper:focus,
+.recharts-pie:focus,
+.recharts-pie *:focus {
+  outline: none !important;
+}

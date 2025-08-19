@@ -1,6 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-// import { useAuth } from "./hooks/useAuth";
+//! import { useAuth } from "./hooks/useAuth";
 import Login from "./pages/Login";
 import ComplaintManage from "./pages/ComplaintManage";
 import MapOverview from "./pages/MapOverview";
@@ -26,6 +26,7 @@ const App: React.FC = () => {
             <Route path="/complaints" element={<ComplaintManage />} />
             <Route path="/complaints/table" element={<ComplaintManage />} />
             <Route path="/complaints/form" element={<ComplaintManage />} />
+            <Route path="/complaints/stats" element={<ComplaintManage />} />
             <Route path="/map/overview" element={<MapOverview />} />
           </>
         ) : (

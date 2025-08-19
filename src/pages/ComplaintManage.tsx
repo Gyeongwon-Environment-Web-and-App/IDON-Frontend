@@ -14,6 +14,7 @@ import Header from "../components/common/Header";
 import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
+import ComplaintStats from "@/components/statistics/ComplaintStats";
 
 const ComplaintManage = () => {
   const location = useLocation();
@@ -62,6 +63,8 @@ const ComplaintManage = () => {
         return "register";
       } else if (location.pathname.includes("/table")) {
         return "manage";
+      } else if (location.pathname.includes("/stats")) {
+        return "stats";
       }
       return "register"; // 기본값
     };
@@ -112,8 +115,10 @@ const ComplaintManage = () => {
     // URL 업데이트
     if (nextTab === "manage") {
       navigate("/complaints/table");
-    } else {
+    } else if (nextTab === "register") {
       navigate("/complaints/form");
+    } else if (nextTab === "stats") {
+      navigate("/complaints/stats");
     }
 
     setFormData(initialFormData);
@@ -218,7 +223,8 @@ const ComplaintManage = () => {
               ? "민원 내역 / 관리"
               : activeTab === "register"
                 ? "민원 등록"
-                : "전체 통계"
+                : activeTab === "stats" ? "전체 통계"
+                : ""
           }
         >
           {/* 민원 등록 콘텐츠 */}
@@ -250,7 +256,11 @@ const ComplaintManage = () => {
                   onSubmit={onSubmit}
                 />
               ))}
-            {activeTab === "stats" && <></>}
+            {activeTab === "stats" && (
+              <>
+                <ComplaintStats />
+              </>
+            )}
           </div>
         </PageLayout>
       </div>

@@ -39,7 +39,7 @@ const menuItems = [
     submenu: [
       { name: "내역 / 관리", route: "/complaints/table" },
       { name: "민원 등록 / 수정", route: "/complaints/form" },
-      { name: "전체 통계", route: "/" },
+      { name: "전체 통계", route: "/complaints/stats" },
     ],
   },
   { label: "통계", submenu: [] },

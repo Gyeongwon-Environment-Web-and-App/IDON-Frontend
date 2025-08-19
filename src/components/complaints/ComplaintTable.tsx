@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import type { DateRange } from "react-day-picker";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,6 @@ import {
   ChevronsRight,
 } from "lucide-react";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -28,15 +24,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Calendar } from "@/components/ui/calendar";
-import { ko } from "date-fns/locale";
 import { complaints as initialComplaints } from "../../data/complaintData";
 import type { Complaint } from "../../types/complaint";
 import Popup from "../forms/Popup";
 import triangle from "../../assets/icons/actions/triangle.svg";
 import filter from "../../assets/icons/actions/filter.svg";
 import deleteIcon from "../../assets/icons/actions/delete.svg";
-import calendar from "../../assets/icons/categories/map_categories/calendar.svg";
+import DateRangePicker from "../common/DateRangePicker";
 
 const formatDateToYYMMDD = (dateString: string) => {
   try {
@@ -184,8 +178,8 @@ const columns: ColumnDef<Complaint>[] = [
 ];
 
 const ComplaintTable: React.FC = () => {
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date(2025, 5, 1)); // 2025년 6월
-  const [open, setOpen] = useState(false);
+  const [dateRange, setDateRange] = useState<DateRange | undefined>();
+
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(
@@ -247,12 +241,6 @@ const ComplaintTable: React.FC = () => {
     });
 
     setFilteredComplaints(filtered);
-  };
-
-  const formatDate = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    return `${year}년 ${month}월`;
   };
 
   // 검색 기능
@@ -382,35 +370,14 @@ const ComplaintTable: React.FC = () => {
       )}
 
       {/* 헤더 */}
-      <div className="flex items-center justify-between mb-3">
+      <header className="flex items-center justify-between mb-3">
         <div className="flex items-center">
-          <span className="text-xl font-bold -mr-2">
-            {formatDate(selectedDate)}
-          </span>
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button className="cursor-pointer bg-white outline-none shadow-none p-0 ml-4">
-                <img src={calendar} alt="캘린더 아이콘" className="h-6 w-6" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={(date) => {
-                  if (date) {
-                    setSelectedDate(date);
-                    setOpen(false);
-                  }
-                }}
-                locale={ko}
-                captionLayout="dropdown"
-                className="rounded-md border"
-              />
-            </PopoverContent>
-          </Popover>
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+          />
         </div>
-      </div>
+      </header>
 
       {/* 검색 및 필터 */}
       <div className="flex items-center justify-between space-x-4 mb-4">
@@ -495,7 +462,7 @@ const ComplaintTable: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="flex items-center shadow-none outline-none border-[#575757]"
+                className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757]"
               >
                 <Download className="w-4 h-4" />
                 <span className="text-sm">다운로드</span>
