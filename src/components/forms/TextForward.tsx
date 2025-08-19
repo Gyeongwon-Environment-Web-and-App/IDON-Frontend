@@ -61,11 +61,11 @@ const TextForward: React.FC<TextForwardProps> = ({
 
   // 데스크탑 버전 (기존 코드)
   return (
-    <div className="flex gap-10">
+    <div className="flex gap-5 px-5">
       {options.map((option) => (
         <div
           key={option}
-          className="border border-black rounded px-8 py-2 text-base font-bold w-[14rem] flex items-center justify-center"
+          className="border border-black rounded py-2 text-base font-bold w-[13rem] flex items-center justify-center"
         >
           <label
             className="flex items-center cursor-pointer"
