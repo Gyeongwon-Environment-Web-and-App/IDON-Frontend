@@ -42,7 +42,6 @@ export const CustomPieChart: React.FC<PieChartProps> = ({ data, colors }) => {
           innerRadius={60}
           outerRadius={110}
           paddingAngle={0}
-          isAnimationActive={false}
           height={300}
         >
           {data.map((entry, index) => (
