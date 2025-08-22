@@ -40,6 +40,12 @@ export default function ComplaintForm({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [tempAddress, setTempAddress] = useState(formData.address);
+
+  // formData.address가 변경될 때 tempAddress 동기화
+  useEffect(() => {
+    setTempAddress(formData.address);
+  }, [formData.address]);
 
   // 지도 관련 상태
   const [showMap, setShowMap] = useState(false);
@@ -206,12 +212,9 @@ export default function ComplaintForm({
               className={`border px-3 py-2 rounded w-full outline-none ${
                 error ? "border-red-500" : "border-light-border"
               }`}
-              value={formData.address}
+              value={tempAddress}
               onChange={(e) => {
-                setFormData((f: ComplaintFormData) => ({
-                  ...f,
-                  address: e.target.value,
-                }));
+                setTempAddress(e.target.value);
                 // 입력 시 에러 상태 초기화
                 if (error) setError(null);
                 // 드롭다운 숨기기
@@ -220,8 +223,20 @@ export default function ComplaintForm({
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   e.preventDefault();
+                  // 임시 주소를 실제 주소로 업데이트
+                  setFormData((f: ComplaintFormData) => ({
+                    ...f,
+                    address: tempAddress,
+                  }));
                   searchAddresses();
                 }
+              }}
+              onBlur={() => {
+                // 포커스를 잃을 때도 임시 주소를 실제 주소로 업데이트
+                setFormData((f: ComplaintFormData) => ({
+                  ...f,
+                  address: tempAddress,
+                }));
               }}
               placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로200길, 광동헬스사우나)"
             />
