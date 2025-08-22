@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,21 +9,121 @@ import truck from "../assets/icons/navigation/home_menu/vehicle.svg";
 import folder from "../assets/icons/navigation/home_menu/folder.svg";
 import write from "../assets/icons/navigation/home_menu/write.svg";
 import mapping from "../assets/icons/navigation/home_menu/mapping.svg";
-import bg1 from "../assets/icons/brand/bg1.png";
+import bg1 from "../assets/background/bg1.webp";
+import bg2 from "../assets/background/bg2.webp";
+import bg3 from "../assets/background/bg3.webp";
+import bg4 from "../assets/background/bg4.webp";
+import bg5 from "../assets/background/bg5.webp";
 
 interface MainPageProps {
   onLogout: () => void;
 }
 
 const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
+
+  // Preload image function with caching
+  const preloadImage = useCallback(
+    (index: number): Promise<void> => {
+      return new Promise((resolve) => {
+        if (loadedImages.has(index)) {
+          resolve();
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          setLoadedImages((prev) => new Set([...prev, index]));
+          resolve();
+        };
+        img.onerror = () => {
+          console.warn(`Failed to load image at index ${index}`);
+          resolve(); // Resolve anyway to prevent blocking
+        };
+        img.src = backgroundImages[index];
+      });
+    },
+    [backgroundImages, loadedImages]
+  );
+
+  // Preload adjacent images (next and previous)
+  const preloadAdjacentImages = useCallback(
+    (currentIndex: number) => {
+      const nextIndex = (currentIndex + 1) % backgroundImages.length;
+      const prevIndex =
+        currentIndex === 0 ? backgroundImages.length - 1 : currentIndex - 1;
+
+      // Preload next and previous images
+      preloadImage(nextIndex);
+      preloadImage(prevIndex);
+    },
+    [backgroundImages.length, preloadImage]
+  );
+
+  // Initialize preloading on mount
+  useEffect(() => {
+    preloadAdjacentImages(0);
+  }, [preloadAdjacentImages]);
+
+  // Preload adjacent images when current image changes
+  useEffect(() => {
+    preloadAdjacentImages(currentImageIndex);
+  }, [currentImageIndex, preloadAdjacentImages]);
+
+  const nextImage = useCallback(async () => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+    const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
+
+    // Ensure next image is loaded before transition
+    await preloadImage(nextIndex);
+
+    setCurrentImageIndex(nextIndex);
+
+    // Use shorter transition time for better responsiveness
+    setTimeout(() => setIsTransitioning(false), 200);
+  }, [
+    currentImageIndex,
+    backgroundImages.length,
+    isTransitioning,
+    preloadImage,
+  ]);
+
+  const prevImage = useCallback(async () => {
+    if (isTransitioning) return;
+
+    setIsTransitioning(true);
+    const prevIndex =
+      currentImageIndex === 0
+        ? backgroundImages.length - 1
+        : currentImageIndex - 1;
+
+    // Ensure previous image is loaded before transition
+    await preloadImage(prevIndex);
+
+    setCurrentImageIndex(prevIndex);
+
+    // Use shorter transition time for better responsiveness
+    setTimeout(() => setIsTransitioning(false), 200);
+  }, [
+    currentImageIndex,
+    backgroundImages.length,
+    isTransitioning,
+    preloadImage,
+  ]);
 
   const handleCardClick = (route: string) => {
     navigate(route);
   };
 
-  // ! 네비게이팅 수정!
+  //! 네비게이팅 수정!
   const menuButtons = [
     {
       title: "민원 관리",
@@ -59,21 +159,39 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     <div className="w-screen h-screen overflow-auto absolute top-0 text-center scrollbar-hide">
       <Header onLogout={onLogout} />
       {/* 배경 이미지 공간 */}
-      <div className="w-screen overflow-hidden absolute 5xl:top-[15.5%]">
-        <img
-          src={bg1}
-          alt="배경 이미지"
-          className="4xl:h-[43vh] md:h-[35vh] h-[30vh] w-screen object-cover object-center transition-all duration-500 sm:scale-100 md:scale-120 lg:scale-110 xl:scale-125"
-        />
+      <div className="w-screen overflow-hidden absolute top-[11%] lg:top-[12%]">
+        <picture>
+          <source
+            srcSet={backgroundImages[currentImageIndex]}
+            type="image/webp"
+          />
+          <img
+            src={backgroundImages[currentImageIndex].replace(".webp", ".jpg")}
+            alt={`배경 이미지 ${currentImageIndex + 1}`}
+            className={`4xl:h-[43vh] md:h-[40vh] h-[33vh] w-screen object-cover object-center transition-all duration-200 ${
+              isTransitioning ? "scale-105" : "scale-100"
+            }`}
+            loading="eager"
+          />
+        </picture>
+
         {/* 좌우 화살표 버튼 */}
-        <button className="hidden md:block absolute top-[50%] left-[20%] -translate-y-[50%] cursor-pointer z-5">
+        <button
+          className="absolute top-[50%] md:left-[20%] left-0 -translate-y-[50%] cursor-pointer z-5 disabled:opacity-50"
+          onClick={prevImage}
+          disabled={isTransitioning}
+        >
           <img
             src={leftArrow}
             alt="왼쪽 이동 화살표"
             className="cursor-pointer"
           />
         </button>
-        <button className="hidden md:block absolute top-[50%] right-[20%] -translate-y-[50%] cursor-pointer object-contain">
+        <button
+          className="absolute top-[50%] md:right-[20%] right-0 -translate-y-[50%] cursor-pointer object-contain disabled:opacity-50"
+          onClick={nextImage}
+          disabled={isTransitioning}
+        >
           <img
             src={rightArrow}
             alt="오른쪽 이동 화살표"
@@ -81,13 +199,25 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
           />
         </button>
 
-        <div className="absolute md:left-[23%] left-5 md:bottom-20 bottom-5 text-white md:text-[1.7rem] md:text-center text-left">
-          <p className="relative md:mb-5 md:text-shadow font-normal md:font-bold text-shadow-sm text-base md:text-[1.7rem]">
-            미래의 쾌적한 삶을 위해,
-          </p>
-          <p className="relative md:left-[8rem] md:text-shadow text-shadow-sm text-lg font-bold md:text-[1.7rem]">
-            경원환경이 함께합니다
-          </p>
+        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-3">
+          {backgroundImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => {
+                if (!isTransitioning) {
+                  setIsTransitioning(true);
+                  preloadImage(index).then(() => {
+                    setCurrentImageIndex(index);
+                    setTimeout(() => setIsTransitioning(false), 200);
+                  });
+                }
+              }}
+              disabled={isTransitioning}
+              className={`w-[15px] h-[15px] !p-0 rounded-full transition-all duration-200 ${
+                index === currentImageIndex ? "bg-white" : "bg-white/50"
+              } ${isTransitioning ? "opacity-50" : "hover:bg-white/75"}`}
+            />
+          ))}
         </div>
       </div>
 

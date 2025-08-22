@@ -19,10 +19,12 @@ const MobileBottomNav = () => {
     switch (location.pathname) {
       case "/":
         return "home";
-      case "/map":
+      case "/map/overview":
         return "map";
-      case "/register":
+      case "/complaints/form":
         return "complaint";
+      case "/complaints/stats":
+        return "stats";
       default:
         return "home";
     }
@@ -34,11 +36,14 @@ const MobileBottomNav = () => {
       case "/":
         setActiveTab("home");
         break;
-      case "/map":
+      case "/map/overview":
         setActiveTab("map");
         break;
-      case "/register":
+      case "/complaints/form":
         setActiveTab("complaint");
+        break;
+      case "/complaints/stats":
+        setActiveTab("stats");
         break;
       default:
         setActiveTab("home");
@@ -58,7 +63,7 @@ const MobileBottomNav = () => {
       label: "통계",
       icon: stats,
       activeIcon: statsGreen,
-      route: "/",
+      route: "/complaints/stats",
     },
     {
       id: "home",

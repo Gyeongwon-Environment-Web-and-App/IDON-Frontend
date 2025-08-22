@@ -1,4 +1,4 @@
-import { CustomPieChart } from "./Piechart";
+import { CustomPieChart } from "./PieChart";
 import { CustomBarChart } from "./BarChart";
 import type { DateRange } from "react-day-picker";
 import {
@@ -56,9 +56,7 @@ const highestComplaintTime = () => {
       minTimeSlot = item.time;
     }
 
-    console.log(`시간대: ${item.time}, 민원수: ${timeSlotTotalComplaints}`);
-    console.log(`totalComplaints: ${totalComplaints}`);
-    totalComplaints+=timeSlotTotalComplaints
+    totalComplaints += timeSlotTotalComplaints;
   });
 
   return {
@@ -66,7 +64,7 @@ const highestComplaintTime = () => {
     minTimeSlot,
     maxComplaints,
     minComplaints,
-    totalComplaints
+    totalComplaints,
   };
 };
 
@@ -74,7 +72,13 @@ const ComplaintStats = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   // 가장 많고 적은 민원 시간대 계산
-  const { maxTimeSlot, minTimeSlot, maxComplaints, minComplaints, totalComplaints } = highestComplaintTime();
+  const {
+    maxTimeSlot,
+    minTimeSlot,
+    maxComplaints,
+    minComplaints,
+    totalComplaints,
+  } = highestComplaintTime();
 
   const DongChartColors = [
     "#72E900",
@@ -278,11 +282,15 @@ const ComplaintStats = () => {
               <p className="text-[#585858] font-semibold text-xl">
                 가장 많은 민원이 들어온 시간대
               </p>
-              <p className="text-black font-semibold text-3xl mb-10">{maxTimeSlot} ({maxComplaints}건)</p>
+              <p className="text-black font-semibold text-3xl mb-10">
+                {maxTimeSlot} ({maxComplaints}건)
+              </p>
               <p className="text-[#585858] font-semibold text-xl">
                 가장 적은 민원이 들어온 시간대
               </p>
-              <p className="text-black font-semibold text-3xl">{minTimeSlot} ({minComplaints}건)</p>
+              <p className="text-black font-semibold text-3xl">
+                {minTimeSlot} ({minComplaints}건)
+              </p>
             </div>
           </div>
         </section>
