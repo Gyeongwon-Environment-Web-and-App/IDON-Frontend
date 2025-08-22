@@ -42,6 +42,8 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
           localStorage.setItem("userToken", token);
         }
 
+        console.log('userToken: ', token);
+
         return { success: true, data: userData };
       }
     } catch (error) {

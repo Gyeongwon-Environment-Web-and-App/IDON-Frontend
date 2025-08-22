@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
+import { useAuth } from "../../hooks/useAuth";
 import { AddressService } from "../../services/addressService";
 import type { ComplaintFormData } from "../../types/complaint";
 import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
@@ -41,6 +43,11 @@ export default function ComplaintForm({
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [tempAddress, setTempAddress] = useState(formData.address);
+  const [frequencyTimeout, setFrequencyTimeout] =
+    useState<NodeJS.Timeout | null>(null);
+  const [addressFrequencyInfo, setAddressFrequencyInfo] = useState<
+    number | null
+  >(null);
 
   // formData.address가 변경될 때 tempAddress 동기화
   useEffect(() => {
@@ -117,6 +124,57 @@ export default function ComplaintForm({
     } finally {
       setLoading(false);
     }
+  };
+
+  // useAuth 훅 사용 (인증 상태 확인용)
+  useAuth();
+
+  const getToken = () => {
+    try {
+      return sessionStorage.getItem("userToken");
+    } catch (error) {
+      console.error("토큰 가져오기 실패:", error);
+      return null;
+    }
+  };
+
+  const handleAddressSelect = (address: {
+    roadAddress: string;
+    jibunAddress: string;
+    englishAddress: string;
+    x: string;
+    y: string;
+    name?: string;
+  }) => {
+    const selectedAddress = address.roadAddress || address.jibunAddress;
+    setFormData((f: ComplaintFormData) => ({
+      ...f,
+      address: selectedAddress,
+    }));
+
+    if (frequencyTimeout) {
+      clearTimeout(frequencyTimeout);
+    }
+
+    const newTimeout = setTimeout(async () => {
+      try {
+        const response = await axios.get(
+          `http://49.50.128.88:3000/complaint/getFrequencyByAddress`,
+          {
+            params: { address: selectedAddress },
+            headers: {
+              Authorization: `Bearer ${getToken()}`,
+            },
+          }
+        );
+        setAddressFrequencyInfo(response.data.numberOfComplaints);
+        console.log("빈도 정보: ", response.data);
+      } catch (error) {
+        console.log("빈도 정보 조회 실패: ", error);
+      }
+    }, 1000);
+
+    setFrequencyTimeout(newTimeout);
   };
 
   // 지도 토글 함수
@@ -282,13 +340,7 @@ export default function ComplaintForm({
                       key={index}
                       className="p-3 hover:bg-gray-100 cursor-pointer border-b border-gray-200 last:border-b-0"
                       onClick={() => {
-                        // 도로명 주소가 있으면 도로명 주소를, 없으면 지번 주소를 사용
-                        const selectedAddress =
-                          address.roadAddress || address.jibunAddress;
-                        setFormData((f: ComplaintFormData) => ({
-                          ...f,
-                          address: selectedAddress,
-                        }));
+                        handleAddressSelect(address);
 
                         // 좌표 정보도 저장
                         const latitude = parseFloat(address.y);
@@ -363,6 +415,16 @@ export default function ComplaintForm({
               isVisible={showMap}
             />
           </div>
+
+          {addressFrequencyInfo !== null && addressFrequencyInfo > 0 && (
+            <>
+              <div className="col-span-1"></div>
+              <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
+                최근 한 달간 이 주소에서 민원이 {addressFrequencyInfo}번 들어왔습니다.
+              </div>
+              <div className="col-span-2"></div>
+          </>
+          )}
 
           {!loading && error && (
             <>

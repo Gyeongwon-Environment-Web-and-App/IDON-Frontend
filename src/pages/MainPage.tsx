@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -26,7 +26,8 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  const backgroundImages = [bg1, bg2, bg3, bg4, bg5];
+  // Memoize backgroundImages array to prevent unnecessary re-renders
+  const backgroundImages = useMemo(() => [bg1, bg2, bg3, bg4, bg5], []);
 
   // Preload image function with caching
   const preloadImage = useCallback(
