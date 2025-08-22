@@ -13,6 +13,7 @@ interface Address {
   x: string;
   y: string;
   distance: number;
+  name?: string; // 장소명 추가
 }
 
 interface GeocodingResponse {
@@ -26,20 +27,88 @@ interface GeocodingResponse {
   errorMessage: string;
 }
 
+interface LocalSearchItem {
+  title: string;
+  link: string;
+  category: string;
+  description: string;
+  telephone: string;
+  address: string;
+  roadAddress: string;
+  mapx: string;
+  mapy: string;
+}
+
+interface LocalSearchResponse {
+  lastBuildDate: string;
+  total: number;
+  start: number;
+  display: number;
+  items: LocalSearchItem[];
+}
+
 export class AddressService {
-  private static readonly API_BASE_URL = "/api/geocode";
+  // Vite 프록시를 통한 API 호출로 변경
+  private static readonly GEOCODE_API_URL = "/api/geocode";
+  // private static readonly LOCAL_SEARCH_API_URL = "/api/local";
 
   // API 키는 환경변수에서 가져오거나 직접 설정
   private static readonly API_KEY_ID = import.meta.env
     .VITE_NAVER_CLOUD_API_KEY_ID;
   private static readonly API_KEY = import.meta.env.VITE_NAVER_CLOUD_API_KEY;
 
+  // 카카오맵 API 키 (장소명 검색용) - JavaScript 키 사용
+  private static readonly KAKAO_JAVASCRIPT_KEY = import.meta.env
+    .VITE_KAKAO_JAVASCRIPT_KEY;
+
+  // 카카오맵 SDK 초기화 확인
+  private static isKakaoSDKLoaded(): boolean {
+    return (
+      typeof window !== "undefined" &&
+      !!window.kakao &&
+      !!window.kakao.maps &&
+      !!window.kakao.maps.services
+    );
+  }
+
+  // API 키 유효성 검사 메서드 추가
+  private static validateApiKeys() {
+    console.log("🔍 API 키 상태:", {
+      네이버_Maps: this.API_KEY_ID && this.API_KEY ? "✅" : "❌",
+      카카오맵_SDK:
+        this.KAKAO_JAVASCRIPT_KEY && this.isKakaoSDKLoaded() ? "✅" : "❌",
+    });
+
+    if (!this.KAKAO_JAVASCRIPT_KEY) {
+      console.error("❌ 카카오맵 API 키가 설정되지 않았습니다!");
+      console.error("📝 환경변수 설정 방법:");
+      console.error("  1. .env 파일에 다음 추가:");
+      console.error("     VITE_KAKAO_JAVASCRIPT_KEY=your_kakao_javascript_key");
+      console.error(
+        "  2. 카카오 개발자 센터(https://developers.kakao.com)에서 애플리케이션 등록"
+      );
+      console.error("  3. 'JavaScript 키' 복사하여 설정");
+      console.error("  4. 웹 플랫폼에 localhost:5173 도메인 등록");
+    }
+
+    if (!this.isKakaoSDKLoaded()) {
+      console.error("❌ 카카오맵 SDK가 로드되지 않았습니다!");
+      console.error("📝 SDK 로드 확인:");
+      console.error(
+        "  1. index.html에 카카오맵 SDK 스크립트가 포함되어 있는지 확인"
+      );
+      console.error("  2. JavaScript 키가 올바르게 설정되어 있는지 확인");
+    }
+  }
+
   static async searchAddress(
     query: string,
     coordinate?: string
   ): Promise<Address[]> {
+    console.log("🔍 네이버 Maps API 검색:", { query, coordinate });
+
     try {
-      const url = new URL(this.API_BASE_URL, window.location.origin);
+      const url = new URL(this.GEOCODE_API_URL, window.location.origin);
       url.searchParams.append("query", query);
       url.searchParams.append("count", "10");
       url.searchParams.append("language", "kor");
@@ -67,8 +136,19 @@ export class AddressService {
 
       const data: GeocodingResponse = await response.json();
 
+      console.log("✅ 네이버 Maps API 응답:", {
+        status: data.status,
+        결과수: data.addresses?.length || 0,
+      });
+
       // HTTP 상태 코드별 에러 처리
       if (!response.ok) {
+        console.error("❌ 네이버 Maps API HTTP 오류:", {
+          status: response.status,
+          statusText: response.statusText,
+          data,
+        });
+
         switch (response.status) {
           case 400:
             throw new Error("잘못된 요청입니다. 검색어를 확인해주세요.");
@@ -89,10 +169,14 @@ export class AddressService {
       if (data.status === "OK") {
         return data.addresses;
       } else {
+        console.error("❌ 네이버 Maps API 응답 오류:", {
+          status: data.status,
+          errorMessage: data.errorMessage,
+        });
         throw new Error(data.errorMessage || "주소 검색에 실패했습니다.");
       }
     } catch (error) {
-      console.error("주소 검색 오류:", error);
+      console.error("❌ 네이버 Maps API 주소 검색 오류:", error);
 
       // AbortError인 경우 타임아웃 에러로 처리
       if (error instanceof Error && error.name === "AbortError") {
@@ -102,98 +186,112 @@ export class AddressService {
       throw error;
     }
   }
+
+  // 카카오맵 SDK를 사용한 장소명 검색
+  static async searchPlace(query: string): Promise<Address[]> {
+    console.log("🔍 카카오맵 SDK 검색:", { query });
+
+    // API 키 유효성 검사
+    this.validateApiKeys();
+
+    // SDK가 로드되지 않았으면 빈 배열 반환
+    if (!this.isKakaoSDKLoaded()) {
+      console.warn("⚠️ 카카오맵 SDK가 로드되지 않아 장소명 검색을 건너뜁니다.");
+      return [];
+    }
+
+    try {
+      // 카카오맵 SDK의 Places 서비스 사용
+      const places = new window.kakao.maps.services.Places();
+
+      // Promise로 래핑하여 비동기 처리
+      const searchResult = await new Promise<any>((resolve, reject) => {
+        places.keywordSearch(query, (data: any, status: any) => {
+          if (status === window.kakao.maps.services.Status.OK) {
+            resolve(data);
+          } else if (status === window.kakao.maps.services.Status.ZERO_RESULT) {
+            resolve([]);
+          } else {
+            reject(new Error(`카카오맵 검색 실패: ${status}`));
+          }
+        });
+      });
+
+      console.log("✅ 카카오맵 SDK 응답:", {
+        결과수: searchResult?.length || 0,
+        결과: searchResult?.map((place: any) => place.place_name) || [],
+      });
+
+      // 카카오맵 응답을 네이버맵 형식으로 변환
+      const addresses: Address[] = (searchResult || []).map((place: any) => {
+        const transformedAddress = {
+          roadAddress: place.road_address_name || place.address_name,
+          jibunAddress: place.address_name,
+          englishAddress: "",
+          addressElements: [],
+          x: place.x, // 경도
+          y: place.y, // 위도
+          distance: 0,
+          name: place.place_name,
+        };
+
+        return transformedAddress;
+      });
+
+      return addresses;
+    } catch (error) {
+      console.error("❌ 카카오맵 SDK 장소명 검색 오류:", error);
+      throw error;
+    }
+  }
+
+  // 주소와 장소명을 모두 검색하는 통합 메서드
+  static async searchAddressAndPlace(query: string): Promise<Address[]> {
+    console.log("🔍 통합 검색 시작:", { query });
+
+    try {
+      // 주소 검색과 장소명 검색을 병렬로 실행
+      const [addressResults, placeResults] = await Promise.allSettled([
+        this.searchAddress(query),
+        this.searchPlace(query),
+      ]);
+
+      const results: Address[] = [];
+
+      // 주소 검색 결과 추가
+      if (addressResults.status === "fulfilled") {
+        results.push(...addressResults.value);
+      } else {
+        console.error("❌ 주소 검색 실패:", addressResults.reason);
+      }
+
+      // 장소명 검색 결과 추가 (중복 제거)
+      if (placeResults.status === "fulfilled") {
+        const placeAddresses = placeResults.value.filter((place) => {
+          // 주소 검색 결과와 중복되지 않는지 확인
+          const isDuplicate = results.some(
+            (addr) =>
+              addr.roadAddress === place.roadAddress ||
+              addr.jibunAddress === place.jibunAddress
+          );
+
+          return !isDuplicate;
+        });
+
+        results.push(...placeAddresses);
+      } else {
+        console.error("❌ 장소명 검색 실패:", placeResults.reason);
+      }
+
+      console.log("✅ 통합 검색 완료:", {
+        검색어: query,
+        최종결과수: results.length,
+      });
+
+      return results;
+    } catch (error) {
+      console.error("❌ 통합 검색 오류:", error);
+      throw error;
+    }
+  }
 }
-
-// 주소에서 동 정보 추출 함수
-export const extractDongInfo = (address: string): string => {
-  try {
-    // 서울시 도봉구 방학로 101 -> 방학 1동
-    // 서울시 도봉구 쌍문로 45길 20 -> 쌍문 3동
-
-    // 서울시 도봉구 패턴 매칭
-    const seoulDobongPattern = /서울특별시\s+도봉구\s+([가-힣]+)/;
-    const match = address.match(seoulDobongPattern);
-
-    if (match) {
-      const roadName = match[1];
-
-      // 도로명에 따른 동 매핑 (더 정확한 매핑)
-      const dongMapping: { [key: string]: string } = {
-        방학로: "방학 1동",
-        시루봉로: "방학 2동",
-        쌍문로: "쌍문 1동",
-        도봉로: "쌍문 2동",
-        해등로: "쌍문 3동",
-        우이천로: "쌍문 1동",
-        덕릉로: "쌍문 1동",
-        방학동: "방학 1동",
-        쌍문동: "쌍문 1동",
-        // 더 많은 매핑 추가 가능
-      };
-
-      // 정확한 매칭 시도
-      for (const [road, dong] of Object.entries(dongMapping)) {
-        if (roadName.includes(road) || road.includes(roadName)) {
-          return dong;
-        }
-      }
-
-      // 부분 매칭 시도
-      if (roadName.includes("방학")) {
-        return "방학 1동";
-      } else if (roadName.includes("쌍문")) {
-        return "쌍문 1동";
-      }
-    }
-
-    // 기본값
-    return "도봉구";
-  } catch (error) {
-    console.error("동 정보 추출 오류:", error);
-    return "도봉구";
-  }
-};
-
-// 주소 포맷팅 함수 (동 정보 포함)
-export const formatAddressWithDong = (address: string): string => {
-  const dongInfo = extractDongInfo(address);
-  return `${address} (${dongInfo})`;
-};
-
-// 네이버 API 응답에서 법정동 정보 추출
-export const extractDongFromAddressElements = (
-  addressElements: AddressElement[]
-): string => {
-  try {
-    // 법정동 정보 찾기
-    const dongElement = addressElements.find(
-      (element) =>
-        element.types.includes("SIGUNGU") ||
-        element.types.includes("DONG") ||
-        element.longName.includes("동")
-    );
-
-    if (dongElement) {
-      return dongElement.longName;
-    }
-
-    return "도봉구";
-  } catch (error) {
-    console.error("법정동 정보 추출 오류:", error);
-    return "도봉구";
-  }
-};
-
-// 주소와 API 응답을 함께 받아서 정확한 동 정보 반환
-export const getAccurateDongInfo = (
-  address: string,
-  addressElements?: AddressElement[]
-): string => {
-  // API 응답이 있으면 법정동 정보 사용
-  if (addressElements && addressElements.length > 0) {
-    return extractDongFromAddressElements(addressElements);
-  }
-
-  // 없으면 주소 파싱으로 추출
-  return extractDongInfo(address);
-};

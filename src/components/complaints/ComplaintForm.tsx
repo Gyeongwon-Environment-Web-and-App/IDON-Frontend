@@ -5,6 +5,7 @@ import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
 import attention from "../../assets/icons/common/attention.svg";
 import attentionRed from "../../assets/icons/common/attention_red.svg";
 import FileAttach from "../forms/FileAttach";
+import MapComponent from "../map/MapComponent";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
@@ -33,15 +34,25 @@ export default function ComplaintForm({
       englishAddress: string;
       x: string;
       y: string;
+      name?: string;
     }>
   >([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // 지도 관련 상태
+  const [showMap, setShowMap] = useState(false);
+  const [mapCoordinates, setMapCoordinates] = useState<{
+    latitude: number;
+    longitude: number;
+  } | null>(null);
+  const mapDropdownRef = useRef<HTMLDivElement>(null);
+
   // 주소 검색 기능
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      // 주소 검색 드롭다운 외부 클릭 처리
       if (
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
@@ -72,7 +83,10 @@ export default function ComplaintForm({
     setShowAddressSearch(true);
 
     try {
-      const results = await AddressService.searchAddress(formData.address);
+      // 주소와 장소명을 모두 검색하는 통합 메서드 사용
+      const results = await AddressService.searchAddressAndPlace(
+        formData.address
+      );
       setAddresses(results);
     } catch (err) {
       const errorMessage =
@@ -94,6 +108,61 @@ export default function ComplaintForm({
 
       setError(userFriendlyMessage);
       setAddresses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 지도 토글 함수
+  const toggleMap = async () => {
+    // 지도가 열려있으면 닫기
+    if (showMap) {
+      setShowMap(false);
+      return;
+    }
+
+    // 지도가 닫혀있으면 열기
+    if (!formData.address.trim()) {
+      alert("먼저 주소를 입력해주세요.");
+      return;
+    }
+
+    // 이미 좌표 정보가 있으면 바로 지도 표시
+    if (formData.coordinates) {
+      setMapCoordinates(formData.coordinates);
+      setShowMap(true);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const results = await AddressService.searchAddress(formData.address);
+
+      if (results && results.length > 0) {
+        const firstResult = results[0];
+        const latitude = parseFloat(firstResult.y);
+        const longitude = parseFloat(firstResult.x);
+
+        if (!isNaN(latitude) && !isNaN(longitude)) {
+          const coordinates = { latitude, longitude };
+          setMapCoordinates(coordinates);
+          setFormData((f: ComplaintFormData) => ({
+            ...f,
+            coordinates,
+          }));
+          setShowMap(true);
+        } else {
+          setError("주소의 좌표 정보를 가져올 수 없습니다.");
+        }
+      } else {
+        setError("입력한 주소를 찾을 수 없습니다. 주소를 다시 확인해주세요.");
+      }
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "주소 검색에 실패했습니다.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -133,6 +202,7 @@ export default function ComplaintForm({
             <input
               type="text"
               id="address"
+              autoComplete="off"
               className={`border px-3 py-2 rounded w-full outline-none ${
                 error ? "border-red-500" : "border-light-border"
               }`}
@@ -153,7 +223,7 @@ export default function ComplaintForm({
                   searchAddresses();
                 }
               }}
-              placeholder="주소를 입력하세요"
+              placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로200길, 광동헬스사우나)"
             />
 
             {/* 주소 검색 드롭다운 */}
@@ -204,15 +274,35 @@ export default function ComplaintForm({
                           ...f,
                           address: selectedAddress,
                         }));
+
+                        // 좌표 정보도 저장
+                        const latitude = parseFloat(address.y);
+                        const longitude = parseFloat(address.x);
+                        if (!isNaN(latitude) && !isNaN(longitude)) {
+                          setMapCoordinates({ latitude, longitude });
+                          setFormData((f: ComplaintFormData) => ({
+                            ...f,
+                            coordinates: { latitude, longitude },
+                          }));
+                        }
+
                         setShowAddressSearch(false);
                       }}
                     >
                       <div className="font-medium text-sm text-gray-900">
-                        {address.roadAddress}
+                        {address.roadAddress || address.jibunAddress}
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {address.jibunAddress}
-                      </div>
+                      {address.jibunAddress &&
+                        address.roadAddress !== address.jibunAddress && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            {address.jibunAddress}
+                          </div>
+                        )}
+                      {address.name && (
+                        <div className="text-xs text-blue-600 mt-1 font-medium">
+                          📍 {address.name}
+                        </div>
+                      )}
                     </div>
                   ))}
               </div>
@@ -228,17 +318,36 @@ export default function ComplaintForm({
 
           {/* 지도 확인 */}
           <div className="hidden md:block md:col-span-1"></div>
-          <button
-            type="button"
-            className="w-full text-left font-bold bg-lighter-green border md:col-span-4 col-span-3 border-light-green px-4 -mt-1 md:mt-2 rounded focus:outline-none flex"
+          <div
+            className="md:col-span-4 col-span-3 relative"
+            ref={mapDropdownRef}
           >
-            지도에서 민원 위치 확인하기
-            <img
-              src={underArrow}
-              alt="아래방향 화살표"
-              className="pl-2 w-6 h-5"
+            <button
+              type="button"
+              className={`w-full text-left font-bold ${showMap ? "bg-white border-light-border rounded-t border-b-0" : "bg-lighter-green border-light-green rounded"} border px-4 -mt-1 md:mt-2 focus:outline-none flex`}
+              onClick={toggleMap}
+              disabled={loading}
+            >
+              {loading
+                ? "위치 확인 중..."
+                : showMap
+                  ? "클릭해서 지도 접기"
+                  : "지도에서 민원 위치 확인하기"}
+              <img
+                src={underArrow}
+                alt="아래방향 화살표"
+                className={`pl-2 w-6 h-5 transition-transform ${showMap ? "rotate-180 ml-2" : ""}`}
+              />
+            </button>
+
+            {/* 드롭다운 지도 컴포넌트 */}
+            <MapComponent
+              latitude={mapCoordinates?.latitude}
+              longitude={mapCoordinates?.longitude}
+              address={formData.address}
+              isVisible={showMap}
             />
-          </button>
+          </div>
 
           {!loading && error && (
             <>

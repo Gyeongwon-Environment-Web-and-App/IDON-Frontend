@@ -15,6 +15,10 @@ export interface ComplaintFormData {
     type: string;
     size: number;
   }>;
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export interface Complaint {

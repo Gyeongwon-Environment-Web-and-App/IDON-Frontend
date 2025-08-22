@@ -6,7 +6,7 @@ import other from "../../assets/icons/categories/tags/other.svg";
 import food from "../../assets/icons/categories/tags/food.svg";
 import X from "../../assets/icons/navigation/arrows/X.svg";
 import type { ComplaintFormData } from "../../types/complaint";
-import { formatAddressWithDong } from "../../services/addressService";
+import { formatAddressWithDong } from "../../utils/dongMapping";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
@@ -169,7 +169,12 @@ export default function ComplaintConfirm({
         </div>
         <div className="flex items-center justify-center my-8">
           <TextForward
-            options={["소장님께 전달", "민원팀에게 전달", "담당 기사님께 전달", "담당 팀장님께 전달"]}
+            options={[
+              "소장님께 전달",
+              "민원팀에게 전달",
+              "담당 기사님께 전달",
+              "담당 팀장님께 전달",
+            ]}
             mobileOptions={["소장님", "민원팀", "담당 기사님", "팀장님"]} // 모바일용 짧은 텍스트
             selectedValues={formData.forwardTargets}
             onChange={(updatedList) =>
