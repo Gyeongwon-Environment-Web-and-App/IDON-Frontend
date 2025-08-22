@@ -1,16 +1,21 @@
 import React, { useState } from "react";
 import mdLogo from "../assets/icons/brand/mid_logo.svg";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
 
-const Login: React.FC = () => {
+interface LoginProps {
+  onLogin: (userData: {
+    serial_no: number;
+    token: string;
+    [key: string]: unknown;
+  }) => void;
+}
+
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [serial, setSerial] = useState("");
   const [autoLogin, setAutoLogin] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  const navigate = useNavigate();
 
   // 로그인 API 호출 함수
   const loginWithSerial = async (serial_no: number) => {
@@ -22,8 +27,7 @@ const Login: React.FC = () => {
       if (response.status === 200) {
         // 로그인 성공
         const { message, user, token } = response.data;
-
-        console.log(response.data, message);
+        console.log(`login message: ${message}`);
 
         // 사용자 정보와 토큰을 함께 저장
         const userData = {
@@ -37,11 +41,6 @@ const Login: React.FC = () => {
           localStorage.setItem("serial_no", user.serial_no.toString());
           localStorage.setItem("userToken", token);
         }
-
-        // 세션 스토리지에 사용자 정보 저장
-        sessionStorage.setItem("userData", JSON.stringify(userData));
-        sessionStorage.setItem("serial_no", user.serial_no.toString());
-        sessionStorage.setItem("userToken", token);
 
         return { success: true, data: userData };
       }
@@ -75,8 +74,8 @@ const Login: React.FC = () => {
       const result = await loginWithSerial(serialNo);
 
       if (result && result.success) {
-        // 로그인 성공 시 메인 페이지로 이동
-        navigate("/");
+        // 로그인 성공 시 부모 컴포넌트의 onLogin 함수 사용
+        onLogin(result.data);
       } else {
         // 로그인 실패 시 에러 메시지 표시
         alert(result?.message || "로그인에 실패했습니다.");
@@ -87,10 +86,6 @@ const Login: React.FC = () => {
     } finally {
       setLoading(false);
     }
-
-    console.log(
-      `시리얼코드: ${serial}\n자동로그인: ${autoLogin ? "예" : "아니오"}`
-    );
   };
 
   const handleSerialChange = (e: React.ChangeEvent<HTMLInputElement>) => {

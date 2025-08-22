@@ -11,7 +11,11 @@ import write from "../assets/icons/navigation/home_menu/write.svg";
 import mapping from "../assets/icons/navigation/home_menu/mapping.svg";
 import bg1 from "../assets/icons/brand/bg1.png";
 
-const MainPage: React.FC = () => {
+interface MainPageProps {
+  onLogout: () => void;
+}
+
+const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -53,13 +57,13 @@ const MainPage: React.FC = () => {
 
   return (
     <div className="w-screen h-screen overflow-auto absolute top-0 text-center scrollbar-hide">
-      <Header />
+      <Header onLogout={onLogout} />
       {/* 배경 이미지 공간 */}
-      <div className="w-screen overflow-hidden absolute top-[15.5%]">
+      <div className="w-screen overflow-hidden absolute 5xl:top-[15.5%]">
         <img
           src={bg1}
           alt="배경 이미지"
-          className="md:h-[43vh] h-[30vh] w-screen object-cover object-center transition-all duration-500 sm:scale-100 md:scale-120 lg:scale-110 xl:scale-125"
+          className="4xl:h-[43vh] md:h-[35vh] h-[30vh] w-screen object-cover object-center transition-all duration-500 sm:scale-100 md:scale-120 lg:scale-110 xl:scale-125"
         />
         {/* 좌우 화살표 버튼 */}
         <button className="hidden md:block absolute top-[50%] left-[20%] -translate-y-[50%] cursor-pointer z-5">
@@ -88,7 +92,7 @@ const MainPage: React.FC = () => {
       </div>
 
       {/* 화면 하단 */}
-      <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[55%] w-screen 2xl:px-80 pt-8 3xl:pt-[3.8rem]">
+      <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[55%] w-screen 2xl:px-80 pt-6">
         <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">
           메인 메뉴
         </p>

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
 import {
   Sheet,
   SheetContent,
@@ -14,6 +13,10 @@ import long_logo from "../../assets/icons/brand/long_logo.svg";
 import logo from "../../assets/icons/brand/logo.svg";
 import topArrow from "../../assets/icons/navigation/arrows/top_arrow.svg";
 import bottomArrow from "../../assets/icons/navigation/arrows/bottom_arrow.svg";
+
+interface HeaderProps {
+  onLogout: () => void;
+}
 
 const menuItems = [
   {
@@ -45,12 +48,11 @@ const menuItems = [
   { label: "통계", submenu: [] },
 ];
 
-export default function Header() {
+export default function Header({ onLogout }: HeaderProps) {
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [expandedMenus, setExpandedMenus] = useState<number[]>([]);
-  const { logout } = useAuth();
 
   const toggleMenu = (index: number) => {
     setExpandedMenus((prev) =>
@@ -61,13 +63,13 @@ export default function Header() {
   const isMenuExpanded = (index: number) => expandedMenus.includes(index);
 
   const handleLogout = () => {
-    logout();
+    onLogout();
     alert("로그아웃 되었습니다.");
   };
 
   return (
     <header className="relative w-screen xs:h-[3rem] md:h-[7rem] bg-white py-3 z-50">
-      <div className="relative md:h-full flex items-center justify-between mx-5 2xl:mx-[18rem] mt-[3rem]">
+      <div className="relative md:h-full flex items-center justify-between mx-5 mt-2 2xl:mx-[18rem]">
         {/* 로고 */}
         <div
           className="cursor-pointer mb-2 md:ml-6"
@@ -216,7 +218,7 @@ export default function Header() {
 
         {/* 오른쪽 메뉴 - 데스크톱에서만 표시 */}
         <div className="hidden md:flex space-x-4 text-base md:text-sm absolute top-0 right-2 cursor-pointer">
-          <button className="hover:text-gray-400" onClick={() => logout()}>
+          <button className="hover:text-gray-400" onClick={() => onLogout()}>
             로그아웃
           </button>
         </div>
@@ -224,7 +226,7 @@ export default function Header() {
 
       {showDropdown && (
         <div
-          className="hidden sm:block absolute top-[8.8rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
+          className="hidden sm:block absolute top-[6.3rem] left-0 !w-screen md:h-[15rem] h-[13rem] z-10 bg-efefef transition"
           onMouseLeave={() => setShowDropdown(false)}
         />
       )}

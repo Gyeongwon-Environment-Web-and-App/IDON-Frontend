@@ -16,7 +16,11 @@ import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
 import ComplaintStats from "@/components/statistics/ComplaintStats";
 
-const ComplaintManage = () => {
+interface ComplaintManageProps {
+  onLogout: () => void;
+}
+
+const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -198,7 +202,7 @@ const ComplaintManage = () => {
           toHome={true}
         />
       )}
-      <Header />
+      <Header onLogout={onLogout} />
       <div className="flex md:justify-center md:items-center justify-start items-start pt-10 md:pt-5 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="민원"
@@ -223,8 +227,9 @@ const ComplaintManage = () => {
               ? "민원 내역 / 관리"
               : activeTab === "register"
                 ? "민원 등록"
-                : activeTab === "stats" ? "전체 통계"
-                : ""
+                : activeTab === "stats"
+                  ? "전체 통계"
+                  : ""
           }
         >
           {/* 민원 등록 콘텐츠 */}

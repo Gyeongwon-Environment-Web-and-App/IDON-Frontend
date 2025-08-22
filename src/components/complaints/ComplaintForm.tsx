@@ -238,7 +238,7 @@ export default function ComplaintForm({
                   address: tempAddress,
                 }));
               }}
-              placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로200길, 광동헬스사우나)"
+              placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로 285, 서울오봉초등학교)"
             />
 
             {/* 주소 검색 드롭다운 */}
