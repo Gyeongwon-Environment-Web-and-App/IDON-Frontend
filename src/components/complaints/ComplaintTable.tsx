@@ -31,151 +31,8 @@ import triangle from "../../assets/icons/actions/triangle.svg";
 import filter from "../../assets/icons/actions/filter.svg";
 import deleteIcon from "../../assets/icons/actions/delete.svg";
 import DateRangePicker from "../common/DateRangePicker";
-
-const formatDateToYYMMDD = (dateString: string) => {
-  try {
-    const date = new Date(dateString);
-    const year = date.getFullYear().toString().slice(-2); // YY
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // MM
-    const day = date.getDate().toString().padStart(2, "0"); // DD
-
-    return `${year}.${month}.${day}`;
-  } catch (error) {
-    console.error("날짜 파싱 오류:", error);
-    return dateString; // 파싱 실패 시 원본 반환
-  }
-};
-
-// 컬럼 정의
-const columns: ColumnDef<Complaint>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <div className="flex justify-center items-center pr-4">
-        <Checkbox
-          checked={
-            table.getIsAllPageRowsSelected()
-              ? true
-              : table.getIsSomePageRowsSelected()
-                ? "indeterminate"
-                : false
-          }
-          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Select all"
-          className="bg-white"
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="flex justify-center items-center pr-4">
-        <Checkbox
-          checked={row.getIsSelected()}
-          onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
-        />
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
-  {
-    accessorKey: "number",
-    header: "연번",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("number")}</div>
-    ),
-  },
-  {
-    accessorKey: "date",
-    header: "접수 일자",
-    cell: ({ row }) => (
-      <div className="text-center">
-        {formatDateToYYMMDD(row.getValue("date"))}
-      </div>
-    ),
-  },
-  {
-    accessorKey: "type",
-    header: "종류",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("type")}</div>
-    ),
-  },
-  {
-    accessorKey: "region_nm",
-    header: "주소",
-    cell: ({ row }) => {
-      const address: string = row.original.address;
-      const regionNm: string = row.getValue("region_nm");
-
-      return (
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="text-center cursor-pointer">{regionNm}</div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p className="max-w-md break-words text-base text-black">
-                {address}
-              </p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      );
-    },
-  },
-  {
-    accessorKey: "content",
-    header: "민원 내용",
-    cell: ({ row }) => (
-      <div className="text-left">{row.getValue("content")}</div>
-    ),
-  },
-  {
-    accessorKey: "contact",
-    header: "연락처",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("contact")}</div>
-    ),
-  },
-  {
-    accessorKey: "driver",
-    header: "담당 기사",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("driver")}</div>
-    ),
-  },
-  {
-    accessorKey: "department",
-    header: "구청/대행",
-    cell: ({ row }) => (
-      <div className="text-center">{row.getValue("department")}</div>
-    ),
-  },
-  {
-    accessorKey: "status",
-    header: "처리결과",
-    cell: ({ row }) => {
-      const status = row.getValue("status") as string;
-      return (
-        <div
-          className={`text-center cursor-pointer py-1 rounded ${
-            status === "완료" ? "text-green-600 font-medium" : "text-gray-500"
-          }`}
-          onClick={() => {
-            // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
-            const onStatusChange = row.original.onStatusChange;
-            if (onStatusChange) {
-              onStatusChange(row.original.id);
-            }
-          }}
-        >
-          {status}
-        </div>
-      );
-    },
-  },
-];
+import ComplaintCard from "./ComplaintCard";
+import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 const ComplaintTable: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
@@ -192,6 +49,159 @@ const ComplaintTable: React.FC = () => {
   const [filteredComplaints, setFilteredComplaints] =
     useState<Complaint[]>(initialComplaints);
   const [sortOrder, setSortOrder] = useState<"최근" | "옛">("최근");
+  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+
+  // 전체 선택 핸들러
+  const handleSelectAll = () => {
+    if (selectedRows.size === filteredComplaints.length) {
+      // 모든 행이 선택된 경우 선택 해제
+      setSelectedRows(new Set());
+    } else {
+      // 모든 행 선택
+      const allIds = new Set(
+        filteredComplaints.map((complaint) => complaint.id)
+      );
+      setSelectedRows(allIds);
+    }
+  };
+
+  // 개별 행 선택 핸들러
+  const handleRowSelect = (complaintId: string, isSelected: boolean) => {
+    const newSelected = new Set(selectedRows);
+    if (isSelected) {
+      newSelected.add(complaintId);
+    } else {
+      newSelected.delete(complaintId);
+    }
+    setSelectedRows(newSelected);
+  };
+
+  // 컬럼 정의
+  const columns: ColumnDef<Complaint>[] = [
+    {
+      id: "select",
+      header: () => (
+        <div className="flex justify-center items-center pr-4">
+          <Checkbox
+            checked={selectedRows.size === filteredComplaints.length}
+            onCheckedChange={handleSelectAll}
+            aria-label="Select all"
+            className="bg-white"
+          />
+        </div>
+      ),
+      cell: ({ row }) => (
+        <div className="flex justify-center items-center pr-4">
+          <Checkbox
+            checked={selectedRows.has(row.original.id)}
+            onCheckedChange={(value) =>
+              handleRowSelect(row.original.id, !!value)
+            }
+            aria-label="Select row"
+          />
+        </div>
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "number",
+      header: "연번",
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("number")}</div>
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: "접수 일자",
+      cell: ({ row }) => (
+        <div className="text-center">
+          {formatDateToYYMMDD(row.getValue("date"))}
+        </div>
+      ),
+    },
+    {
+      accessorKey: "type",
+      header: "종류",
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("type")}</div>
+      ),
+    },
+    {
+      accessorKey: "region_nm",
+      header: "주소",
+      cell: ({ row }) => {
+        const address: string = row.original.address;
+        const regionNm: string = row.getValue("region_nm");
+
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="text-center cursor-pointer">{regionNm}</div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="max-w-md break-words text-base text-black">
+                  {address}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
+      },
+    },
+    {
+      accessorKey: "content",
+      header: "민원 내용",
+      cell: ({ row }) => (
+        <div className="text-left">{row.getValue("content")}</div>
+      ),
+    },
+    {
+      accessorKey: "contact",
+      header: "연락처",
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("contact")}</div>
+      ),
+    },
+    {
+      accessorKey: "driver",
+      header: "담당 기사",
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("driver")}</div>
+      ),
+    },
+    {
+      accessorKey: "department",
+      header: "구청/대행",
+      cell: ({ row }) => (
+        <div className="text-center">{row.getValue("department")}</div>
+      ),
+    },
+    {
+      accessorKey: "status",
+      header: "처리결과",
+      cell: ({ row }) => {
+        const status = row.getValue("status") as string;
+        return (
+          <div
+            className={`text-center cursor-pointer py-1 rounded ${
+              status === "완료" ? "text-green-600 font-medium" : "text-gray-500"
+            }`}
+            onClick={() => {
+              // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
+              const onStatusChange = row.original.onStatusChange;
+              if (onStatusChange) {
+                onStatusChange(row.original.id);
+              }
+            }}
+          >
+            {status}
+          </div>
+        );
+      },
+    },
+  ];
 
   // 시간 필터링 함수
   const handleSortChange = (order: "최근" | "옛") => {
@@ -357,7 +367,7 @@ const ComplaintTable: React.FC = () => {
   }));
 
   return (
-    <div className="w-full 2xl:w-[110%] overflow-x-auto ">
+    <div className="w-full 2xl:w-[110%] overflow-x-auto">
       {/* 팝업 */}
       {isPopupOpen && (
         <Popup
@@ -380,14 +390,15 @@ const ComplaintTable: React.FC = () => {
       </header>
 
       {/* 검색 및 필터 */}
-      <div className="flex items-center justify-between space-x-4 mb-4">
-        <div className="flex items-center">
-          <div className="relative flex-1 max-w-sm mr-2">
+      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] mb-3">
+        {/* 검색 영역 */}
+        <div className="flex gap-2 items-center justify-start mb-3 md:mb-0">
+          <div className="relative flex flex-1 md:flex-auto md:max-w-80">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#575757]" />
             <input
               type="text"
               placeholder="검색..."
-              className="w-full pl-10 pr-4 py-1 border border-[#575757] rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className="pl-10 pr-4 py-1 border border-[#575757] rounded-md focus:outline-none focus:ring-1 focus:ring-light-green focus:border-transparent mx-[2px] flex-1 md:flex-auto"
               value={searchTerm}
               onChange={handleSearchInputChange}
               onKeyDown={handleKeyPress}
@@ -396,101 +407,138 @@ const ComplaintTable: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            className="mr-2 shadow-none bg-[#646464] text-white border-none w-[3rem] outline-none hover:bg-under hover:text-white text-sm"
+            className="shadow-none bg-[#646464] text-white border-none w-[3rem] outline-none hover:bg-under hover:text-white text-sm flex-shrink-0"
             onClick={() => handleSearch(searchTerm)}
           >
             검색
           </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="mr-2 shadow-none border-[#575757] outline-none text-sm"
-              >
-                전체 민원
-                <img src={triangle} alt="쓰레기상성 필터 버튼" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleFilterChange("전체 민원")}>
-                전체 민원
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("음식물")}>
-                음식물
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("재활용")}>
-                재활용
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("생활")}>
-                생활
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleFilterChange("기타")}>
-                기타
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center w-8 border border-[#575757] outline-none text-sm p-0"
-                title={`현재: ${sortOrder === "최근" ? "최근순" : "오래된순"}`}
-              >
-                <img
-                  src={filter}
-                  alt="시간순서 필터 버튼"
-                  className="object-cover w-5"
-                />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => handleSortChange("최근")}>
-                최근 민원 순
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleSortChange("옛")}>
-                옛 민원 순
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757]"
-              >
-                <Download className="w-4 h-4" />
-                <span className="text-sm">다운로드</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem onClick={() => {}}>PDF</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => {}}>Excel</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+        {/* 버튼들 영역 */}
+        <div className="flex gap-2 flex-wrap md:flex-nowrap items-center justify-between md:justify-normal">
           <Button
             variant="outline"
             size="sm"
-            className="flex items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm"
+            className="visible md:hidden shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2"
+            onClick={handleSelectAll}
           >
-            <img src={deleteIcon} alt="삭제 아이콘" />
-            삭제
+            <Checkbox
+              checked={selectedRows.size === filteredComplaints.length}
+            />
+            전체 선택
           </Button>
+          <div className="flex flex-wrap md:flex-nowrap gap-2">
+            <div className="flex flex-wrap md:flex-nowrap gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2"
+                  >
+                    전체 민원
+                    <img src={triangle} alt="쓰레기상성 필터 버튼" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={() => handleFilterChange("전체 민원")}
+                  >
+                    전체 민원
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleFilterChange("음식물")}
+                  >
+                    음식물
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => handleFilterChange("재활용")}
+                  >
+                    재활용
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("생활")}>
+                    생활
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleFilterChange("기타")}>
+                    기타
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center w-8 border border-a2a2a2 md:border-[#575757] outline-none text-sm p-0"
+                    title={`현재: ${sortOrder === "최근" ? "최근순" : "오래된순"}`}
+                  >
+                    <img
+                      src={filter}
+                      alt="시간순서 필터 버튼"
+                      className="object-cover w-5"
+                    />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => handleSortChange("최근")}>
+                    최근 민원 순
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleSortChange("옛")}>
+                    옛 민원 순
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            <div className="flex flex-wrap md:flex-nowrap gap-2 mr-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex md:px-3 px-2 items-center shadow-none outline-none border border-a2a2a2 md:border-[#575757] focus:border-[#575757] focus:outline-none"
+                  >
+                    <Download className="w-4 h-4 md:text-black text-[#575757]" />
+                    <span className="hidden md:block text-sm">다운로드</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem onClick={() => {}}>PDF</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => {}}>Excel</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex px-2 md:px-4 items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm"
+              >
+                <img src={deleteIcon} alt="삭제 아이콘" />
+                <span className="hidden md:block text-sm">삭제</span>
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* 테이블 */}
-      <div className="border border-gray-200 rounded-lg overflow-x-auto">
+      <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
         <DataTable columns={columns} data={complaintsWithCallbacks} />
       </div>
 
+      {/* 모바일 카드 뷰 */}
+      <div className="md:hidden space-y-4 mt-4">
+        {filteredComplaints.map((complaint) => (
+          <ComplaintCard
+            key={complaint.id}
+            complaint={complaint}
+            onStatusChange={handleStatusChange}
+            isSelected={selectedRows.has(complaint.id)}
+            onSelectChange={handleRowSelect}
+          />
+        ))}
+      </div>
+
       {/* 페이지네이션 */}
-      <div className="flex items-center justify-center mt-8">
+      <div className="hidden md:flex items-center justify-center mt-8">
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"

@@ -42,8 +42,6 @@ export const weekdayData = [
   { 요일: "수", 건수: 27 },
   { 요일: "목", 건수: 20 },
   { 요일: "금", 건수: 25 },
-  { 요일: "토", 건수: 15 },
-  { 요일: "일", 건수: 13 },
 ];
 
 export const locationTypeData: ChartDataItem[] = [

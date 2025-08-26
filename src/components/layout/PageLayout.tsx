@@ -44,8 +44,8 @@ const PageLayout: React.FC<PageLayoutProps> = ({
       </div>
 
       {/* 우측 콘텐츠 */}
-      <main className="flex-1 px-5 md:px-6 md:py-6 ml-0 xl:ml-10 max-w-[120vh] w-full">
-        <h2 className="hidden md:text-3xl font-bold md:flex items-center gap-2">
+      <main className="flex-1 px-5 md:px-6 md:py-6 ml-0 xl:ml-10 max-w-[120vh] w-full scrollbar-hide">
+        <h2 className="pb-2 md:pb-0 text-xl md:text-3xl font-bold flex items-center gap-2">
           {tabTitle} {icon}
         </h2>
         <hr

@@ -20,6 +20,7 @@ module.exports = {
         d9d9d9: "#D9D9D9",
         bababa: "#BABABA",
         a8a8a8: "#A8A8A8",
+        a2a2a2: "#A2A2A2",
         "8d8d8d": "#8D8D8D",
         "4e4e4e": "#4E4E4E",
         "light-border": "#ACACAC",
