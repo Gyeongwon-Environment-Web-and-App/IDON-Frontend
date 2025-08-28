@@ -20,6 +20,8 @@ import { useState } from "react";
 import DateRangePicker from "../common/DateRangePicker";
 import WeekDayBarChart from "./WeekDayBarChart";
 import type { BarChartItem } from "@/types/stats";
+import triangle from "../../assets/icons/actions/triangle.svg";
+import { AreaDropdown } from "@/components/ui/AreaDropdown";
 
 // 날짜 포매팅 함수
 const formatDate = (date: Date): string => {
@@ -73,6 +75,13 @@ const highestComplaintTime = (data: BarChartItem[]) => {
 
 const ComplaintStats = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+
+  const handleAreaSelectionChange = (areas: string[]) => {
+    setSelectedAreas(areas);
+    console.log("Selected areas:", areas);
+  };
 
   // 가장 많고 적은 민원 시간대 계산
   const timeStats = highestComplaintTime(timeSlotData);
@@ -95,11 +104,82 @@ const ComplaintStats = () => {
     <div className="w-[100%] h-screen">
       <div className="pb-20">
         <header className="flex justify-between items-end border-b border-under pt-0 pb-3 mb-5">
-          <DateRangePicker
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            containerClassName="border border-black rounded-3xl px-4 py-1"
-          />
+          <div className="flex">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                >
+                  <span className="text-sm">쓰레기 종류</span>
+                  <img src={triangle} alt="쓰레기 종류 선택" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="[&>*]:justify-center !min-w-[110px]"
+              >
+                <DropdownMenuItem onClick={() => {}}>음식물</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>재활용</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>일반</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>기타</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                >
+                  <span className="text-sm">시간대</span>
+                  <img src={triangle} alt="시간대 선택" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="[&>*]:justify-center !min-w-[80px]"
+              >
+                <DropdownMenuItem onClick={() => {}}>연도별</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>월별</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>주간</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>일간</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                >
+                  <span className="text-sm">요일별</span>
+                  <img src={triangle} alt="요일별 선택" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="[&>*]:justify-center !min-w-[80px]"
+              >
+                <DropdownMenuItem onClick={() => {}}>월요일</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>화요일</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>수요일</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>목요일</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => {}}>금요일</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <div className="flex items-center gap-2">
+              <AreaDropdown
+                onSelectionChange={handleAreaSelectionChange}
+                buttonText="구역 선택"
+                buttonClassName="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                contentClassName="w-28 !p-0"
+                childItemClassName="pl-10 bg-f0f0f0 rounded-none"
+                triangleIcon={triangle}
+              />
+            </div>
+          </div>
           <div className="flex">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -127,7 +207,12 @@ const ComplaintStats = () => {
             </Button>
           </div>
         </header>
-        <section>
+        <section className="relative">
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            containerClassName="border border-black rounded-3xl px-4 py-1 absolute right-0"
+          />
           <p className="font-semibold text-8d8d8d">
             최근{" "}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date

@@ -21,6 +21,7 @@ module.exports = {
         bababa: "#BABABA",
         a8a8a8: "#A8A8A8",
         a2a2a2: "#A2A2A2",
+        f0f0f0: "#F0F0F0",
         "8d8d8d": "#8D8D8D",
         "4e4e4e": "#4E4E4E",
         "light-border": "#ACACAC",

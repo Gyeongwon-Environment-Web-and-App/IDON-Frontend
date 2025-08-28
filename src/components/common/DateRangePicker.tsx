@@ -69,12 +69,12 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <div className="inline-flex items-center cursor-pointer">
-            <span className={`text-xl font-semibold -mr-2 ${className}`}>
-              {formatDateDisplay()}
-            </span>
-            <Button className="cursor-pointer bg-white outline-none shadow-none p-0 ml-4 hover:bg-white">
+            <Button className="cursor-pointer bg-white outline-none shadow-none p-0 hover:bg-white">
               <img src={calendar} alt="캘린더 아이콘" className="h-6 w-6" />
             </Button>
+            <span className={`text-xl font-semibold ml-2 ${className}`}>
+              {formatDateDisplay()}
+            </span>
           </div>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">

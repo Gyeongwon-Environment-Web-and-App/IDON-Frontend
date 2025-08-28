@@ -48,9 +48,6 @@ declare global {
           ) => void;
         };
 
-        // SDK loading
-        load: (callback: () => void) => void;
-
         // Services
         services: {
           Status: {
@@ -100,17 +97,13 @@ declare global {
             keywordSearch: (
               keyword: string,
               callback: (
-                result: Array<{
-                  x: string;
-                  y: string;
-                  place_name: string;
-                  address_name: string;
-                  road_address_name?: string;
-                  distance?: string;
-                  category_name?: string;
-                  phone?: string;
-                  place_url?: string;
-                }>,
+                result: {
+                  places: Array<{
+                    x: string;
+                    y: string;
+                    place_name?: string;
+                  }>;
+                },
                 status: string
               ) => void,
               options?: unknown
@@ -138,7 +131,6 @@ interface KakaoMap {
 interface KakaoMarker {
   setPosition: (position: KakaoLatLng) => void;
   getPosition: () => KakaoLatLng;
-  setMap: (map: KakaoMap | null) => void;
 }
 
 interface KakaoInfoWindow {
