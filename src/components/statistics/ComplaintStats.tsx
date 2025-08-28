@@ -1,11 +1,12 @@
 import { CustomPieChart } from "./PieChart";
-import { CustomBarChart } from "./BarChart";
+import { TimeSlotBarChart } from "./TimeSlotBarChart";
 import type { DateRange } from "react-day-picker";
 import {
   complaintTypeData,
   dongComplaintData,
   complaintData,
   timeSlotData,
+  weekdayData,
 } from "../../data/chartData";
 import {
   DropdownMenu,
@@ -17,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Download, Printer } from "lucide-react";
 import { useState } from "react";
 import DateRangePicker from "../common/DateRangePicker";
+import WeekDayBarChart from "./WeekDayBarChart";
+import type { BarChartItem } from "@/types/stats";
 
 // 날짜 포매팅 함수
 const formatDate = (date: Date): string => {
@@ -31,37 +34,37 @@ const formatDateRange = (from: Date, to: Date): string => {
   return `${formatDate(from)} - ${formatDate(to)}`;
 };
 
-const highestComplaintTime = () => {
+const highestComplaintTime = (data: BarChartItem[]) => {
   let maxComplaints = -1;
   let minComplaints = Infinity;
   let totalComplaints = 0;
-  let maxTimeSlot = "";
-  let minTimeSlot = "";
+  let maxTime = "";
+  let minTime = "";
 
-  timeSlotData.forEach((item) => {
+  data.forEach((item) => {
     // 각 시간대의 총 민원 수 계산 (time 제외한 모든 카테고리 합계)
-    const timeSlotTotalComplaints = Object.keys(item)
+    const totalTimeComplaints = Object.keys(item)
       .filter((key) => key !== "time")
       .reduce((sum, key) => sum + Number(item[key]), 0);
 
     // 가장 많은 민원 시간대 찾기
-    if (timeSlotTotalComplaints > maxComplaints) {
-      maxComplaints = timeSlotTotalComplaints;
-      maxTimeSlot = item.time;
+    if (totalTimeComplaints > maxComplaints) {
+      maxComplaints = totalTimeComplaints;
+      maxTime = item.time;
     }
 
     // 가장 적은 민원 시간대 찾기
-    if (timeSlotTotalComplaints < minComplaints) {
-      minComplaints = timeSlotTotalComplaints;
-      minTimeSlot = item.time;
+    if (totalTimeComplaints < minComplaints) {
+      minComplaints = totalTimeComplaints;
+      minTime = item.time;
     }
 
-    totalComplaints += timeSlotTotalComplaints;
+    totalComplaints += totalTimeComplaints;
   });
 
   return {
-    maxTimeSlot,
-    minTimeSlot,
+    maxTime,
+    minTime,
     maxComplaints,
     minComplaints,
     totalComplaints,
@@ -72,13 +75,10 @@ const ComplaintStats = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   // 가장 많고 적은 민원 시간대 계산
-  const {
-    maxTimeSlot,
-    minTimeSlot,
-    maxComplaints,
-    minComplaints,
-    totalComplaints,
-  } = highestComplaintTime();
+  const timeStats = highestComplaintTime(timeSlotData);
+  const weekdayStats = highestComplaintTime(weekdayData);
+
+  console.log(weekdayStats.totalComplaints);
 
   const DongChartColors = [
     "#72E900",
@@ -135,7 +135,7 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${totalComplaints}건`}</h1>
+          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
           <div className="flex items-center gap-4 mt-2 w-full">
             <div className="w-[60%] flex">
               <div className="inline-flex flex-col gap-2 mr-10 mt-4">
@@ -181,7 +181,7 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${totalComplaints}건`}</h1>
+          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
           <div className="flex items-center gap-4 mt-2 w-full">
             <div className="w-[60%] flex">
               <div className="inline-flex flex-col gap-2 mr-10 text-center w-[4rem] mt-4">
@@ -227,7 +227,7 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${totalComplaints}건`}</h1>
+          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
           <div className="flex items-center gap-4 mt-2 w-full">
             <div className="w-[60%] flex">
               <div className="inline-flex flex-col gap-2 mr-10 text-center mt-4">
@@ -273,23 +273,52 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${totalComplaints}건`}</h1>
+          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
           <div className="w-full mt-5 flex items-center justify-between">
             <div className="-ml-10 mr-5">
-              <CustomBarChart data={timeSlotData} colors={TrashChartColors} />
+              <TimeSlotBarChart data={timeSlotData} colors={TrashChartColors} />
             </div>
             <div className="flex flex-col gap-y-3">
               <p className="text-[#585858] font-semibold text-xl">
                 가장 많은 민원이 들어온 시간대
               </p>
               <p className="text-black font-semibold text-3xl mb-10">
-                {maxTimeSlot} ({maxComplaints}건)
+                {timeStats.maxTime} ({timeStats.maxComplaints}건)
               </p>
               <p className="text-[#585858] font-semibold text-xl">
                 가장 적은 민원이 들어온 시간대
               </p>
               <p className="text-black font-semibold text-3xl">
-                {minTimeSlot} ({minComplaints}건)
+                {timeStats.minTime} ({timeStats.minComplaints}건)
+              </p>
+            </div>
+          </div>
+        </section>
+        <section className="mt-10">
+          <p className="font-semibold text-8d8d8d">
+            최근{" "}
+            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+              ? formatDateRange(dateRange.from, dateRange.to)
+              : formatDate(new Date())}
+            의 민원 통계
+          </p>
+          <h1 className="font-bold text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
+          <div className="w-full mt-5 flex items-center justify-between">
+            <div className="-ml-10 mr-5">
+              <WeekDayBarChart data={weekdayData} colors={TrashChartColors} />
+            </div>
+            <div className="flex flex-col gap-y-3">
+              <p className="text-[#585858] font-semibold text-xl">
+                가장 많은 민원이 들어온 요일
+              </p>
+              <p className="text-black font-semibold text-3xl mb-10">
+                {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
+              </p>
+              <p className="text-[#585858] font-semibold text-xl">
+                가장 적은 민원이 들어온 요일
+              </p>
+              <p className="text-black font-semibold text-3xl">
+                {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
               </p>
             </div>
           </div>

@@ -14,7 +14,7 @@ export const dongComplaintData: ChartDataItem[] = [
   { name: "쌍문 3동", value: 12 },
   { name: "쌍문 4동", value: 8 },
   { name: "방학 1동", value: 13 },
-  { name: "방학 2동", value: 4 },
+  { name: "방학 3동", value: 4 },
 ];
 
 export const complaintData: ChartDataItem[] = [
@@ -34,19 +34,10 @@ export const timeSlotData: BarChartItem[] = [
   { time: "4:30~5:30", 재활용: 0, 일반: 2, 기타: 0, 음식물: 2 },
 ];
 
-//?---------------------------------------------------------
-
-export const weekdayData = [
-  { 요일: "월", 건수: 22 },
-  { 요일: "화", 건수: 18 },
-  { 요일: "수", 건수: 27 },
-  { 요일: "목", 건수: 20 },
-  { 요일: "금", 건수: 25 },
-];
-
-export const locationTypeData: ChartDataItem[] = [
-  { name: "아파트 단지", value: 50 },
-  { name: "상가 주변", value: 30 },
-  { name: "공공 장소", value: 10 },
-  { name: "기타", value: 10 },
+export const weekdayData: BarChartItem[] = [
+  { time: "월요일", 재활용: 2, 일반: 3, 기타: 3, 음식물: 4 },
+  { time: "화요일", 재활용: 1, 일반: 2, 기타: 0, 음식물: 3 },
+  { time: "수요일", 재활용: 2, 일반: 3, 기타: 3, 음식물: 4 },
+  { time: "목요일", 재활용: 4, 일반: 2, 기타: 3, 음식물: 6 },
+  { time: "금요일", 재활용: 2, 일반: 4, 기타: 3, 음식물: 3 },
 ];

@@ -35,7 +35,7 @@ export const complaints: Complaint[] = [
     type: "일반",
     content: "음식물 미수거",
     department: "경원환경",
-    region_nm: "방학 2동",
+    region_nm: "방학 3동",
     address: "서울특별시 도봉구 시루봉로 59",
     contact: "010-5553-7777",
     status: "처리중",

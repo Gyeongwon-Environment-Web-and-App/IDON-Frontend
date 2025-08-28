@@ -9,8 +9,8 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Custom Tooltip Component
-interface CustomTooltipProps {
+// Custom TimeSlotTooltip Component
+interface TimeSlotToolTipProps {
   active?: boolean;
   payload?: Array<{
     dataKey: string;
@@ -24,7 +24,7 @@ interface CustomTooltipProps {
   label?: string;
 }
 
-const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
+const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
   if (active && payload && payload.length) {
     const timeRange = payload[0]?.payload?.time; // chartData의 time 가져오기
 
@@ -57,31 +57,11 @@ const CustomTooltip = ({ active, payload }: CustomTooltipProps) => {
   return null;
 };
 
-const timeSlot = [
-  "8:30",
-  "9:30",
-  "10:30",
-  "11:30",
-  "12:30",
-  "1:30",
-  "2:30",
-  "3:30",
-  "4:30",
-  "5:30",
-];
-
-export const CustomBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
+export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
   // 데이터에서 카테고리 키들을 추출 (time 제외)
   const categories = Object.keys(data[0] || {}).filter((key) => key !== "time");
-
-  // 데이터를 timeSlot 인덱스로 변환 (0.5 단위로 조정하여 tick 사이에 위치)
-  const transformedData = data.map((item, index) => ({
-    ...item,
-    timeIndex: index + 0.5, // 0.5, 1.5, 2.5... 로 설정하여 tick 사이에 위치
-    hoverArea: 1, // 투명한 배경 바를 위한 값
-  }));
 
   // 현재 호버된 인덱스에 따른 툴팁 데이터 생성
   const currentTooltipData = categories.map((category, index) => {
@@ -91,7 +71,7 @@ export const CustomBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
       value: value, // 0이어도 명시적으로 표시
       color: colors[index % colors.length],
       payload: {
-        time: data[hoveredIndex]?.time || "8:30~9:30",
+        time: data[hoveredIndex]?.time || "월요일",
         [category]: value,
       },
     };
@@ -104,7 +84,7 @@ export const CustomBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
           <BarChart
             width={1200}
             height={300}
-            data={transformedData}
+            data={data}
             margin={{
               top: 20,
               right: 30,
@@ -113,26 +93,21 @@ export const CustomBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
             }}
           >
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timeIndex"
-              tickFormatter={(value) => timeSlot[Math.floor(value)]}
-              type="number"
-              domain={[0, timeSlot.length - 1]}
-              ticks={timeSlot.map((_, index) => index)}
-            />
+            <XAxis dataKey="time" type="category" />
             <YAxis />
             {categories.map((category, index) => (
               <Bar
                 key={category}
                 dataKey={category}
                 stackId="a"
+                barSize={40}
                 radius={[0, 0, 0, 0]}
                 fill={colors[index % colors.length]}
                 onMouseEnter={(event) => {
-                  const dataIndex = event.payload?.timeIndex
-                    ? Math.floor(event.payload.timeIndex - 0.5)
-                    : 0;
-                  setHoveredIndex(dataIndex);
+                  const dataIndex = data.findIndex(
+                    (item) => item.time === event.payload?.time
+                  );
+                  setHoveredIndex(dataIndex >= 0 ? dataIndex : 0);
                 }}
               />
             ))}
@@ -142,10 +117,10 @@ export const CustomBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
 
       {/* 고정 툴팁 */}
       <div className="-ml-1 mb-8 flex items-center">
-        <CustomTooltip active={true} payload={currentTooltipData} />
+        <TimeSlotToolTip active={true} payload={currentTooltipData} />
       </div>
     </div>
   );
 };
 
-export default CustomBarChart;
+export default WeekDayBarChart;
