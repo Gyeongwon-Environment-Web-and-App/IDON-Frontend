@@ -26,7 +26,13 @@ interface KakaoAddressResult {
 interface KakaoPlaceResult {
   x: string;
   y: string;
-  place_name?: string;
+  place_name: string;
+  address_name: string;
+  road_address_name?: string;
+  distance?: string;
+  category_name?: string;
+  phone?: string;
+  place_url?: string;
 }
 
 interface KakaoCoord2AddressResult {
@@ -52,9 +58,15 @@ export class AddressService {
 
   // API 키 유효성 검사 메서드
   private static validateApiKeys() {
-    console.log("🔍 API 키 상태:", {
-      카카오맵_SDK:
-        this.KAKAO_JAVASCRIPT_KEY && this.isKakaoSDKLoaded() ? "✅" : "❌",
+    console.log("🔍 상세 API 키 검증:", {
+      apiKeyExists: !!this.KAKAO_JAVASCRIPT_KEY,
+      apiKeyLength: this.KAKAO_JAVASCRIPT_KEY?.length || 0,
+      sdkLoaded: this.isKakaoSDKLoaded(),
+      currentDomain: window.location.hostname,
+      currentProtocol: window.location.protocol,
+      kakaoObject: !!window.kakao,
+      kakaoMaps: !!window.kakao?.maps,
+      kakaoServices: !!window.kakao?.maps?.services,
     });
 
     if (!this.KAKAO_JAVASCRIPT_KEY) {
@@ -77,6 +89,23 @@ export class AddressService {
       );
       console.error("  2. JavaScript 키가 올바르게 설정되어 있는지 확인");
     }
+
+    // Test API call if SDK is loaded
+    if (this.isKakaoSDKLoaded()) {
+      try {
+        const geocoder = new window.kakao.maps.services.Geocoder();
+        console.log("✅ Geocoder 인스턴스 생성 성공");
+        // Test a simple search to verify API functionality
+        geocoder.addressSearch("서울", (result, status) => {
+          console.log("🔍 API 테스트 검색 결과:", {
+            status,
+            resultCount: result?.length || 0,
+          });
+        });
+      } catch (error) {
+        console.error("❌ Geocoder 인스턴스 생성 실패:", error);
+      }
+    }
   }
 
   // 카카오맵 주소 검색 (Geocoder 사용)
@@ -84,7 +113,14 @@ export class AddressService {
     query: string,
     coordinate?: string
   ): Promise<Address[]> {
-    console.log("🔍 카카오맵 주소 검색:", { query, coordinate });
+    console.log("🔍 카카오맵 주소 검색 상세:", {
+      query,
+      coordinate,
+      sdkLoaded: this.isKakaoSDKLoaded(),
+      apiKey: this.KAKAO_JAVASCRIPT_KEY ? "✅" : "❌",
+      queryLength: query.length,
+      queryType: typeof query,
+    });
 
     // API 키 유효성 검사
     this.validateApiKeys();
@@ -97,20 +133,40 @@ export class AddressService {
 
     try {
       const geocoder = new window.kakao.maps.services.Geocoder();
+      console.log("✅ Geocoder 인스턴스 생성 성공");
 
       // Promise로 래핑하여 비동기 처리
       const searchResult = await new Promise<KakaoAddressResult[]>(
         (resolve, reject) => {
+          console.log("🔍 API 호출 시작:", {
+            query,
+            timestamp: new Date().toISOString(),
+          });
+
           geocoder.addressSearch(
             query,
             (result: KakaoAddressResult[], status: string) => {
+              console.log("🔍 API 응답 수신:", {
+                status,
+                resultCount: result?.length || 0,
+                timestamp: new Date().toISOString(),
+                statusOK: status === window.kakao.maps.services.Status.OK,
+                statusZeroResult:
+                  status === window.kakao.maps.services.Status.ZERO_RESULT,
+              });
+
               if (status === window.kakao.maps.services.Status.OK) {
+                console.log("✅ 검색 성공:", {
+                  resultCount: result?.length || 0,
+                });
                 resolve(result);
               } else if (
                 status === window.kakao.maps.services.Status.ZERO_RESULT
               ) {
+                console.log("⚠️ 검색 결과 없음");
                 resolve([]);
               } else {
+                console.error("❌ 검색 실패:", { status, result });
                 reject(new Error(`카카오맵 주소 검색 실패: ${status}`));
               }
             }
@@ -147,7 +203,13 @@ export class AddressService {
 
   // 카카오맵 SDK를 사용한 장소명 검색
   static async searchPlace(query: string): Promise<Address[]> {
-    console.log("🔍 카카오맵 장소명 검색:", { query });
+    console.log("🔍 카카오맵 장소명 검색 상세:", {
+      query,
+      sdkLoaded: this.isKakaoSDKLoaded(),
+      apiKey: this.KAKAO_JAVASCRIPT_KEY ? "✅" : "❌",
+      queryLength: query.length,
+      queryType: typeof query,
+    });
 
     // API 키 유효성 검사
     this.validateApiKeys();
@@ -161,20 +223,42 @@ export class AddressService {
     try {
       // 카카오맵 SDK의 Places 서비스 사용
       const places = new window.kakao.maps.services.Places();
+      console.log("✅ Places 인스턴스 생성 성공");
 
-      // Promise로 래핑하여 비동기 처리
-      const searchResult = await new Promise<{ places: KakaoPlaceResult[] }>(
+      // Promise로 래핑하여 비동기 처리 - 공식 문서 구조에 맞게 수정
+      const searchResult = await new Promise<KakaoPlaceResult[]>(
         (resolve, reject) => {
+          console.log("🔍 Places API 호출 시작:", {
+            query,
+            timestamp: new Date().toISOString(),
+          });
+
           places.keywordSearch(
             query,
-            (data: { places: KakaoPlaceResult[] }, status: string) => {
+            (data: KakaoPlaceResult[], status: string) => {
+              console.log("🔍 Places API 응답 수신:", {
+                status,
+                dataLength: data?.length || 0,
+                timestamp: new Date().toISOString(),
+                statusOK: status === window.kakao.maps.services.Status.OK,
+                statusZeroResult:
+                  status === window.kakao.maps.services.Status.ZERO_RESULT,
+                dataType: Array.isArray(data) ? "array" : typeof data,
+                sampleData: data?.[0] ? Object.keys(data[0]) : [],
+              });
+
               if (status === window.kakao.maps.services.Status.OK) {
-                resolve(data);
+                console.log("✅ Places 검색 성공:", {
+                  resultCount: data?.length || 0,
+                });
+                resolve(data); // data는 직접 배열입니다 (공식 문서 구조)
               } else if (
                 status === window.kakao.maps.services.Status.ZERO_RESULT
               ) {
-                resolve({ places: [] });
+                console.log("⚠️ Places 검색 결과 없음");
+                resolve([]);
               } else {
+                console.error("❌ Places 검색 실패:", { status, data });
                 reject(new Error(`카카오맵 장소명 검색 실패: ${status}`));
               }
             }
@@ -183,20 +267,20 @@ export class AddressService {
       );
 
       console.log("✅ 카카오맵 장소명 검색 응답:", {
-        결과수: searchResult?.places?.length || 0,
-        결과: searchResult?.places?.map((place) => place.place_name) || [],
+        결과수: searchResult?.length || 0,
+        결과: searchResult?.map((place) => place.place_name) || [],
       });
 
-      // 카카오맵 응답을 통일된 형식으로 변환
-      const addresses: Address[] = (searchResult?.places || []).map((place) => {
+      // 카카오맵 응답을 통일된 형식으로 변환 - 공식 문서 구조에 맞게 수정
+      const addresses: Address[] = (searchResult || []).map((place) => {
         const transformedAddress: Address = {
-          roadAddress: place.place_name || "",
-          jibunAddress: place.place_name || "",
+          roadAddress: place.road_address_name || place.address_name || "",
+          jibunAddress: place.address_name || "",
           englishAddress: "",
           addressElements: [],
           x: place.x, // 경도
           y: place.y, // 위도
-          distance: 0,
+          distance: place.distance ? parseInt(place.distance) : 0,
           name: place.place_name,
         };
 

@@ -17,12 +17,7 @@ interface KakaoMap {
 interface KakaoMarker {
   setPosition: (position: KakaoLatLng) => void;
   getPosition: () => KakaoLatLng;
-}
-
-interface KakaoInfoWindow {
-  open: (map: KakaoMap, marker: KakaoMarker) => void;
-  close: () => void;
-  setContent: (content: string) => void;
+  setMap: (map: KakaoMap | null) => void;
 }
 
 interface MapComponentProps {
@@ -30,6 +25,7 @@ interface MapComponentProps {
   longitude?: number;
   address?: string;
   isVisible: boolean;
+  resetCenter?: boolean; // New prop to trigger center reset
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({
@@ -37,40 +33,117 @@ const MapComponent: React.FC<MapComponentProps> = ({
   longitude,
   address,
   isVisible,
+  resetCenter,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<KakaoMap | null>(null);
-  const [marker, setMarker] = useState<KakaoMarker | null>(null);
-  const [infoWindow, setInfoWindow] = useState<KakaoInfoWindow | null>(null);
-  const [apiLoaded, setApiLoaded] = useState(false);
-  const [mapInitialized, setMapInitialized] = useState(false);
+  const [mapState, setMapState] = useState<"loading" | "ready" | "error">(
+    "loading"
+  );
+  const [mapInstance, setMapInstance] = useState<KakaoMap | null>(null);
+  const [markerInstance, setMarkerInstance] = useState<KakaoMarker | null>(
+    null
+  );
+  const [infoWindowInstance, setInfoWindowInstance] = useState<{
+    open: (map: KakaoMap, marker: KakaoMarker) => void;
+    close: () => void;
+    setContent: (content: string) => void;
+  } | null>(null);
   const [dongInfo, setDongInfo] = useState<string>("");
   const [dongInfoLoading, setDongInfoLoading] = useState(false);
+  const [hasInitialized, setHasInitialized] = useState(false);
 
+  // Reset hasInitialized when resetCenter changes (new search)
   useEffect(() => {
-    // 카카오맵 API가 로드되었는지 확인
-    if (typeof window !== "undefined" && window.kakao && window.kakao.maps) {
-      setApiLoaded(true);
-    } else {
-      // 카카오맵 JavaScript API 로드
-      const script = document.createElement("script");
-      const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
+    if (resetCenter) {
+      console.log("🔄 New search detected - resetting center state");
+      setHasInitialized(false);
+    }
+  }, [resetCenter]);
 
-      if (!apiKey) {
-        console.error("카카오맵 JavaScript API 키가 설정되지 않았습니다.");
+  // Debug MapComponent props and visibility
+  useEffect(() => {
+    console.log("🔍 MapComponent props check:", {
+      latitude,
+      longitude,
+      address,
+      isVisible,
+      mapState,
+      hasCoordinates: !!(latitude && longitude),
+      hasAddress: !!address,
+      propsType: typeof { latitude, longitude, address, isVisible },
+    });
+  }, [latitude, longitude, address, isVisible, mapState]);
+
+  // Enhanced visibility debugging
+  useEffect(() => {
+    console.log("🔍 MapComponent visibility check:", {
+      isVisible,
+      mapState,
+      hasCoordinates: !!(latitude && longitude),
+      hasAddress: !!address,
+      shouldShowMap: isVisible && mapState === "ready",
+      containerExists: !!mapRef.current,
+      containerVisible: mapRef.current
+        ? mapRef.current.style.display !== "none"
+        : false,
+    });
+  }, [isVisible, mapState, latitude, longitude, address]);
+
+  // Enhanced Kakao Maps loading with retry mechanism
+  useEffect(() => {
+    const loadKakaoMaps = async () => {
+      // Check if already loaded
+      if (window.kakao?.maps) {
+        console.log("✅ Kakao Maps already loaded");
+        setMapState("ready");
         return;
       }
 
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services`;
-      script.async = true;
-      script.onload = () => {
-        setApiLoaded(true);
-      };
-      script.onerror = (error) => {
-        console.error("카카오맵 JavaScript API 로드 실패:", error);
-      };
-      document.head.appendChild(script);
-    }
+      return new Promise((resolve, reject) => {
+        const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
+
+        if (!apiKey) {
+          console.error("❌ 카카오맵 API 키가 설정되지 않았습니다!");
+          setMapState("error");
+          reject(new Error("API key not found"));
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`;
+        script.async = true;
+
+        script.onload = () => {
+          console.log("✅ 카카오맵 SDK 스크립트 로드 완료");
+
+          // Load the SDK
+          if (window.kakao?.maps?.load) {
+            window.kakao.maps.load(() => {
+              console.log("✅ 카카오맵 SDK 초기화 완료");
+              setMapState("ready");
+              resolve(true);
+            });
+          } else {
+            console.log("✅ 카카오맵 SDK 자동 로드 완료");
+            setMapState("ready");
+            resolve(true);
+          }
+        };
+
+        script.onerror = (error) => {
+          console.error("❌ 카카오맵 SDK 로드 실패:", error);
+          setMapState("error");
+          reject(error);
+        };
+
+        document.head.appendChild(script);
+      });
+    };
+
+    loadKakaoMaps().catch((error) => {
+      console.error("❌ 카카오맵 로딩 실패:", error);
+      setMapState("error");
+    });
   }, []);
 
   // 동 정보 비동기 추출
@@ -96,31 +169,85 @@ const MapComponent: React.FC<MapComponentProps> = ({
     fetchDongInfo();
   }, [address]);
 
-  // 지도 초기화 함수를 useCallback으로 메모이제이션
+  // Initialize map when SDK is ready
   const initializeMap = useCallback(() => {
-    if (!mapRef.current || !latitude || !longitude || !apiLoaded) {
+    if (!mapRef.current || mapState !== "ready") {
+      console.log("⚠️ Map initialization skipped:", {
+        hasMapRef: !!mapRef.current,
+        mapState,
+        isVisible,
+      });
       return;
     }
 
     try {
+      console.log("🗺️ 지도 초기화 시작");
+
+      // Default center (Seoul)
+      const defaultCenter = new window.kakao.maps.LatLng(37.5665, 126.978);
+
       const mapOptions = {
-        center: new window.kakao.maps.LatLng(latitude, longitude),
+        center: defaultCenter,
         level: 3,
-        mapTypeId: window.kakao.maps.MapTypeId.ROADMAP,
       };
 
       const newMap = new window.kakao.maps.Map(mapRef.current, mapOptions);
-      setMap(newMap);
+      setMapInstance(newMap);
 
-      // 마커 생성
-      const newMarker = new window.kakao.maps.Marker({
-        position: new window.kakao.maps.LatLng(latitude, longitude),
-        map: newMap,
+      console.log("✅ 지도 인스턴스 생성 완료");
+
+      // Create info window
+      const newInfoWindow = new window.kakao.maps.InfoWindow({
+        content: '<div style="padding:10px;min-width:200px;">로딩 중...</div>',
       });
-      setMarker(newMarker);
+      setInfoWindowInstance(newInfoWindow);
 
-      // 정보창 생성 (동 정보 포함)
-      const infoContent = `
+      console.log("✅ 정보창 생성 완료");
+    } catch (error) {
+      console.error("❌ 지도 초기화 실패:", error);
+      setMapState("error");
+    }
+  }, [mapState]);
+
+  // Update map when coordinates change
+  const updateMapWithCoordinates = useCallback(
+    (lat: number, lng: number) => {
+      if (!mapInstance || !infoWindowInstance) {
+        console.log("⚠️ Coordinate update skipped:", {
+          hasMapInstance: !!mapInstance,
+          hasInfoWindow: !!infoWindowInstance,
+        });
+        return;
+      }
+
+      try {
+        console.log(`📍 좌표 업데이트: ${lat}, ${lng}`);
+
+        const position = new window.kakao.maps.LatLng(lat, lng);
+
+        // Only center on first load
+        if (!hasInitialized) {
+          console.log("🎯 First load - centering map");
+          mapInstance.setCenter(position);
+          setHasInitialized(true);
+        } else {
+          console.log("🔄 Subsequent update - keeping current center");
+        }
+
+        // Remove existing marker
+        if (markerInstance) {
+          markerInstance.setMap(null);
+        }
+
+        // Create new marker
+        const newMarker = new window.kakao.maps.Marker({
+          map: mapInstance,
+          position: position,
+        });
+        setMarkerInstance(newMarker);
+
+        // Update info window content
+        const infoContent = `
         <div style="padding: 10px; min-width: 200px;">
           <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
             민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
@@ -130,88 +257,177 @@ const MapComponent: React.FC<MapComponentProps> = ({
         </div>
       `;
 
-      const newInfoWindow = new window.kakao.maps.InfoWindow({
-        content: infoContent,
-      });
-      setInfoWindow(newInfoWindow);
+        infoWindowInstance.setContent(infoContent);
+        infoWindowInstance.open(mapInstance, newMarker);
 
-      // 마커 클릭 시 정보창 표시
-      window.kakao.maps.event.addListener(newMarker, "click", () => {
-        newInfoWindow.open(newMap, newMarker);
-      });
+        // Add click event to marker
+        window.kakao.maps.event.addListener(newMarker, "click", () => {
+          if (infoWindowInstance) {
+            infoWindowInstance.open(mapInstance, newMarker);
+          }
+        });
 
-      // 초기에 정보창 표시
-      newInfoWindow.open(newMap, newMarker);
-
-      setMapInitialized(true);
-    } catch (error) {
-      console.error("지도 초기화 실패:", error);
-    }
-  }, [latitude, longitude, apiLoaded, address, dongInfo]);
-
-  // API 로드 완료 후 지도 초기화
-  useEffect(() => {
-    // 지도가 숨겨질 때 상태 리셋
-    if (!isVisible && mapInitialized) {
-      if (infoWindow) {
-        infoWindow.close();
+        console.log("✅ 마커 및 정보창 업데이트 완료");
+      } catch (error) {
+        console.error("❌ 좌표 업데이트 실패:", error);
       }
-      setMapInitialized(false);
-      setMap(null);
-      setMarker(null);
-      setInfoWindow(null);
-      return;
-    }
+    },
+    [
+      mapInstance,
+      infoWindowInstance,
+      markerInstance,
+      address,
+      dongInfo,
+      dongInfoLoading,
+      hasInitialized,
+    ]
+  );
 
-    if (apiLoaded && isVisible && latitude && longitude && !mapInitialized) {
-      initializeMap();
-    }
-  }, [
-    apiLoaded,
-    isVisible,
-    latitude,
-    longitude,
-    initializeMap,
-    mapInitialized,
-    infoWindow,
-  ]);
+  // Geocode address to coordinates
+  const geocodeAddress = useCallback(
+    async (address: string) => {
+      if (!mapInstance || !address) {
+        console.log("⚠️ Address geocoding skipped:", {
+          hasMapInstance: !!mapInstance,
+          hasAddress: !!address,
+        });
+        return;
+      }
 
-  // 좌표 변경 시 지도 업데이트
+      try {
+        console.log(`🔍 주소 지오코딩: ${address}`);
+
+        const geocoder = new window.kakao.maps.services.Geocoder();
+
+        geocoder.addressSearch(address, (result, status) => {
+          if (status === window.kakao.maps.services.Status.OK) {
+            const coords = new window.kakao.maps.LatLng(
+              parseFloat(result[0].y),
+              parseFloat(result[0].x)
+            );
+
+            console.log(`✅ 주소 변환 성공: ${result[0].y}, ${result[0].x}`);
+
+            // Only center on first load
+            if (!hasInitialized) {
+              console.log("🎯 First load - centering map");
+              mapInstance.setCenter(coords);
+              setHasInitialized(true);
+            } else {
+              console.log("🔄 Subsequent update - keeping current center");
+            }
+
+            // Remove existing marker
+            if (markerInstance) {
+              markerInstance.setMap(null);
+            }
+
+            // Create new marker
+            const newMarker = new window.kakao.maps.Marker({
+              map: mapInstance,
+              position: coords,
+            });
+            setMarkerInstance(newMarker);
+
+            // Update info window
+            if (infoWindowInstance) {
+              const infoContent = `
+              <div style="padding: 10px; min-width: 200px;">
+                <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
+                  검색된 위치${dongInfo ? `: ${dongInfo}` : ""}
+                </h3>
+                <p style="margin: 0; font-size: 12px; color: #666;">${address}</p>
+                ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
+              </div>
+            `;
+              infoWindowInstance.setContent(infoContent);
+              infoWindowInstance.open(mapInstance, newMarker);
+            }
+
+            // Add click event
+            window.kakao.maps.event.addListener(newMarker, "click", () => {
+              if (infoWindowInstance) {
+                infoWindowInstance.open(mapInstance, newMarker);
+              }
+            });
+          } else {
+            console.warn(`⚠️ 주소 변환 실패: ${status}`);
+          }
+        });
+      } catch (error) {
+        console.error("❌ 주소 지오코딩 오류:", error);
+      }
+    },
+    [
+      mapInstance,
+      markerInstance,
+      infoWindowInstance,
+      dongInfo,
+      dongInfoLoading,
+      hasInitialized,
+    ]
+  );
+
+  // Initialize map when ready
   useEffect(() => {
-    if (map && marker && latitude && longitude && apiLoaded && mapInitialized) {
-      const position = new window.kakao.maps.LatLng(latitude, longitude);
-      map.setCenter(position);
-      marker.setPosition(position);
+    if (mapState === "ready" && isVisible) {
+      // Wait for next render cycle to ensure container exists
+      setTimeout(() => {
+        console.log("🔄 Delayed map initialization...");
+        initializeMap();
+      }, 0);
+    }
+  }, [mapState, isVisible, initializeMap]);
 
-      // 정보창 내용 업데이트
-      if (infoWindow) {
-        const updatedContent = `
-          <div style="padding: 10px; min-width: 200px;">
-            <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
-              민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
-            </h3>
-            <p style="margin: 0; font-size: 12px; color: #666;">${address || "주소 정보 없음"}</p>
-            ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
-          </div>
-        `;
-        infoWindow.setContent(updatedContent);
-        infoWindow.open(map, marker);
+  // Handle coordinate updates
+  useEffect(() => {
+    if (latitude && longitude && mapInstance) {
+      console.log("🔄 Coordinates received, updating map...");
+      updateMapWithCoordinates(latitude, longitude);
+    }
+  }, [latitude, longitude, mapInstance, updateMapWithCoordinates]);
+
+  // Handle address updates
+  useEffect(() => {
+    if (address && mapInstance && !latitude && !longitude) {
+      console.log("🔄 Address received, geocoding...");
+      geocodeAddress(address);
+    }
+  }, [address, mapInstance, latitude, longitude, geocodeAddress]);
+
+  // Handle visibility changes
+  useEffect(() => {
+    console.log("🔍 Visibility change:", { isVisible, mapState });
+    if (!isVisible) {
+      // Clean up when hidden
+      if (infoWindowInstance) {
+        infoWindowInstance.close();
       }
     }
-  }, [
-    latitude,
-    longitude,
-    map,
-    marker,
-    apiLoaded,
-    address,
-    dongInfo,
-    dongInfoLoading,
-    infoWindow,
-    mapInitialized,
-  ]);
+  }, [isVisible, infoWindowInstance, mapState]);
 
-  if (!isVisible) return null;
+  // Final render check
+  useEffect(() => {
+    console.log("🎯 MapComponent render state:", {
+      isVisible,
+      mapState,
+      shouldRender: isVisible,
+      shouldShowMap: isVisible && mapState === "ready",
+      containerExists: !!mapRef.current,
+      containerStyle: mapRef.current
+        ? {
+            display: mapRef.current.style.display,
+            visibility: mapRef.current.style.visibility,
+            height: mapRef.current.style.height,
+          }
+        : null,
+    });
+  }, [isVisible, mapState]);
+
+  if (!isVisible) {
+    console.log("🚫 MapComponent not visible, returning null");
+    return null;
+  }
 
   return (
     <div className="">
@@ -219,57 +435,39 @@ const MapComponent: React.FC<MapComponentProps> = ({
       <div className="z-50 bg-white border border-light-border rounded-b-lg">
         {/* 지도 컨테이너 */}
         <div className="">
-          {!apiLoaded && (
+          {mapState === "loading" && (
             <div
               className="w-full flex items-center justify-center bg-gray-100"
               style={{ height: "300px" }}
             >
               <div className="text-center">
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-                <p className="text-sm">지도 로딩 중...</p>
-                <p className="text-xs text-gray-500 mt-1">
-                  카카오맵 JavaScript API 초기화 중
+                <p className="text-sm">카카오맵 로딩 중...</p>
+                <p className="text-xs text-gray-500 mt-1">SDK 초기화 중</p>
+              </div>
+            </div>
+          )}
+
+          {mapState === "error" && (
+            <div
+              className="w-full flex items-center justify-center bg-red-50"
+              style={{ height: "300px" }}
+            >
+              <div className="text-center">
+                <p className="text-sm text-red-600">지도 로딩 실패</p>
+                <p className="text-xs text-red-500 mt-1">
+                  API 키를 확인해주세요
                 </p>
               </div>
             </div>
           )}
-          {apiLoaded && !mapInitialized && (
-            <div
-              className="w-full flex items-center justify-center bg-gray-100"
-              style={{ height: "300px" }}
-            >
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto mb-2"></div>
-                <p className="text-sm">지도 초기화 중...</p>
-              </div>
-            </div>
-          )}
+
           <div
             ref={mapRef}
-            className={`w-full rounded-b-lg ${!apiLoaded || !mapInitialized ? "hidden" : ""}`}
+            className={`w-full rounded-b-lg ${mapState !== "ready" ? "hidden" : ""}`}
             style={{ height: "300px" }}
           />
         </div>
-
-        {/* 주소 정보 */}
-        {address && (
-          <div className="p-3 border-t bg-gray-50 rounded-b-lg">
-            <p className="text-xs text-gray-600">
-              <strong>주소:</strong> {address}
-            </p>
-            {dongInfo && (
-              <p className="text-xs text-gray-600">
-                <strong>동 정보:</strong> {dongInfo}
-              </p>
-            )}
-            {latitude && longitude && (
-              <p className="text-xs text-gray-600">
-                <strong>좌표:</strong> {latitude.toFixed(6)},{" "}
-                {longitude.toFixed(6)}
-              </p>
-            )}
-          </div>
-        )}
       </div>
     </div>
   );

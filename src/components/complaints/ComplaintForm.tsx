@@ -60,7 +60,19 @@ export default function ComplaintForm({
     latitude: number;
     longitude: number;
   } | null>(null);
+  const [resetMapCenter, setResetMapCenter] = useState(false);
   const mapDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Reset map center flag after it's been used
+  useEffect(() => {
+    if (resetMapCenter) {
+      // Reset the flag after a short delay to allow MapComponent to process it
+      const timer = setTimeout(() => {
+        setResetMapCenter(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [resetMapCenter]);
 
   // 주소 검색 기능
   useEffect(() => {
@@ -85,7 +97,7 @@ export default function ComplaintForm({
 
   // 주소 검색 함수
   const searchAddresses = async () => {
-    if (!formData.address.trim() || formData.address.length < 2) {
+    if (!tempAddress.trim() || tempAddress.length < 2) {
       setAddresses([]);
       setError("주소를 2글자 이상 입력해주세요.");
       return;
@@ -97,9 +109,7 @@ export default function ComplaintForm({
 
     try {
       // 주소와 장소명을 모두 검색하는 통합 메서드 사용
-      const results = await AddressService.searchAddressAndPlace(
-        formData.address
-      );
+      const results = await AddressService.searchAddressAndPlace(tempAddress);
       setAddresses(results);
     } catch (err) {
       const errorMessage =
@@ -151,6 +161,9 @@ export default function ComplaintForm({
       ...f,
       address: selectedAddress,
     }));
+
+    // Reset map center for new address
+    setResetMapCenter(true);
 
     if (frequencyTimeout) {
       clearTimeout(frequencyTimeout);
@@ -413,6 +426,7 @@ export default function ComplaintForm({
               longitude={mapCoordinates?.longitude}
               address={formData.address}
               isVisible={showMap}
+              resetCenter={resetMapCenter}
             />
           </div>
 
@@ -420,10 +434,11 @@ export default function ComplaintForm({
             <>
               <div className="col-span-1"></div>
               <div className="text-red col-span-2 flex justify-start items-center md:mt-2 md:mb-2">
-                최근 한 달간 이 주소에서 민원이 {addressFrequencyInfo}번 들어왔습니다.
+                최근 한 달간 이 주소에서 민원이 {addressFrequencyInfo}번
+                들어왔습니다.
               </div>
               <div className="col-span-2"></div>
-          </>
+            </>
           )}
 
           {!loading && error && (
