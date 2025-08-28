@@ -1,6 +1,30 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { getDongInfo } from "../../utils/dongMapping";
 
+// Kakao Maps specific types
+interface KakaoLatLng {
+  lat: () => number;
+  lng: () => number;
+}
+
+interface KakaoMap {
+  setCenter: (position: KakaoLatLng) => void;
+  getCenter: () => KakaoLatLng;
+  setLevel: (level: number) => void;
+  getLevel: () => number;
+}
+
+interface KakaoMarker {
+  setPosition: (position: KakaoLatLng) => void;
+  getPosition: () => KakaoLatLng;
+}
+
+interface KakaoInfoWindow {
+  open: (map: KakaoMap, marker: KakaoMarker) => void;
+  close: () => void;
+  setContent: (content: string) => void;
+}
+
 interface MapComponentProps {
   latitude?: number;
   longitude?: number;
@@ -15,40 +39,62 @@ const MapComponent: React.FC<MapComponentProps> = ({
   isVisible,
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [map, setMap] = useState<unknown>(null);
-  const [marker, setMarker] = useState<unknown>(null);
-  const [infoWindow, setInfoWindow] = useState<unknown>(null);
+  const [map, setMap] = useState<KakaoMap | null>(null);
+  const [marker, setMarker] = useState<KakaoMarker | null>(null);
+  const [infoWindow, setInfoWindow] = useState<KakaoInfoWindow | null>(null);
   const [apiLoaded, setApiLoaded] = useState(false);
   const [mapInitialized, setMapInitialized] = useState(false);
-
-  // 동 정보 추출
-  const dongInfo = address ? getDongInfo(address) : "";
+  const [dongInfo, setDongInfo] = useState<string>("");
+  const [dongInfoLoading, setDongInfoLoading] = useState(false);
 
   useEffect(() => {
-    // 네이버 지도 API가 로드되었는지 확인
-    if (typeof window !== "undefined" && window.naver && window.naver.maps) {
+    // 카카오맵 API가 로드되었는지 확인
+    if (typeof window !== "undefined" && window.kakao && window.kakao.maps) {
       setApiLoaded(true);
     } else {
-      // 네이버 지도 Open API 로드
+      // 카카오맵 JavaScript API 로드
       const script = document.createElement("script");
-      const clientId = import.meta.env.VITE_NAVER_CLOUD_API_KEY_ID;
+      const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
-      if (!clientId) {
-        console.error("네이버 지도 Open API Client ID가 설정되지 않았습니다.");
+      if (!apiKey) {
+        console.error("카카오맵 JavaScript API 키가 설정되지 않았습니다.");
         return;
       }
 
-      script.src = `https://openapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=${clientId}`;
+      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services`;
       script.async = true;
       script.onload = () => {
         setApiLoaded(true);
       };
       script.onerror = (error) => {
-        console.error("네이버 지도 Open API 로드 실패:", error);
+        console.error("카카오맵 JavaScript API 로드 실패:", error);
       };
       document.head.appendChild(script);
     }
   }, []);
+
+  // 동 정보 비동기 추출
+  useEffect(() => {
+    const fetchDongInfo = async () => {
+      if (!address) {
+        setDongInfo("");
+        return;
+      }
+
+      setDongInfoLoading(true);
+      try {
+        const result = await getDongInfo(address);
+        setDongInfo(result);
+      } catch (error) {
+        console.error("동 정보 추출 실패:", error);
+        setDongInfo("");
+      } finally {
+        setDongInfoLoading(false);
+      }
+    };
+
+    fetchDongInfo();
+  }, [address]);
 
   // 지도 초기화 함수를 useCallback으로 메모이제이션
   const initializeMap = useCallback(() => {
@@ -58,20 +104,17 @@ const MapComponent: React.FC<MapComponentProps> = ({
 
     try {
       const mapOptions = {
-        center: new window.naver.maps.LatLng(latitude, longitude),
-        zoom: 15,
-        mapTypeControl: true,
-        mapTypeControlOptions: {
-          style: window.naver.maps.MapTypeControlStyle.DROPDOWN,
-        },
+        center: new window.kakao.maps.LatLng(latitude, longitude),
+        level: 3,
+        mapTypeId: window.kakao.maps.MapTypeId.ROADMAP,
       };
 
-      const newMap = new window.naver.maps.Map(mapRef.current, mapOptions);
+      const newMap = new window.kakao.maps.Map(mapRef.current, mapOptions);
       setMap(newMap);
 
       // 마커 생성
-      const newMarker = new window.naver.maps.Marker({
-        position: new window.naver.maps.LatLng(latitude, longitude),
+      const newMarker = new window.kakao.maps.Marker({
+        position: new window.kakao.maps.LatLng(latitude, longitude),
         map: newMap,
       });
       setMarker(newMarker);
@@ -83,23 +126,22 @@ const MapComponent: React.FC<MapComponentProps> = ({
             민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
           </h3>
           <p style="margin: 0; font-size: 12px; color: #666;">${address || "주소 정보 없음"}</p>
+          ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
         </div>
       `;
 
-      const newInfoWindow = new window.naver.maps.InfoWindow({
+      const newInfoWindow = new window.kakao.maps.InfoWindow({
         content: infoContent,
       });
       setInfoWindow(newInfoWindow);
 
       // 마커 클릭 시 정보창 표시
-      window.naver.maps.Event.addListener(newMarker, "click", () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (newInfoWindow as any).open(newMap, newMarker);
+      window.kakao.maps.event.addListener(newMarker, "click", () => {
+        newInfoWindow.open(newMap, newMarker);
       });
 
       // 초기에 정보창 표시
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (newInfoWindow as any).open(newMap, newMarker);
+      newInfoWindow.open(newMap, newMarker);
 
       setMapInitialized(true);
     } catch (error) {
@@ -112,8 +154,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     // 지도가 숨겨질 때 상태 리셋
     if (!isVisible && mapInitialized) {
       if (infoWindow) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (infoWindow as any).close();
+        infoWindow.close();
       }
       setMapInitialized(false);
       setMap(null);
@@ -138,11 +179,9 @@ const MapComponent: React.FC<MapComponentProps> = ({
   // 좌표 변경 시 지도 업데이트
   useEffect(() => {
     if (map && marker && latitude && longitude && apiLoaded && mapInitialized) {
-      const position = new window.naver.maps.LatLng(latitude, longitude);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (map as any).setCenter(position);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (marker as any).setPosition(position);
+      const position = new window.kakao.maps.LatLng(latitude, longitude);
+      map.setCenter(position);
+      marker.setPosition(position);
 
       // 정보창 내용 업데이트
       if (infoWindow) {
@@ -152,12 +191,11 @@ const MapComponent: React.FC<MapComponentProps> = ({
               민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
             </h3>
             <p style="margin: 0; font-size: 12px; color: #666;">${address || "주소 정보 없음"}</p>
+            ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
           </div>
         `;
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (infoWindow as any).setContent(updatedContent);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (infoWindow as any).open(map, marker);
+        infoWindow.setContent(updatedContent);
+        infoWindow.open(map, marker);
       }
     }
   }, [
@@ -168,6 +206,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
     apiLoaded,
     address,
     dongInfo,
+    dongInfoLoading,
     infoWindow,
     mapInitialized,
   ]);
@@ -189,7 +228,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
                 <p className="text-sm">지도 로딩 중...</p>
                 <p className="text-xs text-gray-500 mt-1">
-                  네이버 지도 Open API 초기화 중
+                  카카오맵 JavaScript API 초기화 중
                 </p>
               </div>
             </div>
@@ -207,7 +246,7 @@ const MapComponent: React.FC<MapComponentProps> = ({
           )}
           <div
             ref={mapRef}
-            className={`w-full ${!apiLoaded || !mapInitialized ? "hidden" : ""}`}
+            className={`w-full rounded-b-lg ${!apiLoaded || !mapInitialized ? "hidden" : ""}`}
             style={{ height: "300px" }}
           />
         </div>
