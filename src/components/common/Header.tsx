@@ -22,9 +22,9 @@ const menuItems = [
   {
     label: "지도",
     submenu: [
-      { name: "민원 분류", route: "/" },
-      { name: "차량 조회", route: "/" },
-      { name: "구역별 통계", route: "/" },
+      { name: "민원 분류", route: "/map/overview" },
+      { name: "차량 조회", route: "/map/overview" },
+      { name: "구역별 통계", route: "/map/overview" },
       { name: "관할 구역 수정", route: "/" },
     ],
   },

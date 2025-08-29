@@ -103,6 +103,10 @@ module.exports = {
           "100%": { transform: "translateX(-100%)" },
         },
       },
+      animation: {
+        slideIn: "slideIn 0.3s ease-in-out forwards",
+        slideOut: "slideOut 0.3s ease-in-out forwards",
+      },
     },
   },
   plugins: [

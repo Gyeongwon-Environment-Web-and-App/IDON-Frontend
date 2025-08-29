@@ -144,7 +144,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
       title: "지도",
       description: "간략화된 정보를 지도로 조회",
       icon: mapping,
-      route: "/",
+      route: "/map/overview",
       alt: "지도 아이콘",
     },
     {

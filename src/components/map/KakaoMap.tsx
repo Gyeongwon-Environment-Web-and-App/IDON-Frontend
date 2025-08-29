@@ -6,7 +6,10 @@ interface KakaoMapProps {
 }
 
 const KakaoMap = forwardRef<HTMLElement, KakaoMapProps>(
-  ({ center = { lat: 37.6714001064975, lng: 127.041485813197 }, zoom = 2 }, ref) => {
+  (
+    { center = { lat: 37.6714001064975, lng: 127.041485813197 }, zoom = 2 },
+    ref
+  ) => {
     useEffect(() => {
       const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
@@ -16,11 +19,15 @@ const KakaoMap = forwardRef<HTMLElement, KakaoMapProps>(
       }
 
       const script = document.createElement("script");
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
+      script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&autoload=false`;
       script.async = true;
 
       script.onload = () => {
-        (window.kakao.maps as unknown as { load: (callback: () => void) => void }).load(() => {
+        (
+          window.kakao.maps as unknown as {
+            load: (callback: () => void) => void;
+          }
+        ).load(() => {
           const container = document.getElementById("map");
           if (container) {
             const options = {
