@@ -102,7 +102,7 @@ const MobileBottomNav = () => {
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 md:hidden">
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 block md:hidden">
       <div className="flex justify-around items-center py-2">
         {menuItems.map((item) => {
           const isActive = activeTab === item.id;

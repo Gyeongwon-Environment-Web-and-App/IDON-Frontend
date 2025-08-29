@@ -28,6 +28,11 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
   if (active && payload && payload.length) {
     const timeRange = payload[0]?.payload?.time; // chartData의 time 가져오기
 
+    const totalComplaints = payload.reduce(
+      (sum, entry) => sum + entry.value,
+      0
+    );
+
     // 중복 제거: 같은 dataKey를 가진 항목들을 필터링
     const uniqueEntries = payload.filter(
       (entry, index, self) =>
@@ -35,22 +40,25 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
     );
 
     return (
-      <div className="bg-white border border-[#757575] rounded-lg p-5 mt-5 py-5 w-48 text-center">
-        <p className="font-semibold text-2xl text-gray-text mb-2">
-          {timeRange}
-        </p>
-        {uniqueEntries.map((entry, index) => (
-          <div key={index} className="flex items-center gap-2 mb-1 py-1 px-3">
-            <span
-              className="w-3 h-3 rounded-full"
-              style={{ backgroundColor: entry.color }}
-            ></span>
-            <div className="flex justify-between flex-1">
-              <p className="text-base font-semibold">{entry.dataKey}</p>
-              <p className="text-base font-semibold">{entry.value}건</p>
+      <div className="bg-white border border-[#757575] rounded-lg p-2 md:p-5 mt-2 md:mt-5 md:py-5 md:w-48 w-72 text-center">
+        <div className="font-semibold text-lg md:text-2xl text-gray-text mb-2 md:mb-4 flex items-center justify-center">
+          <p>{timeRange}</p>
+          <span className="block md:hidden ml-2 text-black">({totalComplaints}건)</span>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
+          {uniqueEntries.map((entry, index) => (
+            <div key={index} className="flex items-center gap-2 mb-1 py-1 px-3">
+              <span
+                className="w-3 h-3 rounded-full"
+                style={{ backgroundColor: entry.color }}
+              ></span>
+              <div className="flex justify-between flex-1 text-sm md:text-base font-semibold">
+                <p>{entry.dataKey}</p>
+                <p>{entry.value}건</p>
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     );
   }
@@ -78,17 +86,21 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   });
 
   return (
-    <div className="h-80 w-[700px] flex -ml-5">
-      <div className="flex-1 flex items-center">
-        <ResponsiveContainer width="100%" height="100%">
+    <div className="h-96 w-full md:w-[600px] flex flex-col items-center justify-center md:flex-row mt-1 md:mt-16">
+      <div className="flex-1 flex items-center min-w-[450px] scale-90 md:-mr-3">
+        <ResponsiveContainer
+          width="100%"
+          height="100%"
+          className="xxxs:scale-[75%] xxs:scale-[82%] xs:scale-[85%] md:scale-100 md:ml-0 min-h-80"
+        >
           <BarChart
             width={1200}
             height={300}
             data={data}
             margin={{
-              top: 20,
-              right: 30,
-              left: 20,
+              top: 0,
+              right: 10,
+              left: -35,
               bottom: 5,
             }}
           >
@@ -116,7 +128,7 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
       </div>
 
       {/* 고정 툴팁 */}
-      <div className="-ml-1 mb-8 flex items-center">
+      <div className="-mt-10 md:-mt-5 mb-8 flex items-center">
         <TimeSlotToolTip active={true} payload={currentTooltipData} />
       </div>
     </div>

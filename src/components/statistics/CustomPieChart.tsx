@@ -31,6 +31,7 @@ export const CustomPieChart: React.FC<PieChartProps> = ({ data, colors }) => {
     <ResponsiveContainer
       width="40%"
       height={300}
+      className="md:w-[40%] !w-[80%]"
     >
       <PieChart>
         <Pie

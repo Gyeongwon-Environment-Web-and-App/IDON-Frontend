@@ -1,4 +1,4 @@
-import { CustomPieChart } from "./PieChart";
+import { CustomPieChart } from "./CustomPieChart";
 import { TimeSlotBarChart } from "./TimeSlotBarChart";
 import type { DateRange } from "react-day-picker";
 import {
@@ -80,14 +80,11 @@ const ComplaintStats = () => {
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);
-    console.log("Selected areas:", areas);
   };
 
   // 가장 많고 적은 민원 시간대 계산
   const timeStats = highestComplaintTime(timeSlotData);
   const weekdayStats = highestComplaintTime(weekdayData);
-
-  console.log(weekdayStats.totalComplaints);
 
   const DongChartColors = [
     "#72E900",
@@ -102,9 +99,9 @@ const ComplaintStats = () => {
 
   return (
     <div className="w-[100%] h-screen">
-      <div className="pb-20">
-        <header className="flex justify-between items-end border-b border-under pt-0 pb-3 mb-5">
-          <div className="flex">
+      <div className="pb-28 md:pb-20 overflow-hidden">
+        <header className="flex flex-wrap-reverse md:flex-nowrap justify-between md:items-end border-b border-under pt-0 pb-3 mb-5">
+          <div className="flex mt-12 md:mt-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -180,16 +177,16 @@ const ComplaintStats = () => {
               />
             </div>
           </div>
-          <div className="flex">
+          <div className="flex absolute md:static top-32 right-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2 px-[6px] md:px-3"
                 >
                   <Download className="w-4 h-4" />
-                  <span className="text-sm">다운로드</span>
+                  <span className="hidden md:block text-sm">다운로드</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
@@ -200,10 +197,10 @@ const ComplaintStats = () => {
             <Button
               variant="outline"
               size="sm"
-              className="flex items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm"
+              className="flex items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm px-2 md:px-3"
             >
               <Printer className="w-4 h-4" />
-              <span className="text-sm">인쇄</span>
+              <span className="text-sm hidden md:block">인쇄</span>
             </Button>
           </div>
         </header>
@@ -211,23 +208,23 @@ const ComplaintStats = () => {
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
-            containerClassName="border border-black rounded-3xl px-4 py-1 absolute right-0"
+            containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-28"
           />
-          <p className="font-semibold text-8d8d8d">
+          <p className="text-base font-semibold text-8d8d8d">
             최근{" "}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex items-center gap-4 mt-2 w-full">
-            <div className="w-[60%] flex">
-              <div className="inline-flex flex-col gap-2 mr-10 mt-4">
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+          <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
+            <div className="md:w-[60%] w-[100%] flex">
+              <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                 {dongComplaintData.map((item, index) => (
                   <span
                     key={item.name}
-                    className="px-3 py-1 text-xs font-semibold text-white"
+                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
                     style={{ backgroundColor: DongChartColors[index] }}
                   >
                     {item.name}
@@ -239,7 +236,7 @@ const ComplaintStats = () => {
                 colors={DongChartColors}
               />
             </div>
-            <div className="flex flex-col gap-2 w-[40%]">
+            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
               {dongComplaintData.map((item, index) => (
                 <div
                   key={item.name}
@@ -266,10 +263,10 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex items-center gap-4 mt-2 w-full">
-            <div className="w-[60%] flex">
-              <div className="inline-flex flex-col gap-2 mr-10 text-center w-[4rem] mt-4">
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
+            <div className="md:w-[60%] w-[100%] flex">
+              <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
                 {complaintTypeData.map((item, index) => (
                   <span
                     key={item.name}
@@ -285,7 +282,7 @@ const ComplaintStats = () => {
                 colors={TrashChartColors}
               />
             </div>
-            <div className="flex flex-col gap-2 w-[40%]">
+            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
               {complaintTypeData.map((item, index) => (
                 <div
                   key={item.name}
@@ -312,14 +309,14 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex items-center gap-4 mt-2 w-full">
-            <div className="w-[60%] flex">
-              <div className="inline-flex flex-col gap-2 mr-10 text-center mt-4">
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+          <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
+            <div className="md:w-[60%] w-[100%] flex">
+              <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
                 {complaintData.map((item, index) => (
                   <span
                     key={item.name}
-                    className="px-3 py-1 text-xs font-semibold text-white"
+                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
                     style={{ backgroundColor: ComplaintChartColors[index] }}
                   >
                     {item.name}
@@ -331,7 +328,7 @@ const ComplaintStats = () => {
                 colors={ComplaintChartColors}
               />
             </div>
-            <div className="flex flex-col gap-2 w-[40%]">
+            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
               {complaintData.map((item, index) => (
                 <div
                   key={item.name}
@@ -358,28 +355,32 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="w-full mt-5 flex items-center justify-between">
-            <div className="-ml-10 mr-5">
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+            <div className="mb-10 md:mb-5">
               <TimeSlotBarChart data={timeSlotData} colors={TrashChartColors} />
             </div>
-            <div className="flex flex-col gap-y-3">
-              <p className="text-[#585858] font-semibold text-xl">
-                가장 많은 민원이 들어온 시간대
-              </p>
-              <p className="text-black font-semibold text-3xl mb-10">
-                {timeStats.maxTime} ({timeStats.maxComplaints}건)
-              </p>
-              <p className="text-[#585858] font-semibold text-xl">
-                가장 적은 민원이 들어온 시간대
-              </p>
-              <p className="text-black font-semibold text-3xl">
-                {timeStats.minTime} ({timeStats.minComplaints}건)
-              </p>
+            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
+              <div className="flex justify-between md:inline">
+                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                  가장 많은 민원이 들어온 시간대
+                </p>
+                <p className="text-black font-semibold text-sm md:text-3xl md:mb-10 mb-3">
+                  {timeStats.maxTime} ({timeStats.maxComplaints}건)
+                </p>
+              </div>
+              <div className="flex justify-between md:inline">
+                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                  가장 적은 민원이 들어온 시간대
+                </p>
+                <p className="text-black font-semibold text-sm md:text-3xl">
+                  {timeStats.minTime} ({timeStats.minComplaints}건)
+                </p>
+              </div>
             </div>
           </div>
         </section>
-        <section className="mt-10">
+        <section className="mt-7 md:mt-10">
           <p className="font-semibold text-8d8d8d">
             최근{" "}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
@@ -387,24 +388,28 @@ const ComplaintStats = () => {
               : formatDate(new Date())}
             의 민원 통계
           </p>
-          <h1 className="font-bold text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
-          <div className="w-full mt-5 flex items-center justify-between">
-            <div className="-ml-10 mr-5">
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
+          <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+            <div className="md:mb-0 mb-5">
               <WeekDayBarChart data={weekdayData} colors={TrashChartColors} />
             </div>
-            <div className="flex flex-col gap-y-3">
-              <p className="text-[#585858] font-semibold text-xl">
-                가장 많은 민원이 들어온 요일
-              </p>
-              <p className="text-black font-semibold text-3xl mb-10">
-                {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
-              </p>
-              <p className="text-[#585858] font-semibold text-xl">
-                가장 적은 민원이 들어온 요일
-              </p>
-              <p className="text-black font-semibold text-3xl">
-                {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
-              </p>
+            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
+              <div className="flex justify-between md:inline">
+                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                  가장 많은 민원이 들어온 요일
+                </p>
+                <p className="text-black font-semibold text-sm md:text-3xl mb-3">
+                  {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
+                </p>
+              </div>
+              <div className="flex justify-between md:inline">
+                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                  가장 적은 민원이 들어온 요일
+                </p>
+                <p className="text-black font-semibold text-sm md:text-3xl">
+                  {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
+                </p>
+              </div>
             </div>
           </div>
         </section>

@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ComplaintFormData } from "../types/complaint";
-import { useIsMobile } from "@/hooks/use-mobile";
 import Popup from "../components/forms/Popup";
 import DateTimeBox from "../components/forms/DateTimeBox";
 import MobileBottomNav from "../components/layout/MobileBottomNav";
@@ -58,7 +57,6 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
   const [showConfirm, setShowConfirm] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const isMobile = useIsMobile();
 
   // URL 변경 감지하여 탭 업데이트
   useEffect(() => {
@@ -269,7 +267,7 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
           </div>
         </PageLayout>
       </div>
-      {isMobile && <MobileBottomNav />}
+      <MobileBottomNav />
     </div>
   );
 };
