@@ -35,6 +35,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
   // 사이드바 클릭 핸들러 - 마지막 열린 사이드바 기억
   const handleSidebarClick = (type: SidebarType) => {
     setLastOpenedSidebar(type);
+    onSidebarChange(true);
     setOpenSidebar(type);
   };
 
