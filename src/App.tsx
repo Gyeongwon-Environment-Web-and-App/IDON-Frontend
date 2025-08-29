@@ -62,7 +62,7 @@ const AppContent: React.FC = () => {
           />
           <Route
             path="/map/overview"
-            element={<MapOverview onLogout={logout} />}
+            element={<MapOverview />}
           />
         </>
       ) : (

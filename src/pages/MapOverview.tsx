@@ -1,16 +1,14 @@
+import { useRef } from "react";
 import MapSideMenu from "@/components/map/MapSideMenu";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import KakaoMap from "@/components/map/KakaoMap";
 
-interface MapOverviewProps {
-  onLogout: () => void;
-}
+export default function MapOverview() {
+  const mapRef = useRef<HTMLElement>(null);
 
-export default function MapOverview({ onLogout }: MapOverviewProps) {
   return (
-    <div className="h-screen w-screen bg-lighter-green">
-      <SidebarProvider>
-        <MapSideMenu />
-      </SidebarProvider>
+    <div className="h-screen w-screen relative">
+      <KakaoMap ref={mapRef} />
+      <MapSideMenu />
     </div>
   );
 }

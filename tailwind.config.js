@@ -93,6 +93,16 @@ module.exports = {
         custom: "0px 0px 9.69px 4.85px rgba(164, 164, 164, 0.25)",
         "custom-lg": "0px 0px 15px 7px rgba(164, 164, 164, 0.3)",
       },
+      keyframes: {
+        slideIn: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(0)" },
+        },
+        slideOut: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
+      },
     },
   },
   plugins: [
