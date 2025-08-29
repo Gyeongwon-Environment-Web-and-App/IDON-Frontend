@@ -12,7 +12,11 @@ import grayRightArrow from "../../assets/icons/navigation/arrows/gray_arrow_righ
 
 type SidebarType = "complaint" | "vehicle" | "stats" | null;
 
-const MapSideMenu: React.FC = () => {
+interface MapSideMenuProps {
+  onSidebarChange: (isOpen: boolean) => void;
+}
+
+const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
   const [openSidebar, setOpenSidebar] = useState<SidebarType>(null);
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const navigate = useNavigate();
@@ -21,8 +25,10 @@ const MapSideMenu: React.FC = () => {
   const toggleSidebar = () => {
     if (openSidebar) {
       setOpenSidebar(null);
+      onSidebarChange(false);
     } else {
       setOpenSidebar(lastOpenedSidebar || "complaint");
+      onSidebarChange(true);
     }
   };
 
