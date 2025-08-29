@@ -385,6 +385,7 @@ const ComplaintTable: React.FC = () => {
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
+            containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1"
           />
         </div>
       </header>
@@ -416,17 +417,15 @@ const ComplaintTable: React.FC = () => {
 
         {/* 버튼들 영역 */}
         <div className="flex gap-2 flex-wrap md:flex-nowrap items-center justify-between md:justify-normal">
-          <Button
-            variant="outline"
-            size="sm"
-            className="visible md:hidden shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2"
+          <div
+            className="visible md:hidden shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2 py-1 cursor-pointer flex items-center gap-2 rounded-md h-8 font-medium"
             onClick={handleSelectAll}
           >
             <Checkbox
               checked={selectedRows.size === filteredComplaints.length}
             />
             전체 선택
-          </Button>
+          </div>
           <div className="flex flex-wrap md:flex-nowrap gap-2">
             <div className="flex flex-wrap md:flex-nowrap gap-2">
               <DropdownMenu>

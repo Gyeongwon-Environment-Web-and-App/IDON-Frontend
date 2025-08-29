@@ -310,7 +310,7 @@ const ComplaintStats = () => {
               />
             </div>
           </div>
-          <div className="flex absolute md:static top-[8.7rem] right-5">
+          <div className="flex absolute md:static top-[9rem] right-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
