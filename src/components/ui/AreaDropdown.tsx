@@ -30,10 +30,16 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { selectedAreas, selectAll, toggleArea } = useAreaSelection({
-    areaHierarchy,
-    initialSelectedAreas: [],
-  });
+  const { selectedAreas, selectAll, deselectAll, toggleArea } =
+    useAreaSelection({
+      areaHierarchy,
+      initialSelectedAreas: [],
+    });
+
+  // Calculate total number of items for select all logic
+  const allItems =
+    Object.values(areaHierarchy).flat().length +
+    Object.keys(areaHierarchy).length;
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -63,7 +69,13 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
   }, [selectedAreas, onSelectionChange]);
 
   const handleSelectAll = () => {
-    selectAll();
+    if (selectedAreas.length === allItems) {
+      // Deselect all
+      deselectAll();
+    } else {
+      // Select all
+      selectAll();
+    }
   };
 
   const handleAreaToggle = (area: string) => {
@@ -89,22 +101,20 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute top-full left-0 mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+            "absolute top-full right-0 md:left-0 mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
             contentClassName
           )}
         >
           <div className="relative flex cursor-default select-none items-center justify-between px-3 rounded-sm py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground pr-6">
             <input
               type="checkbox"
-              checked={
-                selectedAreas.length ===
-                Object.values(areaHierarchy).flat().length +
-                  Object.keys(areaHierarchy).length
-              }
+              checked={selectedAreas.length === allItems}
               onChange={handleSelectAll}
               className="mr-2 accent-[#656565]"
             />
-            <p>전체 선택</p>
+            <p>
+              {selectedAreas.length === allItems ? "전체 해제" : "전체 선택"}
+            </p>
           </div>
 
           {Object.entries(areaHierarchy).map(([parentArea, childAreas]) => (

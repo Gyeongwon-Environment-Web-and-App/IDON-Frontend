@@ -62,20 +62,19 @@ export const useAreaSelection = ({
           }
         }
 
-        // Check if we need to update parent areas based on their children
+        // Update parent areas based on their children's selection state
+        // Parent is selected only when ALL children are selected
+        // Parent is deselected when ANY child is deselected
         Object.entries(areaHierarchy).forEach(([parent, children]) => {
           const allChildrenSelected = children.every((child) =>
-            newAreas.includes(child)
-          );
-          const someChildrenSelected = children.some((child) =>
             newAreas.includes(child)
           );
 
           if (allChildrenSelected && !newAreas.includes(parent)) {
             // All children are selected, so select the parent
             newAreas.push(parent);
-          } else if (!someChildrenSelected && newAreas.includes(parent)) {
-            // No children are selected, so deselect the parent
+          } else if (!allChildrenSelected && newAreas.includes(parent)) {
+            // Not all children are selected, so deselect the parent
             newAreas = newAreas.filter((a) => a !== parent);
           }
         });

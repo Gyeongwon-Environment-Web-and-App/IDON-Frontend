@@ -75,11 +75,59 @@ const highestComplaintTime = (data: BarChartItem[]) => {
 
 const ComplaintStats = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedTrashType, setSelectedTrashType] =
+    useState<string>("쓰레기 종류");
+  const [selectedTimeline, setSelectedTimeline] = useState<string>("시간대");
+  const [selectedWeekday, setSelectedWeekday] = useState<string>("요일별");
+
+  const getTrashTypeColor = (type: string) => {
+    switch (type) {
+      case "음식물":
+        return "#F5694A";
+      case "재활용":
+        return "#58CC02";
+      case "일반":
+        return "#59B9FF";
+      case "기타":
+        return "#AF8AFF";
+      default:
+        return "black";
+    }
+  };
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);
+  };
+
+  const getSelectedAreaDisplay = (areas: string[]) => {
+    if (areas.length === 0) return "전체 지역";
+
+    const 쌍문Children = ["쌍문 1동", "쌍문 2동", "쌍문 3동", "쌍문 4동"];
+    const 방학Children = ["방학 1동", "방학 3동"];
+
+    const selected쌍문Children = 쌍문Children.filter((child) =>
+      areas.includes(child)
+    );
+    const selected방학Children = 방학Children.filter((child) =>
+      areas.includes(child)
+    );
+
+    const displayParts = [];
+
+    if (selected쌍문Children.length === 쌍문Children.length) {
+      displayParts.push("쌍문동");
+    } else if (selected쌍문Children.length > 0) {
+      displayParts.push(selected쌍문Children.join(", "));
+    }
+
+    if (selected방학Children.length === 방학Children.length) {
+      displayParts.push("방학동");
+    } else if (selected방학Children.length > 0) {
+      displayParts.push(selected방학Children.join(", "));
+    }
+
+    return displayParts.join(", ");
   };
 
   // 가장 많고 적은 민원 시간대 계산
@@ -100,27 +148,58 @@ const ComplaintStats = () => {
   return (
     <div className="w-[100%] h-screen">
       <div className="pb-28 md:pb-20 overflow-hidden">
-        <header className="flex flex-wrap-reverse md:flex-nowrap justify-between md:items-end border-b border-under pt-0 pb-3 mb-5">
+        <header className="flex flex-wrap-reverse md:flex-nowrap justify-between md:items-end border-b border-under pt-0 pb-3 mb-5 mt-3 md:mt-0">
           <div className="flex mt-12 md:mt-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
                   size="sm"
+                  style={{
+                    color: getTrashTypeColor(selectedTrashType),
+                  }}
                   className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
                 >
-                  <span className="text-sm">쓰레기 종류</span>
+                  <span className="text-sm font-semibold">{selectedTrashType}</span>
                   <img src={triangle} alt="쓰레기 종류 선택" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="center"
-                className="[&>*]:justify-center !min-w-[110px]"
+                className="[&>*]:justify-center !min-w-[110px] !font-semibold"
               >
-                <DropdownMenuItem onClick={() => {}}>음식물</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>재활용</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>일반</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>기타</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTrashType("음식물");
+                  }}
+                  className="text-[#F5694A]"
+                >
+                  음식물
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTrashType("재활용");
+                  }}
+                  className="text-[#58CC02]"
+                >
+                  재활용
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTrashType("일반");
+                  }}
+                  className="text-[#59B9FF]"
+                >
+                  일반
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTrashType("기타");
+                  }}
+                  className="text-[#AF8AFF]"
+                >
+                  기타
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -130,7 +209,7 @@ const ComplaintStats = () => {
                   size="sm"
                   className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
                 >
-                  <span className="text-sm">시간대</span>
+                  <span className="text-sm">{selectedTimeline}</span>
                   <img src={triangle} alt="시간대 선택" />
                 </Button>
               </DropdownMenuTrigger>
@@ -138,10 +217,34 @@ const ComplaintStats = () => {
                 align="center"
                 className="[&>*]:justify-center !min-w-[80px]"
               >
-                <DropdownMenuItem onClick={() => {}}>연도별</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>월별</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>주간</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>일간</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline("연도별");
+                  }}
+                >
+                  연도별
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline("월별");
+                  }}
+                >
+                  월별
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline("주간");
+                  }}
+                >
+                  주간
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline("일간");
+                  }}
+                >
+                  일간
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <DropdownMenu>
@@ -151,7 +254,7 @@ const ComplaintStats = () => {
                   size="sm"
                   className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
                 >
-                  <span className="text-sm">요일별</span>
+                  <span className="text-sm">{selectedWeekday}</span>
                   <img src={triangle} alt="요일별 선택" />
                 </Button>
               </DropdownMenuTrigger>
@@ -159,11 +262,41 @@ const ComplaintStats = () => {
                 align="center"
                 className="[&>*]:justify-center !min-w-[80px]"
               >
-                <DropdownMenuItem onClick={() => {}}>월요일</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>화요일</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>수요일</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>목요일</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => {}}>금요일</DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday("월요일");
+                  }}
+                >
+                  월요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday("화요일");
+                  }}
+                >
+                  화요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday("수요일");
+                  }}
+                >
+                  수요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday("목요일");
+                  }}
+                >
+                  목요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday("금요일");
+                  }}
+                >
+                  금요일
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="flex items-center gap-2">
@@ -177,7 +310,7 @@ const ComplaintStats = () => {
               />
             </div>
           </div>
-          <div className="flex absolute md:static top-32 right-5">
+          <div className="flex absolute md:static top-[8.7rem] right-5">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -204,11 +337,17 @@ const ComplaintStats = () => {
             </Button>
           </div>
         </header>
+        <div className="mb-4 pb-3 rounded-lg">
+          <p className="text-base text-gray-600 mb-1">현재 조회 중인 지역은</p>
+          <h3 className="text-xl font-semibold text-gray-800">
+            도봉구 {getSelectedAreaDisplay(selectedAreas)}
+          </h3>
+        </div>
         <section className="relative">
           <DateRangePicker
             dateRange={dateRange}
             onDateRangeChange={setDateRange}
-            containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-28"
+            containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
           />
           <p className="text-base font-semibold text-8d8d8d">
             최근{" "}
