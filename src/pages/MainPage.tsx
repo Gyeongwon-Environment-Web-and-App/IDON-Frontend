@@ -225,7 +225,7 @@ const MainPage: React.FC = () => {
 
       {/* 화면 하단 */}
       <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[53%] w-screen 2xl:px-80">
-        <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">
+        <p className="md:hidden font-bold text-lg px-7 pt-8 pb-4">
           메인 메뉴
         </p>
         {/* 기능 페이지 이동 버튼들 */}
@@ -260,7 +260,7 @@ const MainPage: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="h-full my-10 mx-4 md:mx-0 4xl:pt-5">
+        <div className="h-full mt-7 md:mt-10 mx-4 md:mx-0 4xl:pt-5 mb-24 md:mb-10">
           <div className="flex justify-between bg-[#C8F2CE] w-full md:min-w-64 px-3 py-1 rounded">
             <div className="flex gap-1 font-semibold text-lg">
               공지사항

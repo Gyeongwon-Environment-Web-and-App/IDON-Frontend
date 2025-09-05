@@ -1,6 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useMapOverviewStore } from "@/stores/mapOverviewStore";
 import { useComplaintTableStore } from "@/stores/complaintTableStore";
+import { useNavigate } from "react-router-dom";
+import leftArrow from "../../assets/icons/navigation/arrows/gray_arrow_left.svg";
+import rightArrow from "../../assets/icons/navigation/arrows/gray_arrow_right.svg";
+import fix from "../../assets/icons/common/fix.svg";
+// import general from "../../assets/icons/categories/tags/general.svg";
+import recycle from "../../assets/icons/categories/tags/recycle.svg";
+// import other from "../../assets/icons/categories/tags/other.svg";
+// import food from "../../assets/icons/categories/tags/food.svg";
+//! ---------------------------------------------------------------------
+// import greenCircle from "../../assets/icons/map_card/green_circle.svg"
+import yellowCircle from "../../assets/icons/map_card/yellow_circle.svg";
+import pin from "../../assets/icons/map_card/location_pin.svg";
+import phone from "../../assets/icons/map_card/phone.svg";
+import truck from "../../assets/icons/map_card/truck.svg";
+import sample from "../../assets/background/sample.png";
 
 interface ComplaintDetailProps {
   complaintId?: string;
@@ -12,9 +27,12 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
   const { complaints } = useComplaintTableStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   // Get the complaint ID from props or store
-  const currentComplaintId = complaintId || selectedComplaintId;
+  // const currentComplaintId = complaintId || selectedComplaintId;
+  console.log(selectedComplaintId, complaintId);
+  const currentComplaintId = "1";
 
   // Fetch complaint data when ID changes
   useEffect(() => {
@@ -62,102 +80,104 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
     );
   }
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <div className="flex items-center">
-            <div className="text-red-600 text-sm">{error}</div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="p-6">
+  //       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+  //         <div className="flex items-center">
+  //           <div className="text-red-600 text-sm">{error}</div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
+  // if (!selectedComplaint) {
+  //   return (
+  //     <div className="p-6">
+  //       <div className="text-center text-gray-500">
+  //         <p className="text-sm">선택된 민원이 없습니다.</p>
+  //       </div>
+  //     </div>
+  //   );
+  // }
+
+  if (error) {
+    console.log(error);
+  }
   if (!selectedComplaint) {
-    return (
-      <div className="p-6">
-        <div className="text-center text-gray-500">
-          <p className="text-sm">선택된 민원이 없습니다.</p>
-        </div>
-      </div>
-    );
+    console.log("no selected complaint");
   }
 
   return (
-    <div className="p-6">
-      <div className="space-y-4">
-        {/* Header */}
-        <div className="border-b border-gray-200 pb-4">
-          <h2 className="text-lg font-semibold text-gray-900">
-            민원 상세 정보
-          </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            ID: {selectedComplaint.id}
-          </p>
-        </div>
+    <div className="w-full">
+      {/* Header */}
+      <header className="w-full flex items-center">
+        <button
+          className="flex text-xl font-semibold text-gray-900 px-2 gap-1"
+          onClick={() => console.log("민원 분류로 이동")}
+        >
+          <img src={leftArrow} alt="왼쪽 화살표" />
+          민원 목록
+        </button>
+      </header>
 
-        {/* Complaint Details */}
-        <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="text-sm font-medium text-gray-700">
-                접수 일자
-              </label>
-              <p className="text-sm text-gray-900 mt-1">
-                {selectedComplaint.date}
-              </p>
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700">종류</label>
-              <p className="text-sm text-gray-900 mt-1">
-                {selectedComplaint.type}
-              </p>
-            </div>
+      {/* Complaint Details */}
+      <div className="p-4 py-2">
+        <img src={sample} alt="샘플사진" className="rounded-sm mb-6" />
+
+        <div className="space-y-2">
+          <div className="flex gap-2 items-center">
+            <img src={recycle} alt={`재활용`} />
+            <p className="text-xl font-semibold">임시 제목 임시 제목</p>
+            <button className="flex p-0 w-[3.2rem]" onClick={() => {console.log("수정버튼 클릭")}}>
+              <img src={fix} alt="수정버튼" />
+            </button>
+          </div>
+          <p className="text-base text-[#7C7C7C] font-semibold">2025.06.12 오전 9시 38분</p>
+  
+          <div className="flex gap-2 items-center">
+            <img src={pin} alt="주소 핀" className="w-5 h-5" />
+            <label className="text-lg font-semibold">신당동 다산로33-3 공디 아파트</label>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700">주소</label>
-            <p className="text-sm text-gray-900 mt-1">
-              {selectedComplaint.address}
-            </p>
+          <div className="flex gap-2 items-center">
+            <img src={phone} alt="전화" className="w-5 h-5" />
+            <label className="text-lg font-semibold">경원 환경 (010-1234-1234)</label>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700">상태</label>
-            <span
-              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
-                selectedComplaint.status === "완료"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}
-            >
-              {selectedComplaint.status}
-            </span>
+          <div className="flex gap-2 items-center">
+            <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
+            <label className="text-lg font-semibold">민원 처리 중</label>
+            <button className="text-[#0009FF] p-0 ml-1">상태수정</button>
           </div>
 
-          <div>
-            <label className="text-sm font-medium text-gray-700">
-              민원 내용
-            </label>
-            <div className="mt-1 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-900 whitespace-pre-wrap">
-                {selectedComplaint.content}
-              </p>
+          <div className="flex gap-2 items-center">
+            <img src={truck} alt="차량" className="w-5 h-5" />
+            <label className="text-lg font-semibold">180가 6547</label>
+            <p className="text-base font-semibold text-[#7C7C7C]">차량이 수거 중이에요</p>
+            <button className="text-[#0009FF] p-0">동선 조회</button>
+          </div>
+  
+          <div className="pt-5">
+            <label className="text-lg font-semibold">민원 내용</label>
+            <div className="mt-2 p-3 rounded-lg bg-ebebeb h-40">
+              <p className="text-sm whitespace-pre-wrap"></p>
             </div>
           </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex gap-2 pt-4 border-t border-gray-200">
-          <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
-            처리 상태 변경
-          </button>
-          <button className="flex-1 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-gray-200 transition-colors">
-            수정
-          </button>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="absolute bottom-2 right-1 w-full flex justify-end items-center">
+        <button
+          className="flex text-lg font-semibold text-gray-900 px-2 gap-1"
+          onClick={() => navigate("/complaints/table")}
+        >
+          민원 내역 / 관리로 돌아가기
+          <img src={rightArrow} alt="오른쪽 화살표" />
+        </button>
+      </footer>
     </div>
   );
 };

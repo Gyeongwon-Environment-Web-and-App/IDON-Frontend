@@ -52,6 +52,7 @@ const ComplaintTable: React.FC = () => {
     useState<Complaint[]>(initialComplaints);
   const [sortOrder, setSortOrder] = useState<"최근" | "옛">("최근");
   const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
 
   // 전체 선택 핸들러
   const handleSelectAll = () => {
@@ -402,7 +403,11 @@ const ComplaintTable: React.FC = () => {
         {/* 검색 영역 */}
         <div className="flex gap-2 items-center justify-start mb-3 md:mb-0">
           <div className="relative flex flex-1 md:flex-auto md:max-w-80">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[#575757]" />
+            <Search
+              className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
+                isSearchFocused ? "text-light-green" : "text-[#575757]"
+              }`}
+            />
             <input
               type="text"
               placeholder="검색..."
@@ -410,6 +415,8 @@ const ComplaintTable: React.FC = () => {
               value={searchTerm}
               onChange={handleSearchInputChange}
               onKeyDown={handleKeyPress}
+              onFocus={() => setIsSearchFocused(true)}
+              onBlur={() => setIsSearchFocused(false)}
             />
           </div>
           <Button

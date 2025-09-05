@@ -50,13 +50,13 @@ const MapFilters: React.FC<MapFiltersProps> = ({ sidebarOpen }) => {
 
   return (
     <div
-      className={`fixed top-4 z-50 ${sidebarOpen ? "left-[36rem]" : "left-24"}`}
+      className={`fixed top-4 z-50 ${sidebarOpen ? "left-[36rem]" : "left-16 md:left-24"}`}
     >
       <div className="flex gap-2 mb-2">
         {filterOptions.map((option) => (
           <button
             key={option.id}
-            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md font-semibold px-3 py-2 ${selectedFilter === option.id ? "bg-darker-green text-white" : "bg-white"}`}
+            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md px-2 sm:px-3 py-2 ${selectedFilter === option.id ? "bg-darker-green text-white" : "bg-white"}`}
             onClick={() => setSelectedFilter(option.id)}
           >
             <img
@@ -65,7 +65,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ sidebarOpen }) => {
               }
               alt={`${option.label} 필터`}
             />
-            {option.label}
+            <span className="hidden xl:block text-sm xl:text-base pt-0.5 xl:pt-0 font-semibold ">{option.label}</span>
           </button>
         ))}
       </div>
