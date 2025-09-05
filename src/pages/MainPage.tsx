@@ -7,10 +7,12 @@ import { useMainPageStore } from "@/stores/mainPageStore";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import leftArrow from "../assets/icons/navigation/arrows/arrow_left_white.svg";
 import rightArrow from "../assets/icons/navigation/arrows/arrow_right_white.svg";
+import rightArrowGray from "../assets/icons/navigation/arrows/gray_arrow_right.svg";
 import truck from "../assets/icons/navigation/home_menu/vehicle.svg";
 import folder from "../assets/icons/navigation/home_menu/folder.svg";
 import write from "../assets/icons/navigation/home_menu/write.svg";
 import mapping from "../assets/icons/navigation/home_menu/mapping.svg";
+import notice from "../assets/icons/common/notice.svg";
 import bg1 from "../assets/background/bg1.webp";
 import bg2 from "../assets/background/bg2.webp";
 import bg3 from "../assets/background/bg3.webp";
@@ -177,7 +179,7 @@ const MainPage: React.FC = () => {
 
         {/* 좌우 화살표 버튼 */}
         <button
-          className="absolute top-[50%] md:left-[20%] left-0 -translate-y-[50%] cursor-pointer z-5 disabled:opacity-50"
+          className="absolute top-[50%] md:left-[17%] left-0 -translate-y-[50%] cursor-pointer z-5 disabled:opacity-50"
           onClick={handlePrevImage}
           disabled={isTransitioning}
         >
@@ -188,7 +190,7 @@ const MainPage: React.FC = () => {
           />
         </button>
         <button
-          className="absolute top-[50%] md:right-[20%] right-0 -translate-y-[50%] cursor-pointer object-contain disabled:opacity-50"
+          className="absolute top-[50%] md:right-[16%] right-0 -translate-y-[50%] cursor-pointer object-contain disabled:opacity-50"
           onClick={handleNextImage}
           disabled={isTransitioning}
         >
@@ -222,12 +224,12 @@ const MainPage: React.FC = () => {
       </div>
 
       {/* 화면 하단 */}
-      <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[55%] w-screen 2xl:px-80 pt-6">
+      <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[53%] w-screen 2xl:px-80">
         <p className="md:hidden font-bold text-lg px-7 pt-5 md:pb-2">
           메인 메뉴
         </p>
         {/* 기능 페이지 이동 버튼들 */}
-        <div className="grid grid-cols-2 gap-4 md:gap-8 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-10 items-center px-4 4xl:pt-5">
+        <div className="grid grid-cols-2 gap-4 md:gap-6 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-4 items-center px-4 4xl:pt-5">
           {menuButtons.map((button, index) => (
             <button
               key={index}
@@ -258,12 +260,15 @@ const MainPage: React.FC = () => {
             </button>
           ))}
         </div>
-        <div className="mx-auto border border-red h-full max-w-60 my-10">
-          현재 개발 중입니다. 공지사항페이지들어갈자리 공지사항페이지들어갈자리
-          공지사항페이지들어갈자리 공지사항페이지들어갈자리
-          공지사항페이지들어갈자리 공지사항페이지들어갈자리
-          공지사항페이지들어갈자리 공지사항페이지들어갈자리
-          공지사항페이지들어갈자리
+        <div className="h-full my-10 mx-4 md:mx-0 4xl:pt-5">
+          <div className="flex justify-between bg-[#C8F2CE] w-full md:min-w-64 px-3 py-1 rounded">
+            <div className="flex gap-1 font-semibold text-lg">
+              공지사항
+              <img src={notice} alt="공지사항 아이콘" />
+            </div>
+            <img src={rightArrowGray} alt="오른쪽 화살표" className="cursor-pointer" />
+          </div>
+          <div className="h-72 w-full mt-2 border border-black"></div>
         </div>
       </div>
 
