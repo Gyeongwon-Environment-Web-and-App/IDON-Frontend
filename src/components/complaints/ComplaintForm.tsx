@@ -8,7 +8,7 @@ import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
 import attention from "../../assets/icons/common/attention.svg";
 import attentionRed from "../../assets/icons/common/attention_red.svg";
 import FileAttach from "../forms/FileAttach";
-import UnifiedKakaoMap from "../map/UnifiedKakaoMap";
+import AdvancedKakaoMap from "../map/AdvancedKakaoMap";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
@@ -59,13 +59,13 @@ export default function ComplaintForm({
     setTempAddress(formData.address);
   }, [formData.address, setTempAddress]);
 
-  // Reset map center flag after it's been used
+  // Reset map center flag after it's been used (simplified)
   useEffect(() => {
     if (resetMapCenter) {
       // Reset the flag after a short delay to allow MapComponent to process it
       const timer = setTimeout(() => {
         setResetMapCenter(false);
-      }, 100);
+      }, 200); // Longer delay to prevent conflicts
       return () => clearTimeout(timer);
     }
   }, [resetMapCenter, setResetMapCenter]);
@@ -404,8 +404,7 @@ export default function ComplaintForm({
             </button>
 
             {/* 드롭다운 지도 컴포넌트 */}
-            <UnifiedKakaoMap
-              mode="advanced"
+            <AdvancedKakaoMap
               latitude={mapCoordinates?.latitude}
               longitude={mapCoordinates?.longitude}
               address={formData.address}

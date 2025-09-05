@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import MapSideMenu from "@/components/map/MapSideMenu";
-import UnifiedKakaoMap from "@/components/map/UnifiedKakaoMap";
+import SimpleKakaoMap from "@/components/map/SimpleKakaoMap";
 import MapFilters from "@/components/map/MapFilters";
 
 export default function MapOverview() {
@@ -9,9 +9,8 @@ export default function MapOverview() {
 
   return (
     <div className="h-screen w-screen relative">
-      <UnifiedKakaoMap
+      <SimpleKakaoMap
         ref={mapRef}
-        mode="simple"
         center={{ lat: 37.6714001064975, lng: 127.041485813197 }}
         zoom={2}
       />
