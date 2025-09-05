@@ -1,63 +1,37 @@
 // hooks/useAuth.ts
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 
 export const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Get state and actions from Zustand store
+  const {
+    isAuthenticated,
+    isLoading,
+    userData,
+    token,
+    login: storeLogin,
+    logout: storeLogout,
+    checkAuthStatus,
+    setLoading,
+  } = useAuthStore();
+
+  // Check auth status on mount
   useEffect(() => {
     checkAuthStatus();
-  }, []);
+  }, [checkAuthStatus]);
 
-  const checkAuthStatus = () => {
-    try {
-      const userData = sessionStorage.getItem("userData");
-      const token = sessionStorage.getItem("userToken");
-
-      if (userData && token) {
-        if (isTokenExpired(token)) {
-          logout();
-          return;
-        }
-
-        setIsAuthenticated(true);
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch {
-      setIsAuthenticated(false);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const isTokenExpired = (token: string): boolean => {
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const currentTime = Date.now();
-      const tokenExpTime = payload.exp * 1000; // Convert to milliseconds
-
-      // Check if token is expired (expiration time is set by server)
-      return tokenExpTime < currentTime;
-    } catch {
-      return true;
-    }
-  };
-
+  // Enhanced login function with navigation
   const login = (userData: {
-    serial_no: number;
+    id: number;
+    serial_no: string;
+    phone_no: string;
+    name: string;
     token: string;
-    [key: string]: unknown;
   }) => {
-    // Store data
-    sessionStorage.setItem("userData", JSON.stringify(userData));
-    sessionStorage.setItem("serial_no", userData.serial_no.toString());
-    sessionStorage.setItem("userToken", userData.token);
-
-    // Update state immediately
-    setIsAuthenticated(true);
+    storeLogin(userData);
 
     // Navigate after state update
     setTimeout(() => {
@@ -65,17 +39,9 @@ export const useAuth = () => {
     }, 0);
   };
 
+  // Enhanced logout function with navigation
   const logout = () => {
-    // 스토리지 정리
-    localStorage.removeItem("userData");
-    localStorage.removeItem("serial_no");
-    localStorage.removeItem("userToken");
-    sessionStorage.removeItem("userData");
-    sessionStorage.removeItem("serial_no");
-    sessionStorage.removeItem("userToken");
-
-    // 상태 업데이트
-    setIsAuthenticated(false);
+    storeLogout();
 
     // Navigate after state update
     setTimeout(() => {
@@ -83,5 +49,14 @@ export const useAuth = () => {
     }, 0);
   };
 
-  return { isAuthenticated, isLoading, logout, login, checkAuthStatus };
+  return {
+    isAuthenticated,
+    isLoading,
+    userData,
+    token,
+    logout,
+    login,
+    checkAuthStatus,
+    setLoading,
+  };
 };

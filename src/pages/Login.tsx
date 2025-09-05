@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 import mdLogo from "../assets/icons/brand/mid_logo.svg";
-import axios from "axios";
+import { authService, type LoginResult } from "../services/authService";
 
 interface LoginProps {
   onLogin: (userData: {
-    serial_no: number;
+    id: number;
+    serial_no: string;
+    phone_no: string;
+    name: string;
     token: string;
-    [key: string]: unknown;
   }) => void;
 }
 
@@ -18,52 +20,18 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
   const [loading, setLoading] = useState(false);
 
   // 로그인 API 호출 함수
-  const loginWithSerial = async (serial_no: number) => {
-    try {
-      const response = await axios.get(
-        `http://49.50.128.88:3000/user/login/${serial_no}`
-      );
+  const loginWithSerial = async (serial_no: number): Promise<LoginResult> => {
+    const result = await authService.login(serial_no);
 
-      if (response.status === 200) {
-        // 로그인 성공
-        const { message, user, token } = response.data;
-        console.log(`login message: ${message}`);
-
-        // 사용자 정보와 토큰을 함께 저장
-        const userData = {
-          ...user,
-          token: token,
-        };
-
-        // 로컬 스토리지에 사용자 정보 저장 (자동 로그인용)
-        if (autoLogin) {
-          localStorage.setItem("userData", JSON.stringify(userData));
-          localStorage.setItem("serial_no", user.serial_no.toString());
-          localStorage.setItem("userToken", token);
-        }
-
-        console.log('userToken: ', token);
-
-        return { success: true, data: userData };
-      }
-    } catch (error) {
-      console.error("로그인 실패:", error);
-
-      if (axios.isAxiosError(error)) {
-        if (error.response?.status === 404) {
-          return {
-            success: false,
-            message: "존재하지 않는 시리얼 번호입니다.",
-          };
-        } else if (error.response?.status === 400) {
-          return { success: false, message: "잘못된 요청입니다." };
-        } else {
-          return { success: false, message: "서버 오류가 발생했습니다." };
-        }
-      }
-
-      return { success: false, message: "로그인 중 오류가 발생했습니다." };
+    // 로그인 성공 시 로컬 스토리지에 사용자 정보 저장 (자동 로그인용)
+    if (result.success && result.data && autoLogin) {
+      localStorage.setItem("userData", JSON.stringify(result.data));
+      localStorage.setItem("serial_no", result.data.serial_no.toString());
+      localStorage.setItem("userToken", result.data.token);
+      console.log("userToken: ", result.data.token);
     }
+
+    return result;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -75,7 +43,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       const serialNo = parseInt(serial);
       const result = await loginWithSerial(serialNo);
 
-      if (result && result.success) {
+      if (result && result.success && result.data) {
         // 로그인 성공 시 부모 컴포넌트의 onLogin 함수 사용
         onLogin(result.data);
       } else {

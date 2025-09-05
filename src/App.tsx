@@ -1,10 +1,5 @@
 import React from "react";
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import ComplaintManage from "./pages/ComplaintManage";
 import MapOverview from "./pages/MapOverview";
@@ -20,7 +15,7 @@ const App: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { isAuthenticated, isLoading, logout, login } = useAuth();
+  const { isAuthenticated, isLoading, login } = useAuth();
 
   if (isLoading) {
     return <div>Loading...</div>;
@@ -43,27 +38,12 @@ const AppContent: React.FC = () => {
       {/* 보호된 라우트들 - 조건부 렌더링 */}
       {isAuthenticated ? (
         <>
-          <Route path="/" element={<MainPage onLogout={logout} />} />
-          <Route
-            path="/complaints"
-            element={<ComplaintManage onLogout={logout} />}
-          />
-          <Route
-            path="/complaints/table"
-            element={<ComplaintManage onLogout={logout} />}
-          />
-          <Route
-            path="/complaints/form"
-            element={<ComplaintManage onLogout={logout} />}
-          />
-          <Route
-            path="/complaints/stats"
-            element={<ComplaintManage onLogout={logout} />}
-          />
-          <Route
-            path="/map/overview"
-            element={<MapOverview />}
-          />
+          <Route path="/" element={<MainPage />} />
+          <Route path="/complaints" element={<ComplaintManage />} />
+          <Route path="/complaints/table" element={<ComplaintManage />} />
+          <Route path="/complaints/form" element={<ComplaintManage />} />
+          <Route path="/complaints/stats" element={<ComplaintManage />} />
+          <Route path="/map/overview" element={<MapOverview />} />
         </>
       ) : (
         // 인증되지 않은 경우 모든 경로를 로그인으로 리다이렉트

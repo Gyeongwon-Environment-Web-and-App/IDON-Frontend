@@ -1,7 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
-import type { ComplaintFormData } from "../types/complaint";
+import { useComplaintFormStore } from "../stores/complaintFormStore";
+import { useAuthStore } from "../stores/authStore";
+import { useComplaintManageStore } from "../stores/complaintManageStore";
 import Popup from "../components/forms/Popup";
 import DateTimeBox from "../components/forms/DateTimeBox";
 import MobileBottomNav from "../components/layout/MobileBottomNav";
@@ -15,48 +17,27 @@ import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
 import ComplaintStats from "@/components/statistics/ComplaintStats";
 
-interface ComplaintManageProps {
-  onLogout: () => void;
-}
-
-const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
+const ComplaintManage = () => {
+  // Get logout function from Zustand store
+  const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
 
-  const initialFormData: ComplaintFormData = {
-    address: "",
-    routeInput: "",
-    selectedRoute: "",
-    phone: "",
-    selectedTrash: "",
-    trashInput: "",
-    trashDetail: "",
-    content: "",
-    isMalicious: false,
-    forwardTargets: [] as string[],
-    uploadedFiles: [] as Array<{
-      name: string;
-      url: string;
-      type: string;
-      size: number;
-    }>,
-  };
+  // Get form data from Zustand store
+  const { formData, resetForm } = useComplaintFormStore();
 
-  // URL에 따라 기본 탭 설정
-  const getDefaultTab = () => {
-    if (location.pathname.includes("/form")) {
-      return "register";
-    } else if (location.pathname.includes("/table")) {
-      return "manage";
-    }
-    return "register"; // 기본값
-  };
-
-  const [activeTab, setActiveTab] = useState(getDefaultTab());
-  const [formData, setFormData] = useState(initialFormData);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
+  // Get complaint manage state from Zustand store
+  const {
+    activeTab,
+    showConfirm,
+    hasUnsavedChanges,
+    isPopupOpen,
+    setActiveTab,
+    setShowConfirm,
+    setIsPopupOpen,
+    resetUI,
+    checkUnsavedChanges,
+  } = useComplaintManageStore();
 
   // URL 변경 감지하여 탭 업데이트
   useEffect(() => {
@@ -77,17 +58,8 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
 
   // 폼 데이터 변경 감지
   useEffect(() => {
-    const hasData = !!(
-      formData.address ||
-      formData.selectedRoute ||
-      formData.selectedTrash ||
-      formData.content ||
-      formData.trashDetail ||
-      formData.phone
-    );
-
-    setHasUnsavedChanges(hasData);
-  }, [formData]);
+    checkUnsavedChanges(formData);
+  }, [formData, checkUnsavedChanges]);
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -102,7 +74,7 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
     return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [hasUnsavedChanges]);
 
-  const handleTabClick = (nextTab: string) => {
+  const handleTabClick = (nextTab: "manage" | "register" | "stats") => {
     if (
       activeTab === "register" && // 작성 중에서
       nextTab !== "register" && // 다른 탭으로 이동
@@ -123,7 +95,7 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
       navigate("/complaints/stats");
     }
 
-    setFormData(initialFormData);
+    resetForm();
     setActiveTab(nextTab);
   };
 
@@ -170,8 +142,8 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
       setIsPopupOpen(true);
 
       // 5. 폼 초기화
-      setFormData(initialFormData);
-      setShowConfirm(false);
+      resetForm();
+      resetUI();
     } catch (error) {
       console.error("민원 제출 실패:", error);
       alert("민원 제출에 실패했습니다. 다시 시도해주세요.");
@@ -200,7 +172,7 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
           toHome={true}
         />
       )}
-      <Header onLogout={onLogout} />
+      <Header onLogout={logout} />
       <div className="flex md:justify-center md:items-center justify-start items-start md:pt-10 pt-2 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="민원"
@@ -241,8 +213,6 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
               (!showConfirm ? (
                 <ComplaintForm
                   dateTimeBox={<DateTimeBox visible={true} repeat={false} />}
-                  formData={formData}
-                  setFormData={setFormData}
                   onSubmit={() => setShowConfirm(true)}
                 />
               ) : (
@@ -254,8 +224,6 @@ const ComplaintManage = ({ onLogout }: ComplaintManageProps) => {
                       onBack={() => setShowConfirm(false)}
                     />
                   }
-                  setFormData={setFormData}
-                  formData={formData}
                   onSubmit={onSubmit}
                 />
               ))}

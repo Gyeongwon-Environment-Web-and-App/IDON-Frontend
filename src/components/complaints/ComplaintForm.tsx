@@ -1,67 +1,63 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 import { AddressService } from "../../services/addressService";
-import type { ComplaintFormData } from "../../types/complaint";
+import { useComplaintFormStore } from "../../stores/complaintFormStore";
+import { useComplaintFormUIStore } from "../../stores/complaintFormUIStore";
 import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
 import attention from "../../assets/icons/common/attention.svg";
 import attentionRed from "../../assets/icons/common/attention_red.svg";
 import FileAttach from "../forms/FileAttach";
-import MapComponent from "../map/MapComponent";
+import UnifiedKakaoMap from "../map/UnifiedKakaoMap";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
-  formData: ComplaintFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ComplaintFormData>>;
   onSubmit: () => void;
 }
 
 export default function ComplaintForm({
   dateTimeBox,
-  formData,
-  setFormData,
   onSubmit,
 }: ComplaintFormProps) {
-  const [focus, setFocus] = useState({
-    routeInput: false,
-    trashInput: false,
-    input3: false,
-  });
+  // Get state and actions from Zustand store
+  const {
+    formData,
+    showAddressSearch,
+    addresses,
+    loading,
+    error,
+    tempAddress,
+    addressFrequencyInfo,
+    updateFormData,
+    setShowAddressSearch,
+    setAddresses,
+    setLoading,
+    setError,
+    setTempAddress,
+    setAddressFrequencyInfo,
+  } = useComplaintFormStore();
 
-  const [showAddressSearch, setShowAddressSearch] = useState(false);
-  const [addresses, setAddresses] = useState<
-    Array<{
-      roadAddress: string;
-      jibunAddress: string;
-      englishAddress: string;
-      x: string;
-      y: string;
-      name?: string;
-    }>
-  >([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Get UI state and actions from Zustand store
+  const {
+    focus,
+    showMap,
+    mapCoordinates,
+    resetMapCenter,
+    frequencyTimeout,
+    setFocus,
+    setShowMap,
+    setMapCoordinates,
+    setResetMapCenter,
+    setFrequencyTimeout,
+  } = useComplaintFormUIStore();
+
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [tempAddress, setTempAddress] = useState(formData.address);
-  const [frequencyTimeout, setFrequencyTimeout] =
-    useState<NodeJS.Timeout | null>(null);
-  const [addressFrequencyInfo, setAddressFrequencyInfo] = useState<
-    number | null
-  >(null);
+  const mapDropdownRef = useRef<HTMLDivElement>(null);
 
   // formData.address가 변경될 때 tempAddress 동기화
   useEffect(() => {
     setTempAddress(formData.address);
-  }, [formData.address]);
-
-  // 지도 관련 상태
-  const [showMap, setShowMap] = useState(false);
-  const [mapCoordinates, setMapCoordinates] = useState<{
-    latitude: number;
-    longitude: number;
-  } | null>(null);
-  const [resetMapCenter, setResetMapCenter] = useState(false);
-  const mapDropdownRef = useRef<HTMLDivElement>(null);
+  }, [formData.address, setTempAddress]);
 
   // Reset map center flag after it's been used
   useEffect(() => {
@@ -72,7 +68,7 @@ export default function ComplaintForm({
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [resetMapCenter]);
+  }, [resetMapCenter, setResetMapCenter]);
 
   // 주소 검색 기능
   useEffect(() => {
@@ -93,7 +89,7 @@ export default function ComplaintForm({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [loading, error]);
+  }, [loading, error, setShowAddressSearch]);
 
   // 주소 검색 함수
   const searchAddresses = async () => {
@@ -141,7 +137,7 @@ export default function ComplaintForm({
 
   const getToken = () => {
     try {
-      return sessionStorage.getItem("userToken");
+      return localStorage.getItem("userToken");
     } catch (error) {
       console.error("토큰 가져오기 실패:", error);
       return null;
@@ -157,10 +153,7 @@ export default function ComplaintForm({
     name?: string;
   }) => {
     const selectedAddress = address.roadAddress || address.jibunAddress;
-    setFormData((f: ComplaintFormData) => ({
-      ...f,
-      address: selectedAddress,
-    }));
+    updateFormData({ address: selectedAddress });
 
     // Reset map center for new address
     setResetMapCenter(true);
@@ -225,10 +218,7 @@ export default function ComplaintForm({
         if (!isNaN(latitude) && !isNaN(longitude)) {
           const coordinates = { latitude, longitude };
           setMapCoordinates(coordinates);
-          setFormData((f: ComplaintFormData) => ({
-            ...f,
-            coordinates,
-          }));
+          updateFormData({ coordinates });
           setShowMap(true);
         } else {
           setError("주소의 좌표 정보를 가져올 수 없습니다.");
@@ -295,19 +285,13 @@ export default function ComplaintForm({
                 if (e.key === "Enter") {
                   e.preventDefault();
                   // 임시 주소를 실제 주소로 업데이트
-                  setFormData((f: ComplaintFormData) => ({
-                    ...f,
-                    address: tempAddress,
-                  }));
+                  updateFormData({ address: tempAddress });
                   searchAddresses();
                 }
               }}
               onBlur={() => {
                 // 포커스를 잃을 때도 임시 주소를 실제 주소로 업데이트
-                setFormData((f: ComplaintFormData) => ({
-                  ...f,
-                  address: tempAddress,
-                }));
+                updateFormData({ address: tempAddress });
               }}
               placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로 285, 서울오봉초등학교)"
             />
@@ -360,10 +344,9 @@ export default function ComplaintForm({
                         const longitude = parseFloat(address.x);
                         if (!isNaN(latitude) && !isNaN(longitude)) {
                           setMapCoordinates({ latitude, longitude });
-                          setFormData((f: ComplaintFormData) => ({
-                            ...f,
+                          updateFormData({
                             coordinates: { latitude, longitude },
-                          }));
+                          });
                         }
 
                         setShowAddressSearch(false);
@@ -421,12 +404,15 @@ export default function ComplaintForm({
             </button>
 
             {/* 드롭다운 지도 컴포넌트 */}
-            <MapComponent
+            <UnifiedKakaoMap
+              mode="advanced"
               latitude={mapCoordinates?.latitude}
               longitude={mapCoordinates?.longitude}
               address={formData.address}
               isVisible={showMap}
               resetCenter={resetMapCenter}
+              className="w-full rounded-b-lg"
+              style={{ height: "300px" }}
             />
           </div>
 
@@ -481,12 +467,7 @@ export default function ComplaintForm({
                   borderRight:
                     idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
                 }}
-                onClick={() =>
-                  setFormData((f: ComplaintFormData) => ({
-                    ...f,
-                    selectedRoute: label,
-                  }))
-                }
+                onClick={() => updateFormData({ selectedRoute: label })}
               >
                 {label}
               </button>
@@ -503,20 +484,10 @@ export default function ComplaintForm({
                 ? formData.selectedRoute
                 : ""
             }
-            onChange={(e) =>
-              setFormData((f: ComplaintFormData) => ({
-                ...f,
-                selectedRoute: e.target.value,
-              }))
-            }
-            onFocus={() => setFocus((f) => ({ ...f, routeInput: true }))}
-            onBlur={() => setFocus((f) => ({ ...f, routeInput: false }))}
-            onClick={() =>
-              setFormData((f: ComplaintFormData) => ({
-                ...f,
-                selectedRoute: "",
-              }))
-            }
+            onChange={(e) => updateFormData({ selectedRoute: e.target.value })}
+            onFocus={() => setFocus({ routeInput: true })}
+            onBlur={() => setFocus({ routeInput: false })}
+            onClick={() => updateFormData({ selectedRoute: "" })}
           />
           <div className="h-5 md:hidden"></div>
 
@@ -530,12 +501,7 @@ export default function ComplaintForm({
                 value={formData.phone}
                 className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 py-2 mt-2 mb-5 rounded focus:outline-none"
                 placeholder="직접 전화번호 입력"
-                onChange={(e) => {
-                  setFormData((f: ComplaintFormData) => ({
-                    ...f,
-                    phone: e.target.value,
-                  }));
-                }}
+                onChange={(e) => updateFormData({ phone: e.target.value })}
               />
             </>
           )}
@@ -563,12 +529,7 @@ export default function ComplaintForm({
                   borderRight:
                     idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
                 }}
-                onClick={() =>
-                  setFormData((f: ComplaintFormData) => ({
-                    ...f,
-                    selectedTrash: label,
-                  }))
-                }
+                onClick={() => updateFormData({ selectedTrash: label })}
               >
                 {label}
               </button>
@@ -585,20 +546,10 @@ export default function ComplaintForm({
             }
             placeholder={focus.trashInput ? "" : "직접 입력"}
             className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
-            onFocus={() => setFocus((f) => ({ ...f, trashInput: true }))}
-            onBlur={() => setFocus((f) => ({ ...f, trashInput: false }))}
-            onChange={(e) =>
-              setFormData((f: ComplaintFormData) => ({
-                ...f,
-                selectedTrash: e.target.value,
-              }))
-            }
-            onClick={() =>
-              setFormData((f: ComplaintFormData) => ({
-                ...f,
-                selectedTrash: "",
-              }))
-            }
+            onFocus={() => setFocus({ trashInput: true })}
+            onBlur={() => setFocus({ trashInput: false })}
+            onChange={(e) => updateFormData({ selectedTrash: e.target.value })}
+            onClick={() => updateFormData({ selectedTrash: "" })}
           />
 
           {/* 쓰레기 상세 종류 */}
@@ -609,17 +560,24 @@ export default function ComplaintForm({
             type="text"
             placeholder={focus.input3 ? "" : "입력란"}
             className="w-full md:w-[200px] md:col-span-1 col-span-3 border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold md:my-5 -mt-5"
-            onFocus={() => setFocus((f) => ({ ...f, input3: true }))}
-            onBlur={() => setFocus((f) => ({ ...f, input3: false }))}
+            onFocus={() => setFocus({ input3: true })}
+            onBlur={() => setFocus({ input3: false })}
             value={formData.trashDetail}
-            onChange={(e) =>
-              setFormData((f) => ({ ...f, trashDetail: e.target.value }))
-            }
+            onChange={(e) => updateFormData({ trashDetail: e.target.value })}
           />
           <div className="hidden md:block md:col-span-3"></div>
 
           {/* 파일 첨부 */}
-          <FileAttach formData={formData} setFormData={setFormData} />
+          <FileAttach
+            formData={formData}
+            setFormData={(updates) => {
+              if (typeof updates === "function") {
+                updateFormData(updates(formData));
+              } else {
+                updateFormData(updates);
+              }
+            }}
+          />
 
           {/* 민원 내용 */}
           <label className="md:col-span-1 col-span-3 font-bold text-[1rem] md:mt-5 self-start">
@@ -629,9 +587,7 @@ export default function ComplaintForm({
             id="content"
             value={formData.content}
             className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none outline-none"
-            onChange={(e) => {
-              setFormData((f) => ({ ...f, content: e.target.value }));
-            }}
+            onChange={(e) => updateFormData({ content: e.target.value })}
           />
 
           {/* 악성 민원 체크 */}
@@ -643,7 +599,7 @@ export default function ComplaintForm({
               className="w-5 h-5 accent-red"
               checked={formData.isMalicious}
               onChange={(e) =>
-                setFormData((f) => ({ ...f, isMalicious: e.target.checked }))
+                updateFormData({ isMalicious: e.target.checked })
               }
             />
             <label

@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "@/components/common/Header";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useAuthStore } from "@/stores/authStore";
+import { useMainPageStore } from "@/stores/mainPageStore";
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 import leftArrow from "../assets/icons/navigation/arrows/arrow_left_white.svg";
 import rightArrow from "../assets/icons/navigation/arrows/arrow_right_white.svg";
@@ -15,14 +17,22 @@ import bg3 from "../assets/background/bg3.webp";
 import bg4 from "../assets/background/bg4.webp";
 import bg5 from "../assets/background/bg5.webp";
 
-interface MainPageProps {
-  onLogout: () => void;
-}
+const MainPage: React.FC = () => {
+  // Get logout function from Zustand store
+  const { logout } = useAuthStore();
 
-const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [loadedImages, setLoadedImages] = useState<Set<number>>(new Set([0]));
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  // Get main page state from Zustand store
+  const {
+    currentImageIndex,
+    loadedImages,
+    isTransitioning,
+    setCurrentImageIndex,
+    addLoadedImage,
+    setIsTransitioning,
+    nextImage,
+    prevImage,
+  } = useMainPageStore();
+
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -40,7 +50,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
         const img = new Image();
         img.onload = () => {
-          setLoadedImages((prev) => new Set([...prev, index]));
+          addLoadedImage(index);
           resolve();
         };
         img.onerror = () => {
@@ -50,7 +60,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
         img.src = backgroundImages[index];
       });
     },
-    [backgroundImages, loadedImages]
+    [backgroundImages, loadedImages, addLoadedImage]
   );
 
   // Preload adjacent images (next and previous)
@@ -77,47 +87,36 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
     preloadAdjacentImages(currentImageIndex);
   }, [currentImageIndex, preloadAdjacentImages]);
 
-  const nextImage = useCallback(async () => {
+  // Enhanced next/prev image functions using store actions
+  const handleNextImage = useCallback(async () => {
     if (isTransitioning) return;
 
-    setIsTransitioning(true);
     const nextIndex = (currentImageIndex + 1) % backgroundImages.length;
-
-    // Ensure next image is loaded before transition
     await preloadImage(nextIndex);
-
-    setCurrentImageIndex(nextIndex);
-
-    // Use shorter transition time for better responsiveness
-    setTimeout(() => setIsTransitioning(false), 200);
+    nextImage(backgroundImages.length);
   }, [
     currentImageIndex,
     backgroundImages.length,
     isTransitioning,
     preloadImage,
+    nextImage,
   ]);
 
-  const prevImage = useCallback(async () => {
+  const handlePrevImage = useCallback(async () => {
     if (isTransitioning) return;
 
-    setIsTransitioning(true);
     const prevIndex =
       currentImageIndex === 0
         ? backgroundImages.length - 1
         : currentImageIndex - 1;
-
-    // Ensure previous image is loaded before transition
     await preloadImage(prevIndex);
-
-    setCurrentImageIndex(prevIndex);
-
-    // Use shorter transition time for better responsiveness
-    setTimeout(() => setIsTransitioning(false), 200);
+    prevImage(backgroundImages.length);
   }, [
     currentImageIndex,
     backgroundImages.length,
     isTransitioning,
     preloadImage,
+    prevImage,
   ]);
 
   const handleCardClick = (route: string) => {
@@ -158,7 +157,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
 
   return (
     <div className="w-screen h-screen overflow-auto absolute top-0 text-center scrollbar-hide">
-      <Header onLogout={onLogout} />
+      <Header onLogout={logout} />
       {/* 배경 이미지 공간 */}
       <div className="w-screen overflow-hidden absolute top-[11%] lg:top-[12%]">
         <picture>
@@ -179,7 +178,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
         {/* 좌우 화살표 버튼 */}
         <button
           className="absolute top-[50%] md:left-[20%] left-0 -translate-y-[50%] cursor-pointer z-5 disabled:opacity-50"
-          onClick={prevImage}
+          onClick={handlePrevImage}
           disabled={isTransitioning}
         >
           <img
@@ -190,7 +189,7 @@ const MainPage: React.FC<MainPageProps> = ({ onLogout }) => {
         </button>
         <button
           className="absolute top-[50%] md:right-[20%] right-0 -translate-y-[50%] cursor-pointer object-contain disabled:opacity-50"
-          onClick={nextImage}
+          onClick={handleNextImage}
           disabled={isTransitioning}
         >
           <img

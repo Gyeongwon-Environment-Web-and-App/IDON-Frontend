@@ -5,22 +5,20 @@ import recycle from "../../assets/icons/categories/tags/recycle.svg";
 import other from "../../assets/icons/categories/tags/other.svg";
 import food from "../../assets/icons/categories/tags/food.svg";
 import X from "../../assets/icons/navigation/arrows/X.svg";
-import type { ComplaintFormData } from "../../types/complaint";
 import { formatAddressWithDong } from "../../utils/dongMapping";
+import { useComplaintFormStore } from "../../stores/complaintFormStore";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
-  formData: ComplaintFormData;
-  setFormData: React.Dispatch<React.SetStateAction<ComplaintFormData>>;
   onSubmit: () => void;
 }
 
 export default function ComplaintConfirm({
-  formData,
   dateTimeBox,
-  setFormData,
   onSubmit,
 }: ComplaintConfirmProps) {
+  // Get form data from Zustand store
+  const { formData, updateFormData } = useComplaintFormStore();
   console.log("uploadedFiles length:", formData.uploadedFiles.length);
   console.log("uploadedFiles:", formData.uploadedFiles);
 
@@ -89,12 +87,11 @@ export default function ComplaintConfirm({
                           alt="닫기 아이콘"
                           className="mr-[6px] pt-[0.5px] pl-[0.5px] cursor-pointer"
                           onClick={() => {
-                            setFormData((prev) => ({
-                              ...prev,
-                              uploadedFiles: prev.uploadedFiles.filter(
+                            updateFormData({
+                              uploadedFiles: formData.uploadedFiles.filter(
                                 (_, i) => i !== index
                               ),
-                            }));
+                            });
                           }}
                         />
                         {file.type.startsWith("image/") ? (
@@ -178,7 +175,7 @@ export default function ComplaintConfirm({
             mobileOptions={["소장님", "민원팀", "담당 기사님", "팀장님"]} // 모바일용 짧은 텍스트
             selectedValues={formData.forwardTargets}
             onChange={(updatedList) =>
-              setFormData((prev) => ({ ...prev, forwardTargets: updatedList }))
+              updateFormData({ forwardTargets: updatedList })
             }
           />
         </div>
