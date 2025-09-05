@@ -15,6 +15,7 @@ interface ComplaintCardProps {
   onStatusChange?: (complaintId: string) => void;
   isSelected?: boolean;
   onSelectChange?: (complaintId: string, selected: boolean) => void;
+  onCardClick?: (id: string) => void;
 }
 
 const ComplaintCard: React.FC<ComplaintCardProps> = ({
@@ -22,6 +23,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
   onStatusChange,
   isSelected = false,
   onSelectChange,
+  onCardClick,
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const bad = true; //! 여기 수정
@@ -71,7 +73,20 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
   };
 
   return (
-    <div className="bg-white border border-[#A2A2A2] rounded-lg flex justify-between">
+    <div
+      className="bg-white border border-[#A2A2A2] rounded-lg flex justify-between cursor-pointer hover:bg-gray-50"
+      onClick={(e) => {
+        // Prevent card click when clicking on checkboxes or status buttons
+        if (e.target instanceof HTMLElement) {
+          const isInteractive = e.target.closest(
+            'input[type="checkbox"], button, [role="button"]'
+          );
+          if (!isInteractive && onCardClick) {
+            onCardClick(complaint.id);
+          }
+        }
+      }}
+    >
       <div className="flex flex-col justify-around p-3">
         <div className="flex items-center gap-2 mb-3">
           <Checkbox

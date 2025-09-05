@@ -98,7 +98,9 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         centerLng = longitude;
         console.log(`🗺️ 지도 초기화: 좌표 사용 (${centerLat}, ${centerLng})`);
       } else {
-        console.log(`🗺️ 지도 초기화: 기본 좌표 사용 (${centerLat}, ${centerLng})`);
+        console.log(
+          `🗺️ 지도 초기화: 기본 좌표 사용 (${centerLat}, ${centerLng})`
+        );
       }
 
       const defaultCenter = new window.kakao.maps.LatLng(centerLat, centerLng);
@@ -151,7 +153,15 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
     } catch (error) {
       console.error("❌ 지도 초기화 실패:", error);
     }
-  }, [isLoaded, latitude, longitude, address, dongInfo, dongInfoLoading, onMarkerClick]);
+  }, [
+    isLoaded,
+    latitude,
+    longitude,
+    address,
+    dongInfo,
+    dongInfoLoading,
+    onMarkerClick,
+  ]);
 
   // Update map when coordinates change
   const updateMapWithCoordinates = useCallback(
@@ -341,8 +351,8 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
 
   // Cleanup on unmount
   useEffect(() => {
+    const currentMapRef = mapRef.current;
     return () => {
-      const currentMapRef = mapRef.current;
       if (markerInstanceRef.current) {
         markerInstanceRef.current.setMap(null);
       }

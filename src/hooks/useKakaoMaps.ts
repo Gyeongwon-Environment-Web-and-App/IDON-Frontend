@@ -221,41 +221,38 @@ export interface KakaoInfoWindow {
   setContent: (content: string) => void;
 }
 
-// Global type declarations
-declare global {
-  interface Window {
-    kakao: {
-      maps: {
-        load?: (callback: () => void) => void;
-        LatLng: new (lat: number, lng: number) => KakaoLatLng;
-        Map: new (
-          container: HTMLElement,
-          options: { center: KakaoLatLng; level: number; mapTypeId?: string }
-        ) => KakaoMap;
-        Marker: new (options: {
-          map: KakaoMap;
-          position: KakaoLatLng;
-        }) => KakaoMarker;
-        InfoWindow: new (options: { content: string }) => KakaoInfoWindow;
-        event: {
-          addListener: (
-            target: any,
-            event: string,
-            handler: () => void
+declare const window: Window & {
+  kakao: {
+    maps: {
+      load?: (callback: () => void) => void;
+      LatLng: new (lat: number, lng: number) => KakaoLatLng;
+      Map: new (
+        container: HTMLElement,
+        options: { center: KakaoLatLng; level: number; mapTypeId?: string }
+      ) => KakaoMap;
+      Marker: new (options: {
+        map: KakaoMap;
+        position: KakaoLatLng;
+      }) => KakaoMarker;
+      InfoWindow: new (options: { content: string }) => KakaoInfoWindow;
+      event: {
+        addListener: (
+          target: unknown,
+          event: string,
+          handler: () => void
+        ) => void;
+      };
+      services: {
+        Geocoder: new () => {
+          addressSearch: (
+            address: string,
+            callback: (result: unknown[], status: unknown) => void
           ) => void;
         };
-        services: {
-          Geocoder: new () => {
-            addressSearch: (
-              address: string,
-              callback: (result: any[], status: any) => void
-            ) => void;
-          };
-          Status: {
-            OK: string;
-          };
+        Status: {
+          OK: string;
         };
       };
     };
-  }
-}
+  };
+};

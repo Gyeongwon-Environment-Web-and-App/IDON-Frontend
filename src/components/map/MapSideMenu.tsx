@@ -9,6 +9,8 @@ import chartWhite from "../../assets/icons/common/chart_white.svg";
 import logo from "../../assets/icons/brand/logo.svg";
 import grayLeftArrow from "../../assets/icons/navigation/arrows/gray_arrow_left.svg";
 import grayRightArrow from "../../assets/icons/navigation/arrows/gray_arrow_right.svg";
+import ComplaintDetail from "./ComplaintDetail";
+import { useMapOverviewStore } from "../../stores/mapOverviewStore";
 
 type SidebarType = "complaint" | "vehicle" | "stats" | null;
 
@@ -17,17 +19,26 @@ interface MapSideMenuProps {
 }
 
 const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
-  const [openSidebar, setOpenSidebar] = useState<SidebarType>(null);
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const navigate = useNavigate();
+  const onSidebarChangeRef = React.useRef(onSidebarChange);
+
+  // Update ref when callback changes
+  React.useEffect(() => {
+    onSidebarChangeRef.current = onSidebarChange;
+  }, [onSidebarChange]);
+
+  // Get state from store
+  const { activeSidebar, selectedComplaintId, setActiveSidebar, sidebarOpen } =
+    useMapOverviewStore();
 
   // 토글 함수
   const toggleSidebar = () => {
-    if (openSidebar) {
-      setOpenSidebar(null);
+    if (activeSidebar) {
+      setActiveSidebar(null);
       onSidebarChange(false);
     } else {
-      setOpenSidebar(lastOpenedSidebar || "complaint");
+      setActiveSidebar(lastOpenedSidebar || "complaint");
       onSidebarChange(true);
     }
   };
@@ -35,13 +46,26 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
   // 사이드바 클릭 핸들러 - 마지막 열린 사이드바 기억
   const handleSidebarClick = (type: SidebarType) => {
     setLastOpenedSidebar(type);
+    setActiveSidebar(type);
     onSidebarChange(true);
-    setOpenSidebar(type);
   };
+
+  // Sync sidebar state with parent component
+  React.useEffect(() => {
+    onSidebarChangeRef.current(sidebarOpen);
+  }, [sidebarOpen]);
 
   // 각 사이드바에 들어갈 content 컴포넌트
   const sidebarContents = {
-    complaint: <div className="p-6">민원 목록 컴포넌트</div>,
+    complaint: selectedComplaintId ? (
+      <ComplaintDetail complaintId={selectedComplaintId} />
+    ) : (
+      <div className="p-6">
+        <div className="text-center text-gray-500">
+          <p className="text-sm">민원을 선택해주세요.</p>
+        </div>
+      </div>
+    ),
     vehicle: <div className="p-6">차량 정보 컴포넌트</div>,
     stats: <div className="p-6">구역별 통계 컴포넌트</div>,
   };
@@ -61,11 +85,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
           </button>
           {/* 민원 목록 */}
           <button
-            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${openSidebar === "complaint" ? "bg-darker-green text-white" : ""}`}
+            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${activeSidebar === "complaint" ? "bg-darker-green text-white" : ""}`}
             onClick={() => handleSidebarClick("complaint")}
           >
             <img
-              src={openSidebar === "complaint" ? editWhite : editIcon}
+              src={activeSidebar === "complaint" ? editWhite : editIcon}
               alt="민원 목록"
               className="w-10 h-10"
             />
@@ -73,11 +97,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
           </button>
           {/* 차량 조회 */}
           <button
-            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${openSidebar === "vehicle" ? "bg-darker-green text-white" : ""}`}
+            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${activeSidebar === "vehicle" ? "bg-darker-green text-white" : ""}`}
             onClick={() => handleSidebarClick("vehicle")}
           >
             <img
-              src={openSidebar === "vehicle" ? truckWhite : truckIcon}
+              src={activeSidebar === "vehicle" ? truckWhite : truckIcon}
               alt="차량 조회"
               className="w-10 h-10"
             />
@@ -85,11 +109,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
           </button>
           {/* 구역별 통계 */}
           <button
-            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${openSidebar === "stats" ? "bg-darker-green text-white" : ""}`}
+            className={`w-full h-20 flex flex-col items-center justify-center m-0 p-0 text-xs font-semibold mb-0 ${activeSidebar === "stats" ? "bg-darker-green text-white" : ""}`}
             onClick={() => handleSidebarClick("stats")}
           >
             <img
-              src={openSidebar === "stats" ? chartWhite : chartIcon}
+              src={activeSidebar === "stats" ? chartWhite : chartIcon}
               alt="구역별 통계"
               className="w-10 h-10"
             />
@@ -102,22 +126,24 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
       <button
         onClick={toggleSidebar}
         className={`fixed top-1/2 -translate-y-1/2 z-50 p-2 w-10 h-20 bg-white border border-l-0 border-d9d9d9 rounded-r-md ease-in-out transition duration-600 ${
-          openSidebar ? "left-[35rem] animate-slideIn" : "left-[7.5rem] animate-slideOut"
+          activeSidebar
+            ? "left-[35rem] animate-slideIn"
+            : "left-[7.5rem] animate-slideOut"
         }`}
       >
         <img
-          src={openSidebar ? grayLeftArrow : grayRightArrow}
+          src={activeSidebar ? grayLeftArrow : grayRightArrow}
           alt="사이드바 펼치기/접기"
         />
       </button>
 
-      {openSidebar && (
+      {activeSidebar && (
         <div
           className={`w-[30rem] max-w-full fixed inset-y-0 left-20 h-full bg-white border-r z-40 
-          ${openSidebar ? "animate-slideIn" : "animate-slideOut"}`}
+          ${activeSidebar ? "animate-slideIn" : "animate-slideOut"}`}
           aria-label="사이드바 메뉴"
         >
-          {sidebarContents[openSidebar]}
+          {sidebarContents[activeSidebar]}
         </div>
       )}
     </>

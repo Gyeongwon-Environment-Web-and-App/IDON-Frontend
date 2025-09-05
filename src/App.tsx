@@ -44,6 +44,7 @@ const AppContent: React.FC = () => {
           <Route path="/complaints/form" element={<ComplaintManage />} />
           <Route path="/complaints/stats" element={<ComplaintManage />} />
           <Route path="/map/overview" element={<MapOverview />} />
+          <Route path="/map/overview/:complaintId" element={<MapOverview />} />
         </>
       ) : (
         // 인증되지 않은 경우 모든 경로를 로그인으로 리다이렉트

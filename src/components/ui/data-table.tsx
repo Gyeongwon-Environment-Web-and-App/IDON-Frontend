@@ -25,11 +25,13 @@ import {
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onRowClick?: (row: TData) => void;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onRowClick,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -92,6 +94,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  className={onRowClick ? "hover:bg-gray-50" : ""}
                 >
                   {row.getVisibleCells().map((cell, index) => {
                     const isLastCell =
@@ -99,9 +102,20 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={`text-base text-black cursor-pointer ${
+                        className={`text-base text-black ${
                           !isLastCell ? "border-r border-d9d9d9" : ""
                         }`}
+                        onClick={(e) => {
+                          // Prevent row click when clicking on checkboxes or buttons
+                          if (e.target instanceof HTMLElement) {
+                            const isInteractive = e.target.closest(
+                              'input[type="checkbox"], button, [role="button"]'
+                            );
+                            if (!isInteractive && onRowClick) {
+                              onRowClick(row.original);
+                            }
+                          }
+                        }}
                       >
                         {flexRender(
                           cell.column.columnDef.cell,

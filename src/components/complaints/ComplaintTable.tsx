@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import type { DateRange } from "react-day-picker";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -35,6 +36,7 @@ import ComplaintCard from "./ComplaintCard";
 import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 const ComplaintTable: React.FC = () => {
+  const navigate = useNavigate();
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
@@ -74,6 +76,11 @@ const ComplaintTable: React.FC = () => {
       newSelected.delete(complaintId);
     }
     setSelectedRows(newSelected);
+  };
+
+  // 행 클릭 핸들러 - 지도로 네비게이션
+  const handleRowClick = (complaintId: string) => {
+    navigate(`/map/overview/${complaintId}`);
   };
 
   // 컬럼 정의
@@ -520,7 +527,11 @@ const ComplaintTable: React.FC = () => {
 
       {/* 테이블 */}
       <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
-        <DataTable columns={columns} data={complaintsWithCallbacks} />
+        <DataTable
+          columns={columns}
+          data={complaintsWithCallbacks}
+          onRowClick={(complaint) => handleRowClick(complaint.id)}
+        />
       </div>
 
       {/* 모바일 카드 뷰 */}
@@ -532,6 +543,7 @@ const ComplaintTable: React.FC = () => {
             onStatusChange={handleStatusChange}
             isSelected={selectedRows.has(complaint.id)}
             onSelectChange={handleRowSelect}
+            onCardClick={handleRowClick}
           />
         ))}
       </div>

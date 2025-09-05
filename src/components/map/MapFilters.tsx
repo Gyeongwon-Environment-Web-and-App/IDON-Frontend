@@ -56,7 +56,7 @@ const MapFilters: React.FC<MapFiltersProps> = ({ sidebarOpen }) => {
         {filterOptions.map((option) => (
           <button
             key={option.id}
-            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md font-semibold ${selectedFilter === option.id ? "bg-darker-green text-white" : "bg-white"}`}
+            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md font-semibold px-3 py-2 ${selectedFilter === option.id ? "bg-darker-green text-white" : "bg-white"}`}
             onClick={() => setSelectedFilter(option.id)}
           >
             <img
