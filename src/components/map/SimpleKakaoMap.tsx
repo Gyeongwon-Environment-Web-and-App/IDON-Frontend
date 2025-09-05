@@ -141,7 +141,12 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           }
         }}
         className={className}
-        style={style}
+        style={{
+          ...style,
+          pointerEvents: "auto",
+          touchAction: "none",
+          userSelect: "none",
+        }}
       />
     );
   }
