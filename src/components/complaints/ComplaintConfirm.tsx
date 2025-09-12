@@ -7,7 +7,7 @@ import food from "../../assets/icons/categories/tags/food.svg";
 import X from "../../assets/icons/navigation/arrows/X.svg";
 import { formatAddressWithDong } from "../../utils/dongMapping";
 import { useComplaintFormStore } from "../../stores/complaintFormStore";
-import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
+// import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
@@ -24,24 +24,22 @@ export default function ComplaintConfirm({
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
   // Format date/time for display
-  const formatDisplayDateTime = (isoString: string) => {
-    const date = new Date(isoString);
+  // const formatDisplayDateTime = (isoString: string) => {
+  //   const date = new Date(isoString);
 
-    let hour = date.getHours();
-    const minute = String(date.getMinutes()).padStart(2, "0");
-    const isAM = hour < 12;
-    const ampm = isAM ? "오전" : "오후";
-    if (!isAM) hour = hour === 12 ? 12 : hour - 12;
-    if (hour === 0) hour = 12;
+  //   let hour = date.getHours();
+  //   const minute = String(date.getMinutes()).padStart(2, "0");
+  //   const isAM = hour < 12;
+  //   const ampm = isAM ? "오전" : "오후";
+  //   if (!isAM) hour = hour === 12 ? 12 : hour - 12;
+  //   if (hour === 0) hour = 12;
 
-    return {
-      date: `${formatDateToYYMMDD(isoString)}`,
-      time: `${ampm} ${hour}:${minute}`,
-    };
-  };
+  //   return `${formatDateToYYMMDD(isoString)} ${ampm} ${hour}:${minute}`;
+  // };
 
-  console.log("uploadedFiles length:", formData.uploadedFiles.length);
-  console.log("uploadedFiles:", formData.uploadedFiles);
+  // ! 파일 업로드 확인
+  // console.log("uploadedFiles length:", formData.uploadedFiles.length);
+  // console.log("uploadedFiles:", formData.uploadedFiles);
 
   // Format address with dong info asynchronously
   useEffect(() => {
@@ -76,24 +74,31 @@ export default function ComplaintConfirm({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
 
+  const getNotifyData = () => {
+    return formData.notify?.usernames || [];
+  };
+
   return (
     <div className="overflow-y-auto overflow-x-hidden w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
+        {/* <div className="mt-0 mpx-5">{formatDisplayDateTime(formData.datetime)}</div> */}
         <div className="mt-0 mpx-5">{dateTimeBox}</div>
         <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
           <section className="md:mr-[3rem] md:w-[65%] w-full">
             <p className="text-dark-gray">
               민원 종류 -{" "}
               <span className="text-black my-3 md:my-5">
-                {formData.selectedTrash}
-                {formData.trashDetail && ` (${formData.trashDetail})`}
+                {formData.type}
+                {formData.category && ` (${formData.category})`}
               </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5">
               민원 접수 종류 -{" "}
               <span className="text-black">
-                {formData.selectedRoute}{" "}
-                {formData.phone ? `(${formData.phone})` : ""}
+                {formData.route}{" "}
+                {formData.source.phone_no
+                  ? `(${formData.source.phone_no})`
+                  : ""}
               </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5">
@@ -106,15 +111,6 @@ export default function ComplaintConfirm({
                 )}
               </span>
             </p>
-            {formData.dateTime && (
-              <p className="text-dark-gray my-3 md:my-5">
-                민원 발생 일시 -{" "}
-                <span className="text-black">
-                  {formatDisplayDateTime(formData.dateTime).date}{" "}
-                  {formatDisplayDateTime(formData.dateTime).time}
-                </span>
-              </p>
-            )}
             <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
               민원 내용
               <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
@@ -195,13 +191,13 @@ export default function ComplaintConfirm({
               <div className="flex">
                 <img
                   src={
-                    formData.selectedTrash === "음식물"
+                    formData.type === "음식물"
                       ? food
-                      : formData.selectedTrash === "재활용"
+                      : formData.type === "재활용"
                         ? recycle
-                        : formData.selectedTrash === "기타"
+                        : formData.type === "기타"
                           ? other
-                          : formData.selectedTrash === "일반"
+                          : formData.type === "일반"
                             ? general
                             : ""
                   }
@@ -230,9 +226,11 @@ export default function ComplaintConfirm({
               "담당 팀장님께 전달",
             ]}
             mobileOptions={["소장님", "민원팀", "담당 기사님", "팀장님"]} // 모바일용 짧은 텍스트
-            selectedValues={formData.forwardTargets}
+            selectedValues={getNotifyData()}
             onChange={(updatedList) =>
-              updateFormData({ forwardTargets: updatedList })
+              updateFormData({
+                notify: { ...getNotifyData(), usernames: updatedList },
+              })
             }
           />
         </div>

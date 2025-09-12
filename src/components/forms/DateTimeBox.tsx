@@ -45,7 +45,7 @@ export default function DateTimeBox({
   const [now] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
     // Initialize from store if available, otherwise use current date
-    return formData.dateTime ? new Date(formData.dateTime) : now;
+    return formData.datetime ? new Date(formData.datetime) : now;
   });
   const [open, setOpen] = useState(false);
   const { date, time } = formatDateTime(selectedDate || now);
@@ -53,7 +53,7 @@ export default function DateTimeBox({
   // Update store when selectedDate changes
   useEffect(() => {
     if (selectedDate) {
-      updateFormData({ dateTime: selectedDate.toISOString() });
+      updateFormData({ datetime: selectedDate.toISOString() });
     }
   }, [selectedDate, updateFormData]);
 

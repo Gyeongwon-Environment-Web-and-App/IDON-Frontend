@@ -1,25 +1,28 @@
 export interface ComplaintFormData {
   address: string;
-  routeInput: string;
-  selectedRoute: string;
-  phone: string;
-  selectedTrash: string;
-  trashInput: string;
-  trashDetail: string;
+  datetime: string;
+  category: string;
+  type: string;
   content: string;
-  isMalicious: boolean;
-  forwardTargets: string[];
+  route: string;
+  source: {
+    phone_no: string;
+    bad: boolean;
+  };
+  notify: {
+    usernames: string[];
+  };
+  // Keep these for UI purposes (not sent to backend)
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
   uploadedFiles: Array<{
     name: string;
     url: string;
     type: string;
     size: number;
   }>;
-  coordinates?: {
-    latitude: number;
-    longitude: number;
-  };
-  dateTime?: string;
 }
 
 export interface Complaint {

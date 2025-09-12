@@ -40,17 +40,19 @@ interface ComplaintFormState {
 // Step 2: Initial form data
 const initialFormData: ComplaintFormData = {
   address: "",
-  routeInput: "",
-  selectedRoute: "",
-  phone: "",
-  selectedTrash: "",
-  trashInput: "",
-  trashDetail: "",
+  datetime: new Date().toISOString(),
+  category: "",
+  type: "",
   content: "",
-  isMalicious: false,
-  forwardTargets: [],
+  route: "",
+  source: {
+    phone_no: "",
+    bad: false,
+  },
+  notify: {
+    usernames: [],
+  },
   uploadedFiles: [],
-  dateTime: new Date().toISOString(),
 };
 
 // Step 3: Create the store

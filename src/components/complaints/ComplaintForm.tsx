@@ -239,8 +239,8 @@ export default function ComplaintForm({
     e.preventDefault();
     if (
       !formData.address.trim() ||
-      !formData.selectedRoute.trim() ||
-      !formData.selectedTrash.trim()
+      !formData.route.trim() ||
+      !formData.type.trim()
     ) {
       window.alert(
         "필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)"
@@ -248,6 +248,13 @@ export default function ComplaintForm({
       return;
     }
     onSubmit();
+  };
+
+  const getSourceData = () => {
+    if (!formData.source) {
+      return { phone_no: "", bad: false };
+    }
+    return formData.source;
   };
 
   return (
@@ -443,13 +450,13 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
+            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
           >
             {["경원환경", "120", "구청", "주민센터"].map((label, idx, arr) => (
               <button
@@ -457,7 +464,7 @@ export default function ComplaintForm({
                 type="button"
                 className={`
                   flex-1 px-4 font-bold
-                  ${formData.selectedRoute === label ? "bg-lighter-green" : ""}
+                  ${formData.route === label ? "bg-lighter-green" : ""}
                   ${idx === 0 ? "rounded-l" : ""}
                   ${idx === arr.length - 1 ? "rounded-r" : ""}
                   focus:outline-none
@@ -466,7 +473,7 @@ export default function ComplaintForm({
                   borderRight:
                     idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
                 }}
-                onClick={() => updateFormData({ selectedRoute: label })}
+                onClick={() => updateFormData({ route: label })}
               >
                 {label}
               </button>
@@ -475,32 +482,36 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.routeInput ? "" : "직접 입력"}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.selectedRoute !== "경원환경" ? "md:mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
             value={
               !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(
-                formData.selectedRoute
+                formData.route
               )
-                ? formData.selectedRoute
+                ? formData.route
                 : ""
             }
-            onChange={(e) => updateFormData({ selectedRoute: e.target.value })}
+            onChange={(e) => updateFormData({ route: e.target.value })}
             onFocus={() => setFocus({ routeInput: true })}
             onBlur={() => setFocus({ routeInput: false })}
-            onClick={() => updateFormData({ selectedRoute: "" })}
+            onClick={() => updateFormData({ route: "" })}
           />
           <div className="h-5 md:hidden"></div>
 
           {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
-          {formData.selectedRoute === "경원환경" && (
+          {formData.route === "경원환경" && (
             <>
               <div className="hidden md:block md:col-span-1"></div>
               <input
                 id="경원환경 직접 전화번호 입력"
                 type="text"
-                value={formData.phone}
+                value={formData.source.phone_no}
                 className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 py-2 mt-2 mb-5 rounded focus:outline-none"
                 placeholder="직접 전화번호 입력"
-                onChange={(e) => updateFormData({ phone: e.target.value })}
+                onChange={(e) =>
+                  updateFormData({
+                    source: { ...formData.source, phone_no: e.target.value },
+                  })
+                }
               />
             </>
           )}
@@ -519,7 +530,7 @@ export default function ComplaintForm({
                 type="button"
                 className={`
                   flex-1 px-4 font-bold
-                  ${formData.selectedTrash === label ? "bg-lighter-green" : ""}
+                  ${formData.type === label ? "bg-lighter-green" : ""}
                   ${idx === 0 ? "rounded-l" : ""}
                   ${idx === arr.length - 1 ? "rounded-r" : ""}
                   focus:outline-none
@@ -528,7 +539,7 @@ export default function ComplaintForm({
                   borderRight:
                     idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
                 }}
-                onClick={() => updateFormData({ selectedTrash: label })}
+                onClick={() => updateFormData({ type: label })}
               >
                 {label}
               </button>
@@ -537,18 +548,16 @@ export default function ComplaintForm({
           <input
             type="text"
             value={
-              !["재활용", "일반", "음식물", "기타"].includes(
-                formData.selectedTrash
-              )
-                ? formData.selectedTrash
+              !["재활용", "일반", "음식물", "기타"].includes(formData.type)
+                ? formData.type
                 : ""
             }
             placeholder={focus.trashInput ? "" : "직접 입력"}
             className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
             onFocus={() => setFocus({ trashInput: true })}
             onBlur={() => setFocus({ trashInput: false })}
-            onChange={(e) => updateFormData({ selectedTrash: e.target.value })}
-            onClick={() => updateFormData({ selectedTrash: "" })}
+            onChange={(e) => updateFormData({ type: e.target.value })}
+            onClick={() => updateFormData({ type: "" })}
           />
 
           {/* 쓰레기 상세 종류 */}
@@ -561,8 +570,8 @@ export default function ComplaintForm({
             className="w-full md:w-[200px] md:col-span-1 col-span-3 border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold md:my-5 -mt-5"
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
-            value={formData.trashDetail}
-            onChange={(e) => updateFormData({ trashDetail: e.target.value })}
+            value={formData.category}
+            onChange={(e) => updateFormData({ category: e.target.value })}
           />
           <div className="hidden md:block md:col-span-3"></div>
 
@@ -596,17 +605,19 @@ export default function ComplaintForm({
               type="checkbox"
               id="malicious"
               className="w-5 h-5 accent-red"
-              checked={formData.isMalicious}
+              checked={getSourceData().bad}
               onChange={(e) =>
-                updateFormData({ isMalicious: e.target.checked })
+                updateFormData({
+                  source: { ...formData.source, bad: e.target.checked },
+                })
               }
             />
             <label
               htmlFor="malicious"
-              className={`flex items-center text-[1rem] ${formData.isMalicious ? "text-red" : ""}`}
+              className={`flex items-center text-[1rem] ${formData.source.bad ? "text-red" : ""}`}
             >
               <img
-                src={formData.isMalicious ? attentionRed : attention}
+                src={formData.source.bad ? attentionRed : attention}
                 alt="찡그린 표정"
                 className="w-6 h-6 mr-1"
               />

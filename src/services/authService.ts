@@ -109,4 +109,8 @@ export const authService = {
     const token = localStorage.getItem("userToken");
     return !!token;
   },
+
+  getToken: () => {
+    return localStorage.getItem("userToken");
+  }
 };

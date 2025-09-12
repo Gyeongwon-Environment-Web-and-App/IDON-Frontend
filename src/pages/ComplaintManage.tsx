@@ -1,5 +1,4 @@
 import { useEffect } from "react";
-import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useComplaintFormStore } from "../stores/complaintFormStore";
 import { useAuthStore } from "../stores/authStore";
@@ -16,6 +15,7 @@ import ComplaintForm from "../components/complaints/ComplaintForm";
 import ComplaintConfirm from "../components/complaints/ComplaintConfirm";
 import ComplaintTable from "@/components/complaints/ComplaintTable";
 import ComplaintStats from "@/components/statistics/ComplaintStats";
+import apiClient from "../lib/api";
 
 const ComplaintManage = () => {
   // Get logout function from Zustand store
@@ -102,54 +102,37 @@ const ComplaintManage = () => {
   // !백엔드로 정보 전송
   const onSubmit = async () => {
     try {
-      // 1. 파일들을 FormData로 변환
-      const formDataToSend = new FormData();
+      // 1. 백엔드 API 형식에 맞춘 데이터 준비
 
-      // 2. 텍스트 데이터 추가
-      formDataToSend.append("address", formData.address);
-      formDataToSend.append("selectedRoute", formData.selectedRoute);
-      formDataToSend.append("phone", formData.phone);
-      formDataToSend.append("selectedTrash", formData.selectedTrash);
-      formDataToSend.append("trashDetail", formData.trashDetail);
-      formDataToSend.append("content", formData.content);
-      formDataToSend.append("isMalicious", formData.isMalicious.toString());
-      formDataToSend.append(
-        "forwardTargets",
-        JSON.stringify(formData.forwardTargets)
-      );
-      formDataToSend.append(
-        "dateTime",
-        formData.dateTime || new Date().toISOString()
-      );
+      const complaintData = {
+        address: formData.address,
+        datetime: formData.datetime || new Date().toISOString(),
+        category: formData.category || "",
+        type: formData.type,
+        content: formData.content || "",
+        route: formData.route,
+        source: {
+          phone_no: formData.source?.phone_no || "",
+          bad: formData.source?.bad || false,
+        },
+        notify: {
+          usernames: formData.notify?.usernames || [],
+        },
+      };
 
-      // 3. 파일들 추가 (Data URL을 Blob으로 변환)
-      for (let i = 0; i < formData.uploadedFiles.length; i++) {
-        const file = formData.uploadedFiles[i];
-        // Data URL을 Blob으로 변환
-        const response = await fetch(file.url);
-        const blob = await response.blob();
-        formDataToSend.append(`file_${i}`, blob, file.name);
-      }
-
-      // 4. 백엔드로 전송
-      const response = await axios.post(
-        "http://localhost:5000/api/complaints",
-        formDataToSend,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      // 2. apiClient를 사용하여 백엔드로 전송 (자동으로 토큰 추가됨)
+      const response = await apiClient.post("/complaint/create", complaintData);
 
       console.log("민원 제출 성공:", response.data);
+
       setIsPopupOpen(true);
 
-      // 5. 폼 초기화
+      // 3. 폼 초기화
       resetForm();
       resetUI();
     } catch (error) {
       console.error("민원 제출 실패:", error);
+
       alert("민원 제출에 실패했습니다. 다시 시도해주세요.");
     }
   };
@@ -232,7 +215,7 @@ const ComplaintManage = () => {
                   dateTimeBox={
                     <DateTimeBox
                       visible={false}
-                      repeat={formData.isMalicious}
+                      repeat={formData.source.bad}
                       onBack={() => setShowConfirm(false)}
                     />
                   }
