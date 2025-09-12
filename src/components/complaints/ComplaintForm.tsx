@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import axios from "axios";
 import { useAuth } from "../../hooks/useAuth";
 import { AddressService } from "../../services/addressService";
 import { useComplaintFormStore } from "../../stores/complaintFormStore";
@@ -9,6 +8,7 @@ import attention from "../../assets/icons/common/attention.svg";
 import attentionRed from "../../assets/icons/common/attention_red.svg";
 import FileAttach from "../forms/FileAttach";
 import AdvancedKakaoMap from "../map/AdvancedKakaoMap";
+import apiClient from "../../lib/api";
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
@@ -28,6 +28,7 @@ export default function ComplaintForm({
     error,
     tempAddress,
     addressFrequencyInfo,
+    phoneFrequencyInfo,
     updateFormData,
     setShowAddressSearch,
     setAddresses,
@@ -35,6 +36,7 @@ export default function ComplaintForm({
     setError,
     setTempAddress,
     setAddressFrequencyInfo,
+    setPhoneFrequencyInfo
   } = useComplaintFormStore();
 
   // Get UI state and actions from Zustand store
@@ -135,15 +137,6 @@ export default function ComplaintForm({
   // useAuth 훅 사용 (인증 상태 확인용)
   useAuth();
 
-  const getToken = () => {
-    try {
-      return localStorage.getItem("userToken");
-    } catch (error) {
-      console.error("토큰 가져오기 실패:", error);
-      return null;
-    }
-  };
-
   const handleAddressSelect = (address: {
     roadAddress: string;
     jibunAddress: string;
@@ -164,23 +157,80 @@ export default function ComplaintForm({
 
     const newTimeout = setTimeout(async () => {
       try {
-        const response = await axios.get(
-          `http://49.50.128.88:3000/complaint/getFrequencyByAddress`,
-          {
-            params: { address: selectedAddress },
-            headers: {
-              Authorization: `Bearer ${getToken()}`,
-            },
-          }
+        // First try path parameter (like Swagger)
+        const response = await apiClient.get(
+          `/complaint/getFrequencyByAddress/${encodeURIComponent(selectedAddress)}`
         );
         setAddressFrequencyInfo(response.data.numberOfComplaints);
-        console.log("빈도 정보: ", response.data);
+        console.log("주소 빈도 정보: ", response.data);
       } catch (error) {
-        console.log("빈도 정보 조회 실패: ", error);
+        if (
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          error.response &&
+          typeof error.response === "object" &&
+          "status" in error.response &&
+          error.response.status === 404
+        ) {
+          try {
+            const response = await apiClient.get(
+              "/complaint/getFrequencyByAddress",
+              {
+                params: { address: selectedAddress },
+              }
+            );
+            setAddressFrequencyInfo(response.data.numberOfComplaints);
+            console.log("주소 빈도 정보: ", response.data);
+          } catch (fallbackError) {
+            console.log("주소 빈도 정보 조회 실패: ", fallbackError);
+            setAddressFrequencyInfo(null);
+          }
+        } else {
+          console.log("주소 빈도 정보 조회 실패: ", error);
+          setAddressFrequencyInfo(null);
+        }
       }
     }, 1000);
 
     setFrequencyTimeout(newTimeout);
+  };
+
+  const handlePhoneClick = (phone_no: string) => {
+    setTimeout(async () => {
+      try {
+        const response = await apiClient.get(`/complaint/getFrequencyByAddress/${encodeURIComponent(phone_no)}`);
+        setPhoneFrequencyInfo(response.data.numberOfComplaints);
+        console.log("전화번호 빈도 정보: ", response.data);
+      }catch (error) {
+        if (
+          error &&
+          typeof error === "object" &&
+          "response" in error &&
+          error.response &&
+          typeof error.response === "object" &&
+          "status" in error.response &&
+          error.response.status === 404
+        ) {
+          try {
+            const response = await apiClient.get(
+              "/complaint/getFrequencyByAddress",
+              {
+                params: { address: phone_no },
+              }
+            );
+            setPhoneFrequencyInfo(response.data.numberOfComplaints);
+            console.log("전화번호 빈도 정보: ", response.data);
+          } catch (fallbackError) {
+            console.log("전화번호 빈도 정보 조회 실패: ", fallbackError);
+            setPhoneFrequencyInfo(null);
+          }
+        } else {
+          console.log("전화번호 빈도 정보 조회 실패: ", error);
+          setPhoneFrequencyInfo(null);
+        }
+      }
+    }, 1000);
   };
 
   // 지도 토글 함수
@@ -512,7 +562,21 @@ export default function ComplaintForm({
                     source: { ...formData.source, phone_no: e.target.value },
                   })
                 }
+                onClick={() => {
+                  handlePhoneClick(formData.source.phone_no);
+                }}
               />
+            </>
+          )}
+
+          {phoneFrequencyInfo !== null && phoneFrequencyInfo > 0 && (
+            <>
+              <div className="col-span-1"></div>
+              <div className="text-red col-span-2 flex justify-start items-center -mt-3 mb-1">
+                최근 한 달간 이 전화번호에서 민원이 {phoneFrequencyInfo}번
+                들어왔습니다.
+              </div>
+              <div className="col-span-2"></div>
             </>
           )}
 

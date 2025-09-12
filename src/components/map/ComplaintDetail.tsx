@@ -16,6 +16,8 @@ import pin from "../../assets/icons/map_card/location_pin.svg";
 import phone from "../../assets/icons/map_card/phone.svg";
 import truck from "../../assets/icons/map_card/truck.svg";
 import sample from "../../assets/background/sample.png";
+import { createStatusChangeHandler } from "@/lib/popupHandlers";
+import Popup from "../forms/Popup";
 
 interface ComplaintDetailProps {
   complaintId?: string;
@@ -24,12 +26,32 @@ interface ComplaintDetailProps {
 const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
   const { selectedComplaintId, selectedComplaint, setSelectedComplaint } =
     useMapOverviewStore();
-  const { complaints } = useComplaintTableStore();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Get the complaint ID from props or store
+  const {
+    complaints,
+    isPopupOpen,
+    selectedComplaintStatus,
+    setSelectedComplaintStatus,
+    setIsPopupOpen,
+    setSelectedComplaintId,
+    updateComplaint,
+  } = useComplaintTableStore();
+
+  const statusChangeHandler = createStatusChangeHandler(
+    selectedComplaintId,
+    selectedComplaintStatus,
+    updateComplaint,
+    () => {
+      setIsPopupOpen(false);
+      setSelectedComplaintId(null);
+      setSelectedComplaintStatus(null);
+    }
+  );
+
+  //! Get the complaint ID from props or store
   // const currentComplaintId = complaintId || selectedComplaintId;
   console.log(selectedComplaintId, complaintId);
   const currentComplaintId = "1";
@@ -111,6 +133,27 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
 
   return (
     <div className="w-full">
+      {isPopupOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
+          onClick={(e) => {
+            console.log("clicked!");
+            if (e.target === e.currentTarget) {
+              setIsPopupOpen(false);
+            }
+          }}
+        >
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full mx-4">
+            <Popup
+              message={statusChangeHandler.getMessage()}
+              yesNo={true}
+              onFirstClick={statusChangeHandler.onConfirm}
+              onSecondClick={statusChangeHandler.onCancel}
+              toHome={false}
+            />
+          </div>
+        </div>
+      )}
       {/* Header */}
       <header className="w-full flex items-center">
         <button
@@ -130,35 +173,50 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
           <div className="flex gap-2 items-center">
             <img src={recycle} alt={`재활용`} />
             <p className="text-xl font-semibold">임시 제목 임시 제목</p>
-            <button className="flex p-0 w-[3.2rem]" onClick={() => {console.log("수정버튼 클릭")}}>
+            <button
+              className="flex p-0 w-[3.2rem]"
+              onClick={() => {
+                console.log("수정버튼 클릭");
+              }}
+            >
               <img src={fix} alt="수정버튼" />
             </button>
           </div>
-          <p className="text-base text-[#7C7C7C] font-semibold">2025.06.12 오전 9시 38분</p>
-  
+          <p className="text-base text-[#7C7C7C] font-semibold">
+            2025.06.12 오전 9시 38분
+          </p>
+
           <div className="flex gap-2 items-center">
             <img src={pin} alt="주소 핀" className="w-5 h-5" />
-            <label className="text-lg font-semibold">신당동 다산로33-3 공디 아파트</label>
+            <label className="text-lg font-semibold">
+              신당동 다산로33-3 공디 아파트
+            </label>
           </div>
 
           <div className="flex gap-2 items-center">
             <img src={phone} alt="전화" className="w-5 h-5" />
-            <label className="text-lg font-semibold">경원 환경 (010-1234-1234)</label>
+            <label className="text-lg font-semibold">
+              경원 환경 (010-1234-1234)
+            </label>
           </div>
 
           <div className="flex gap-2 items-center">
             <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
             <label className="text-lg font-semibold">민원 처리 중</label>
-            <button className="text-[#0009FF] p-0 ml-1">상태수정</button>
+            <button className="text-[#0009FF] p-0 ml-1" onClick={() => {setIsPopupOpen(true)}}>
+              상태수정
+            </button>
           </div>
 
           <div className="flex gap-2 items-center">
             <img src={truck} alt="차량" className="w-5 h-5" />
             <label className="text-lg font-semibold">180가 6547</label>
-            <p className="text-base font-semibold text-[#7C7C7C]">차량이 수거 중이에요</p>
+            <p className="text-base font-semibold text-[#7C7C7C]">
+              차량이 수거 중이에요
+            </p>
             <button className="text-[#0009FF] p-0">동선 조회</button>
           </div>
-  
+
           <div className="pt-5">
             <label className="text-lg font-semibold">민원 내용</label>
             <div className="mt-2 p-3 rounded-lg bg-ebebeb h-40">

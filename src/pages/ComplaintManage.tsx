@@ -120,6 +120,8 @@ const ComplaintManage = () => {
         },
       };
 
+      console.log(complaintData);
+
       // 2. apiClient를 사용하여 백엔드로 전송 (자동으로 토큰 추가됨)
       const response = await apiClient.post("/complaint/create", complaintData);
 

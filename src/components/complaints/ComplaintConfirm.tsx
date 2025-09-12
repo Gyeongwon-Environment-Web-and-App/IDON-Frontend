@@ -23,20 +23,6 @@ export default function ComplaintConfirm({
   const [formattedAddress, setFormattedAddress] = useState(formData.address);
   const [isLoadingAddress, setIsLoadingAddress] = useState(false);
 
-  // Format date/time for display
-  // const formatDisplayDateTime = (isoString: string) => {
-  //   const date = new Date(isoString);
-
-  //   let hour = date.getHours();
-  //   const minute = String(date.getMinutes()).padStart(2, "0");
-  //   const isAM = hour < 12;
-  //   const ampm = isAM ? "오전" : "오후";
-  //   if (!isAM) hour = hour === 12 ? 12 : hour - 12;
-  //   if (hour === 0) hour = 12;
-
-  //   return `${formatDateToYYMMDD(isoString)} ${ampm} ${hour}:${minute}`;
-  // };
-
   // ! 파일 업로드 확인
   // console.log("uploadedFiles length:", formData.uploadedFiles.length);
   // console.log("uploadedFiles:", formData.uploadedFiles);

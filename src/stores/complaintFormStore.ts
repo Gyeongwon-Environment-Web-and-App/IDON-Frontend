@@ -25,6 +25,7 @@ interface ComplaintFormState {
   error: string | null;
   tempAddress: string;
   addressFrequencyInfo: number | null;
+  phoneFrequencyInfo: number | null;
 
   // Actions (functions that update state)
   updateFormData: (updates: Partial<ComplaintFormData>) => void;
@@ -33,7 +34,8 @@ interface ComplaintFormState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setTempAddress: (address: string) => void;
-  setAddressFrequencyInfo: (info: number | null) => void;
+  setAddressFrequencyInfo: (addressInfo: number | null) => void;
+  setPhoneFrequencyInfo: (phoneInfo: number | null) => void;
   resetForm: () => void;
 }
 
@@ -68,6 +70,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
       error: null,
       tempAddress: "",
       addressFrequencyInfo: null,
+      phoneFrequencyInfo: null,
 
       // Actions
       updateFormData: (updates) =>
@@ -85,7 +88,8 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
 
       setTempAddress: (address) => set({ tempAddress: address }),
 
-      setAddressFrequencyInfo: (info) => set({ addressFrequencyInfo: info }),
+      setAddressFrequencyInfo: (addressInfo) => set({ addressFrequencyInfo: addressInfo }),
+      setPhoneFrequencyInfo: (phoneInfo) => set({ phoneFrequencyInfo: phoneInfo }),
 
       resetForm: () =>
         set({
