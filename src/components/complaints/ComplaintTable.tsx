@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import type { DateRange } from "react-day-picker";
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { complaints as initialComplaints } from "../../data/complaintData";
 import type { Complaint } from "../../types/complaint";
 import Popup from "../forms/Popup";
 import triangle from "../../assets/icons/actions/triangle.svg";
@@ -34,25 +32,43 @@ import deleteIcon from "../../assets/icons/actions/delete.svg";
 import DateRangePicker from "../common/DateRangePicker";
 import ComplaintCard from "./ComplaintCard";
 import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
+import { useComplaintTableStore } from "@/stores/complaintTableStore";
+import { complaints as initialComplaints } from "../../data/complaintData";
+import { createStatusChangeHandler } from "@/lib/popupHandlers";
 
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-
-  const [complaints, setComplaints] = useState<Complaint[]>(initialComplaints);
-  const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const [selectedComplaintId, setSelectedComplaintId] = useState<string | null>(
-    null
-  );
-  const [selectedComplaintStatus, setSelectedComplaintStatus] = useState<
-    "처리중" | "완료" | null
-  >(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filteredComplaints, setFilteredComplaints] =
-    useState<Complaint[]>(initialComplaints);
-  const [sortOrder, setSortOrder] = useState<"최근" | "옛">("최근");
-  const [selectedRows, setSelectedRows] = useState<Set<string>>(new Set());
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+
+  const {
+    dateRange,
+    searchTerm,
+    sortOrder,
+    complaints,
+    filteredComplaints,
+    selectedRows,
+    selectedComplaintStatus,
+    isPopupOpen,
+    selectedComplaintId,
+    setDateRange,
+    setSearchTerm,
+    setSortOrder,
+    setComplaints,
+    setFilteredComplaints,
+    setSelectedRows,
+    setSelectedComplaintStatus,
+    setIsPopupOpen,
+    setSelectedComplaintId,
+    updateComplaint,
+  } = useComplaintTableStore();
+
+  // Initialize store with data on mount
+  useEffect(() => {
+    if (complaints.length === 0) {
+      setComplaints(initialComplaints);
+      setFilteredComplaints(initialComplaints);
+    }
+  }, [complaints.length, setComplaints, setFilteredComplaints]);
 
   // 전체 선택 핸들러
   const handleSelectAll = () => {
@@ -309,64 +325,17 @@ const ComplaintTable: React.FC = () => {
     }
   };
 
-  // 팝업에서 예를 눌렀을 때
-  const handleConfirmStatusChange = () => {
-    if (selectedComplaintId && selectedComplaintStatus) {
-      const newStatus =
-        selectedComplaintStatus === "처리중" ? "완료" : "처리중";
-
-      // 원본 데이터와 필터된 데이터 모두 업데이트
-      setComplaints((prev) =>
-        prev.map((complaint) =>
-          complaint.id === selectedComplaintId
-            ? { ...complaint, status: newStatus as "처리중" | "완료" }
-            : complaint
-        )
-      );
-
-      setFilteredComplaints((prev) =>
-        prev.map((complaint) =>
-          complaint.id === selectedComplaintId
-            ? { ...complaint, status: newStatus as "처리중" | "완료" }
-            : complaint
-        )
-      );
+  // 상태 변경 핸들러
+  const statusChangeHandler = createStatusChangeHandler(
+    selectedComplaintId,
+    selectedComplaintStatus,
+    updateComplaint,
+    () => {
+      setIsPopupOpen(false);
+      setSelectedComplaintId(null);
+      setSelectedComplaintStatus(null);
     }
-    setIsPopupOpen(false);
-    setSelectedComplaintId(null);
-    setSelectedComplaintStatus(null);
-  };
-
-  // 팝업에서 아니오를 눌렀을 때
-  const handleCancelStatusChange = () => {
-    setIsPopupOpen(false);
-    setSelectedComplaintId(null);
-    setSelectedComplaintStatus(null);
-  };
-
-  // 팝업 메시지 생성
-  const getPopupMessage = () => {
-    if (selectedComplaintStatus === "처리중") {
-      return (
-        <>
-          <p className="pb-2">
-            처리결과를 <span className="text-darker-green">완료</span>로
-          </p>
-          <p>수정하시겠습니까?</p>
-        </>
-      );
-    } else if (selectedComplaintStatus === "완료") {
-      return (
-        <>
-          <p className="pb-2">
-            처리결과를 <span className="text-[#8E8E8E]">처리중</span>으로
-          </p>
-          <p>되돌리시겠습니까?</p>
-        </>
-      );
-    }
-    return "";
-  };
+  );
 
   // 각 complaint에 상태 변경 콜백 추가
   const complaintsWithCallbacks = filteredComplaints.map((complaint) => ({
@@ -379,10 +348,10 @@ const ComplaintTable: React.FC = () => {
       {/* 팝업 */}
       {isPopupOpen && (
         <Popup
-          message={getPopupMessage()}
+          message={statusChangeHandler.getMessage()}
           yesNo={true}
-          onFirstClick={handleConfirmStatusChange}
-          onSecondClick={handleCancelStatusChange}
+          onFirstClick={statusChangeHandler.onConfirm}
+          onSecondClick={statusChangeHandler.onCancel}
           toHome={false}
         />
       )}

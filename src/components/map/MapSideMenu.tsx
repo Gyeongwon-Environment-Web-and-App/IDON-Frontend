@@ -83,7 +83,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({ onSidebarChange }) => {
   };
 
   return (
-    <div className="w-screen h-screen">
+    <div className="">
       {/* 왼쪽 고정 세로 메뉴 바 */}
       <nav className="fixed left-0 top-0 h-screen w-14 md:w-20 flex flex-col justify-between bg-white border-r z-50 p-0">
         {/* 상단 버튼 */}

@@ -1,23 +1,8 @@
 // stores/complaintTableStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-// Define date range interface
-interface DateRange {
-  from: Date;
-  to: Date;
-}
-
-// Define complaint interface
-interface Complaint {
-  id: string;
-  date: string;
-  address: string;
-  type: string;
-  status: "처리중" | "완료";
-  content: string;
-  [key: string]: any;
-}
+import type { DateRange } from "react-day-picker";
+import type { Complaint } from "../types/complaint";
 
 // Define complaint table state interface
 interface ComplaintTableState {
@@ -166,6 +151,7 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
         sortOrder: state.sortOrder,
         complaints: state.complaints,
         filteredComplaints: state.filteredComplaints,
+        selectedRows: state.selectedRows,
       }),
       // Custom storage to handle Set serialization
       storage: {
@@ -173,14 +159,22 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
           const str = localStorage.getItem(name);
           if (!str) return null;
           const parsed = JSON.parse(str);
-          if (parsed.state?.selectedRows) {
+          if (
+            parsed.state?.selectedRows &&
+            Array.isArray(parsed.state.selectedRows)
+          ) {
             parsed.state.selectedRows = new Set(parsed.state.selectedRows);
           }
           return parsed;
         },
         setItem: (name, value) => {
-          const toStore = { ...value };
-          if (toStore.state?.selectedRows) {
+          const toStore = { ...value } as {
+            state?: { selectedRows?: Set<string> | string[] };
+          };
+          if (
+            toStore.state?.selectedRows &&
+            toStore.state.selectedRows instanceof Set
+          ) {
             toStore.state.selectedRows = Array.from(toStore.state.selectedRows);
           }
           localStorage.setItem(name, JSON.stringify(toStore));

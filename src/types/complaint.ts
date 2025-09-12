@@ -34,4 +34,5 @@ export interface Complaint {
   driver: string;
   status: "처리중" | "완료";
   onStatusChange?: (id: string) => void;
+  [key: string]: unknown;
 }
