@@ -33,8 +33,8 @@ import DateRangePicker from "../common/DateRangePicker";
 import ComplaintCard from "./ComplaintCard";
 import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 import { useComplaintTableStore } from "@/stores/complaintTableStore";
-import { complaints as initialComplaints } from "../../data/complaintData";
 import { createStatusChangeHandler } from "@/lib/popupHandlers";
+import { useComplaints } from "@/hooks/useComplaints";
 
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
@@ -62,13 +62,24 @@ const ComplaintTable: React.FC = () => {
     updateComplaint,
   } = useComplaintTableStore();
 
-  // Initialize store with data on mount
+  // Use the enhanced useComplaints hook with dateRange
+  const {
+    complaints: apiComplaints,
+    isLoading,
+    error,
+  } = useComplaints(dateRange);
+
+  // Update store with API data when it changes
   useEffect(() => {
-    if (complaints.length === 0) {
-      setComplaints(initialComplaints);
-      setFilteredComplaints(initialComplaints);
+    if (apiComplaints.length > 0) {
+      setComplaints(apiComplaints);
+      setFilteredComplaints(apiComplaints);
+    } else if (apiComplaints.length === 0 && !isLoading) {
+      // Show empty state instead of fallback data
+      setComplaints([]);
+      setFilteredComplaints([]);
     }
-  }, [complaints.length, setComplaints, setFilteredComplaints]);
+  }, [apiComplaints, isLoading, setComplaints, setFilteredComplaints]);
 
   // 전체 선택 핸들러
   const handleSelectAll = () => {
@@ -503,36 +514,64 @@ const ComplaintTable: React.FC = () => {
 
       {/* 테이블 */}
       <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
-        <DataTable
-          columns={columns}
-          data={complaintsWithCallbacks}
-          onRowClick={(complaint) => handleRowClick(complaint.id)}
-          clickableColumnIds={[
-            'select',
-            'number', 
-            'date',
-            'type',
-            'region_nm',
-            'content',
-            'contact',
-            'driver',
-            'department'
-          ]}
-        />
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-red-500">{error}</div>
+          </div>
+        ) : complaintsWithCallbacks.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">민원이 없습니다.</div>
+          </div>
+        ) : (
+          <DataTable
+            columns={columns}
+            data={complaintsWithCallbacks}
+            onRowClick={(complaint) => handleRowClick(complaint.id)}
+            clickableColumnIds={[
+              "select",
+              "number",
+              "date",
+              "type",
+              "region_nm",
+              "content",
+              "contact",
+              "driver",
+              "department",
+            ]}
+          />
+        )}
       </div>
 
       {/* 모바일 카드 뷰 */}
       <div className="md:hidden space-y-4 mt-4">
-        {filteredComplaints.map((complaint) => (
-          <ComplaintCard
-            key={complaint.id}
-            complaint={complaint}
-            onStatusChange={handleStatusChange}
-            isSelected={selectedRows.has(complaint.id)}
-            onSelectChange={handleRowSelect}
-            onCardClick={handleRowClick}
-          />
-        ))}
+        {isLoading ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-red-500">{error}</div>
+          </div>
+        ) : filteredComplaints.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <div className="text-gray-500">민원이 없습니다.</div>
+          </div>
+        ) : (
+          filteredComplaints.map((complaint) => (
+            <ComplaintCard
+              key={complaint.id}
+              complaint={complaint}
+              onStatusChange={handleStatusChange}
+              isSelected={selectedRows.has(complaint.id)}
+              onSelectChange={handleRowSelect}
+              onCardClick={handleRowClick}
+            />
+          ))
+        )}
       </div>
 
       {/* 페이지네이션 */}

@@ -162,7 +162,7 @@ const ComplaintManage = () => {
         />
       )}
       <Header onLogout={logout} />
-      <div className="flex md:justify-center md:items-center justify-start items-start md:pt-10 pt-2 pb-[7rem] md:pb-5 w-full">
+      <div className="flex md:justify-center md:items-center justify-start items-start pt-2 md:pt-4 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="민원"
           icon={

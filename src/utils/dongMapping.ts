@@ -176,18 +176,18 @@ const formatSearchKeyword = (address: string): string => {
 
   // 3. 도봉구 주소인 경우 더 구체적인 검색어 생성
   if (keyword.includes("도봉구")) {
-    // 도로명 주소 패턴 (개선): "서울 도봉구 [도로명길] [번호]"
-    const roadPattern = /서울\s*도봉구\s*([가-힣]+로[가-힣]*길?)\s*(\d+)/;
-    const match = keyword.match(roadPattern);
+    // 도로명 주소 패턴 (개선): "서울 도봉구 [도로명길] [번호]" - "길" 포함
+    const roadWithGilPattern = /서울\s*도봉구\s*([가-힣]+로\d*길)\s*(\d+)/;
+    const roadWithGilMatch = keyword.match(roadWithGilPattern);
 
-    if (match) {
-      const roadName = match[1];
-      const buildingNumber = match[2];
+    if (roadWithGilMatch) {
+      const roadName = roadWithGilMatch[1];
+      const buildingNumber = roadWithGilMatch[2];
       // 도로명길 + 건물번호로 검색 (더 정확함)
       return `${roadName} ${buildingNumber}`;
     }
 
-    // 일반 도로명 주소 패턴: "서울 도봉구 [도로명] [번호]"
+    // 일반 도로명 주소 패턴: "서울 도봉구 [도로명] [번호]" - "길" 없음
     const simpleRoadPattern = /서울\s*도봉구\s*([가-힣]+로)\s*(\d+)/;
     const simpleMatch = keyword.match(simpleRoadPattern);
 
@@ -290,7 +290,7 @@ const getDetailedDongInfo = async (
         const dongRegion = result.find((region) => region.region_type === "H");
         if (dongRegion && dongRegion.region_3depth_name) {
           console.log(`✅ 세부 동 정보 찾음: ${dongRegion.region_3depth_name}`);
-          resolve(dongRegion.region_3depth_name); // "방학2동" 형태로 반환
+          resolve(dongRegion.region_3depth_name);
         } else {
           console.warn(
             `No 3-depth region found for coordinates: ${lat}, ${lng}`
