@@ -99,6 +99,8 @@ class KakaoSDKManager {
       const script = document.createElement("script");
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`;
       script.async = true;
+      script.defer = true;
+      script.crossOrigin = "anonymous";
 
       script.onload = () => {
         this.initializeSDK().then(resolve).catch(reject);

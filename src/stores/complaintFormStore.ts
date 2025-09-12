@@ -50,6 +50,7 @@ const initialFormData: ComplaintFormData = {
   isMalicious: false,
   forwardTargets: [],
   uploadedFiles: [],
+  dateTime: new Date().toISOString(),
 };
 
 // Step 3: Create the store

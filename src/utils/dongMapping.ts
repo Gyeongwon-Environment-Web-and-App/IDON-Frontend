@@ -141,11 +141,28 @@ interface KakaoInfoWindow {
 
 type KakaoMapTypeId = string;
 
+// 캐시 및 요청 중복 방지를 위한 전역 상태
+const addressCache = new Map<string, string>();
+const pendingRequests = new Map<string, Promise<string>>();
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5분 캐시
+const cacheTimestamps = new Map<string, number>();
+
 // 도봉구 주소인지 확인하는 함수
 export const isDobongAddress = (address: string): boolean => {
   const dobongKeywords = ["도봉구", "방학", "쌍문", "창동", "도봉동", "마들"];
 
   return dobongKeywords.some((keyword) => address.includes(keyword));
+};
+
+// 캐시 정리 함수
+const cleanExpiredCache = () => {
+  const now = Date.now();
+  for (const [key, timestamp] of cacheTimestamps.entries()) {
+    if (now - timestamp > CACHE_EXPIRY) {
+      addressCache.delete(key);
+      cacheTimestamps.delete(key);
+    }
+  }
 };
 
 // 주소를 검색에 최적화된 키워드로 변환
@@ -387,42 +404,82 @@ const extractDongFromAddress = (address: string): string => {
   }
 };
 
-// 주소에서 동 정보 추출 함수 (API 기반) - 업데이트됨
+// 주소에서 동 정보 추출 함수 (API 기반) - 캐싱 및 중복 요청 방지 추가
 export const extractDongInfo = async (address: string): Promise<string> => {
   try {
+    // 캐시 정리
+    cleanExpiredCache();
+
     // 도봉구 주소가 아니면 빈 문자열 반환
     if (!isDobongAddress(address)) {
       return "";
     }
 
-    // 1. 주소를 좌표로 변환
-    const coords = await getCoordinatesFromAddress(address);
-    if (!coords) {
-      console.warn(`Could not find coordinates for address: ${address}`);
-      return "";
+    // 캐시 확인
+    if (addressCache.has(address)) {
+      console.log(
+        `📋 캐시에서 동 정보 반환: ${address} -> ${addressCache.get(address)}`
+      );
+      return addressCache.get(address)!;
     }
 
-    // 2. 좌표를 세부 행정동 정보로 변환 (coord2RegionCode 사용)
-    const detailedDongInfo = await getDetailedDongInfo(coords.lat, coords.lng);
-
-    if (detailedDongInfo) {
-      return detailedDongInfo;
+    // 중복 요청 확인
+    if (pendingRequests.has(address)) {
+      console.log(`⏳ 중복 요청 방지: ${address}`);
+      return pendingRequests.get(address)!;
     }
 
-    // 3. fallback: 기존 coord2Address 방식 사용
-    console.log("Falling back to coord2Address method");
-    const dongInfo = await getDongFromCoordinates(coords.lat, coords.lng);
+    // 새로운 요청 생성
+    const requestPromise = performDongExtraction(address);
+    pendingRequests.set(address, requestPromise);
 
-    if (dongInfo) {
-      return dongInfo;
+    try {
+      const result = await requestPromise;
+
+      // 캐시에 저장
+      if (result) {
+        addressCache.set(address, result);
+        cacheTimestamps.set(address, Date.now());
+        console.log(`💾 동 정보 캐시 저장: ${address} -> ${result}`);
+      }
+
+      return result;
+    } finally {
+      // 요청 완료 후 pending에서 제거
+      pendingRequests.delete(address);
     }
-
-    console.warn(`Could not extract dong info for address: ${address}`);
-    return "";
   } catch (error) {
     console.error("동 정보 추출 오류:", error);
     return "";
   }
+};
+
+// 실제 동 정보 추출 로직을 별도 함수로 분리
+const performDongExtraction = async (address: string): Promise<string> => {
+  // 1. 주소를 좌표로 변환
+  const coords = await getCoordinatesFromAddress(address);
+  if (!coords) {
+    console.warn(`Could not find coordinates for address: ${address}`);
+    return "";
+  }
+
+  // 2. 좌표를 세부 행정동 정보로 변환 (coord2RegionCode 사용)
+  const detailedDongInfo = await getDetailedDongInfo(coords.lat, coords.lng);
+
+  if (detailedDongInfo) {
+    return detailedDongInfo;
+  }
+
+  // 3. fallback: 기존 coord2Address 방식 사용
+  console.log("Falling back to coord2Address method");
+  const dongInfo = await getDongFromCoordinates(coords.lat, coords.lng);
+
+  if (dongInfo) {
+    return dongInfo;
+  }
+
+  console.warn(`Could not extract dong info for address: ${address}`);
+  return "";
 };
 
 // 주소 포맷팅 함수 (동 정보 포함) - 비동기 버전

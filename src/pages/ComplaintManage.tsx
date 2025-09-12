@@ -117,6 +117,10 @@ const ComplaintManage = () => {
         "forwardTargets",
         JSON.stringify(formData.forwardTargets)
       );
+      formDataToSend.append(
+        "dateTime",
+        formData.dateTime || new Date().toISOString()
+      );
 
       // 3. 파일들 추가 (Data URL을 Blob으로 변환)
       for (let i = 0; i < formData.uploadedFiles.length; i++) {
@@ -191,7 +195,15 @@ const ComplaintManage = () => {
             { label: "전체 통계", value: "stats" },
           ]}
           activeTab={activeTab}
-          onTabClick={handleTabClick}
+          onTabClick={(value) => {
+            if (
+              value === "manage" ||
+              value === "register" ||
+              value === "stats"
+            ) {
+              handleTabClick(value);
+            }
+          }}
           tabTitle={
             activeTab === "manage"
               ? "민원 내역 / 관리"

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import TextForward from "../forms/TextForward";
 import general from "../../assets/icons/categories/tags/general.svg";
 import recycle from "../../assets/icons/categories/tags/recycle.svg";
@@ -7,6 +7,7 @@ import food from "../../assets/icons/categories/tags/food.svg";
 import X from "../../assets/icons/navigation/arrows/X.svg";
 import { formatAddressWithDong } from "../../utils/dongMapping";
 import { useComplaintFormStore } from "../../stores/complaintFormStore";
+import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 interface ComplaintConfirmProps {
   dateTimeBox: React.ReactNode;
@@ -19,8 +20,51 @@ export default function ComplaintConfirm({
 }: ComplaintConfirmProps) {
   // Get form data from Zustand store
   const { formData, updateFormData } = useComplaintFormStore();
+  const [formattedAddress, setFormattedAddress] = useState(formData.address);
+  const [isLoadingAddress, setIsLoadingAddress] = useState(false);
+
+  // Format date/time for display
+  const formatDisplayDateTime = (isoString: string) => {
+    const date = new Date(isoString);
+
+    let hour = date.getHours();
+    const minute = String(date.getMinutes()).padStart(2, "0");
+    const isAM = hour < 12;
+    const ampm = isAM ? "오전" : "오후";
+    if (!isAM) hour = hour === 12 ? 12 : hour - 12;
+    if (hour === 0) hour = 12;
+
+    return {
+      date: `${formatDateToYYMMDD(isoString)}`,
+      time: `${ampm} ${hour}:${minute}`,
+    };
+  };
+
   console.log("uploadedFiles length:", formData.uploadedFiles.length);
   console.log("uploadedFiles:", formData.uploadedFiles);
+
+  // Format address with dong info asynchronously
+  useEffect(() => {
+    const formatAddress = async () => {
+      if (!formData.address) {
+        setFormattedAddress("");
+        return;
+      }
+
+      setIsLoadingAddress(true);
+      try {
+        const result = await formatAddressWithDong(formData.address);
+        setFormattedAddress(result);
+      } catch (error) {
+        console.error("Address formatting error:", error);
+        setFormattedAddress(formData.address); // Fallback to original address
+      } finally {
+        setIsLoadingAddress(false);
+      }
+    };
+
+    formatAddress();
+  }, [formData.address]);
 
   const formatFileSize = (bytes: number): string => {
     if (bytes === 0) return "0 Bytes";
@@ -55,9 +99,22 @@ export default function ComplaintConfirm({
             <p className="text-dark-gray my-3 md:my-5">
               민원 발생 주소 -{" "}
               <span className="text-black">
-                {formatAddressWithDong(formData.address)}{" "}
+                {isLoadingAddress ? (
+                  <span className="text-gray-500">주소 정보 로딩 중...</span>
+                ) : (
+                  formattedAddress
+                )}
               </span>
             </p>
+            {formData.dateTime && (
+              <p className="text-dark-gray my-3 md:my-5">
+                민원 발생 일시 -{" "}
+                <span className="text-black">
+                  {formatDisplayDateTime(formData.dateTime).date}{" "}
+                  {formatDisplayDateTime(formData.dateTime).time}
+                </span>
+              </p>
+            )}
             <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
               민원 내용
               <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">

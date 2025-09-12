@@ -19,6 +19,7 @@ export interface ComplaintFormData {
     latitude: number;
     longitude: number;
   };
+  dateTime?: string;
 }
 
 export interface Complaint {

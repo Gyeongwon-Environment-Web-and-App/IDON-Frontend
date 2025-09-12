@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Popover,
   PopoverTrigger,
@@ -8,6 +8,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { ko } from "date-fns/locale";
 import attentionRed from "../../assets/icons/common/attention_red.svg";
 import redo from "../../assets/icons/actions/redo.svg";
+import { useComplaintFormStore } from "../../stores/complaintFormStore";
 
 function formatDateTime(date: Date) {
   // 연, 월, 일
@@ -40,10 +41,21 @@ export default function DateTimeBox({
   repeat,
   onBack,
 }: DateTimeBoxProps) {
+  const { formData, updateFormData } = useComplaintFormStore();
   const [now] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(now);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
+    // Initialize from store if available, otherwise use current date
+    return formData.dateTime ? new Date(formData.dateTime) : now;
+  });
   const [open, setOpen] = useState(false);
   const { date, time } = formatDateTime(selectedDate || now);
+
+  // Update store when selectedDate changes
+  useEffect(() => {
+    if (selectedDate) {
+      updateFormData({ dateTime: selectedDate.toISOString() });
+    }
+  }, [selectedDate, updateFormData]);
 
   return (
     <div className="flex items-center md:justify-between justify-start md:gap-2 md:px-6 py-3 md:border-b md:border-light-border w-full">
@@ -100,7 +112,11 @@ export default function DateTimeBox({
       </div>
       {repeat && (
         <div className="flex items-center">
-          <img src={attentionRed} alt="반복 민원 아이콘" className="w-5 h-5 md:w-6 md:h-6" />
+          <img
+            src={attentionRed}
+            alt="반복 민원 아이콘"
+            className="w-5 h-5 md:w-6 md:h-6"
+          />
           <p className="text-red text-sm ml-1">반복 민원</p>
         </div>
       )}
