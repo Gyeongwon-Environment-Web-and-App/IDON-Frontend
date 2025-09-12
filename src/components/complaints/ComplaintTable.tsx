@@ -507,6 +507,17 @@ const ComplaintTable: React.FC = () => {
           columns={columns}
           data={complaintsWithCallbacks}
           onRowClick={(complaint) => handleRowClick(complaint.id)}
+          clickableColumnIds={[
+            'select',
+            'number', 
+            'date',
+            'type',
+            'region_nm',
+            'content',
+            'contact',
+            'driver',
+            'department'
+          ]}
         />
       </div>
 

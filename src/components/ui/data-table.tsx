@@ -26,12 +26,14 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   onRowClick?: (row: TData) => void;
+  clickableColumnIds?: string[];
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
+  clickableColumnIds
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -111,7 +113,10 @@ export function DataTable<TData, TValue>({
                             const isInteractive = e.target.closest(
                               'input[type="checkbox"], button, [role="button"]'
                             );
-                            if (!isInteractive && onRowClick) {
+
+                            const isClickableColumn = !clickableColumnIds || clickableColumnIds.includes(cell.column.id);
+
+                            if (!isInteractive && onRowClick && isClickableColumn) {
                               onRowClick(row.original);
                             }
                           }
