@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Fragment } from "react";
 import { Button } from "@/components/ui/button";
 import { useAreaSelection } from "@/hooks/useAreaSelection";
 import triangle from "@/assets/icons/actions/triangle.svg";
@@ -107,27 +107,29 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
         >
           <div className="relative flex cursor-default select-none items-center justify-between px-3 rounded-sm py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground pr-6">
             <input
+              id="checkbox-allAreas"
               type="checkbox"
               checked={selectedAreas.length === allItems}
               onChange={handleSelectAll}
-              className="mr-2 accent-[#656565]"
+              className="accent-[#656565]"
             />
-            <p>
+            <label htmlFor="checkbox-allAreas">
               {selectedAreas.length === allItems ? "전체 해제" : "전체 선택"}
-            </p>
+            </label>
           </div>
 
           {Object.entries(areaHierarchy).map(([parentArea, childAreas]) => (
-            <React.Fragment key={parentArea}>
+            <Fragment key={parentArea}>
               {/* Parent area */}
               <div className="relative flex cursor-pointer select-none items-center rounded-sm justify-between px-3 py-1.5 pr-8 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground">
                 <input
+                  id={`checkbox-${parentArea}`}
                   type="checkbox"
                   checked={selectedAreas.includes(parentArea)}
                   onChange={() => handleAreaToggle(parentArea)}
                   className="mr-2 accent-[#656565]"
                 />
-                {parentArea}
+                <label htmlFor={`checkbox-${parentArea}`}>{parentArea}</label>
               </div>
 
               {/* Child areas */}
@@ -141,14 +143,15 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
                 >
                   <input
                     type="checkbox"
+                    id={`checkbox-${childArea}`}
                     checked={selectedAreas.includes(childArea)}
                     onChange={() => handleAreaToggle(childArea)}
                     className="-ml-2 mr-3 accent-[#656565]"
                   />
-                  {childArea}
+                  <label htmlFor={`checkbox-${childArea}`}>{childArea}</label>
                 </div>
               ))}
-            </React.Fragment>
+            </Fragment>
           ))}
         </div>
       )}

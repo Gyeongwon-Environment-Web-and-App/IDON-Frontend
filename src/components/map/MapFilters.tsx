@@ -16,6 +16,8 @@ import type { DateRange } from "react-day-picker";
 
 interface MapFiltersProps {
   sidebarOpen: boolean;
+  dateRange?: DateRange;
+  onDateRangeChange: (dateRange: DateRange | undefined) => void;
   // onFilterChange: (filter: FilterOptions) => void;
   // isLoading?: boolean;
 }
@@ -44,9 +46,12 @@ const filterOptions = [
   { id: "bad", label: "반복민원", icon: attention, iconWhite: att_white },
 ];
 
-const MapFilters: React.FC<MapFiltersProps> = ({ sidebarOpen }) => {
+const MapFilters: React.FC<MapFiltersProps> = ({
+  sidebarOpen,
+  dateRange,
+  onDateRangeChange,
+}) => {
   const [selectedFilter, setSelectedFilter] = useState("all");
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
 
   return (
     <div
@@ -65,13 +70,15 @@ const MapFilters: React.FC<MapFiltersProps> = ({ sidebarOpen }) => {
               }
               alt={`${option.label} 필터`}
             />
-            <span className="hidden xl:block text-sm xl:text-base pt-0.5 xl:pt-0 font-semibold ">{option.label}</span>
+            <span className="hidden xl:block text-sm xl:text-base pt-0.5 xl:pt-0 font-semibold ">
+              {option.label}
+            </span>
           </button>
         ))}
       </div>
       <DateRangePicker
         dateRange={dateRange}
-        onDateRangeChange={setDateRange}
+        onDateRangeChange={onDateRangeChange}
         containerClassName="border border-d9d9d9 rounded-full px-4 py-1 bg-white shadow-md"
       />
     </div>

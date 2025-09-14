@@ -268,7 +268,9 @@ const MainPage: React.FC = () => {
             </div>
             <img src={rightArrowGray} alt="오른쪽 화살표" className="cursor-pointer" />
           </div>
-          <div className="h-72 w-full mt-2 border border-black"></div>
+          <div className="h-72 w-full mt-2 flex justify-center items-center font-semibold">
+            개발 중입니다!
+          </div>
         </div>
       </div>
 

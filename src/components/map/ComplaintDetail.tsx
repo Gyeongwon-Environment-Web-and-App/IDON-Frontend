@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useMapOverviewStore } from "@/stores/mapOverviewStore";
 import { useComplaintTableStore } from "@/stores/complaintTableStore";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import leftArrow from "../../assets/icons/navigation/arrows/gray_arrow_left.svg";
 import rightArrow from "../../assets/icons/navigation/arrows/gray_arrow_right.svg";
 import fix from "../../assets/icons/common/fix.svg";
@@ -19,11 +19,8 @@ import sample from "../../assets/background/sample.png";
 import { createStatusChangeHandler } from "@/lib/popupHandlers";
 import Popup from "../forms/Popup";
 
-interface ComplaintDetailProps {
-  complaintId?: string;
-}
-
-const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
+const ComplaintDetail: React.FC = () => {
+  const { complaintId } = useParams<{ complaintId: string }>();
   const { selectedComplaintId, selectedComplaint, setSelectedComplaint } =
     useMapOverviewStore();
   const [loading, setLoading] = useState(false);
@@ -51,10 +48,8 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
     }
   );
 
-  //! Get the complaint ID from props or store
-  // const currentComplaintId = complaintId || selectedComplaintId;
-  console.log(selectedComplaintId, complaintId);
-  const currentComplaintId = "1";
+  // Get the complaint ID from URL params
+  const currentComplaintId = complaintId;
 
   // Fetch complaint data when ID changes
   useEffect(() => {
@@ -102,17 +97,19 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
     );
   }
 
-  // if (error) {
-  //   return (
-  //     <div className="p-6">
-  //       <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-  //         <div className="flex items-center">
-  //           <div className="text-red-600 text-sm">{error}</div>
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
+  if (error) {
+    console.log('Complaint Detail Error: ', error);
+
+    return (
+      <div className="p-6">
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <div className="flex items-center">
+            <div className="text-red-600 text-sm">{error}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // if (!selectedComplaint) {
   //   return (
@@ -123,10 +120,6 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
   //     </div>
   //   );
   // }
-
-  if (error) {
-    console.log(error);
-  }
   if (!selectedComplaint) {
     console.log("no selected complaint");
   }
@@ -134,7 +127,7 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
   return (
     <div className="w-full">
       {isPopupOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
           onClick={(e) => {
             console.log("clicked!");
@@ -158,7 +151,7 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
       <header className="w-full flex items-center">
         <button
           className="flex text-xl font-semibold text-gray-900 px-2 gap-1"
-          onClick={() => console.log("민원 분류로 이동")}
+          onClick={() => navigate("/map/overview/complaints")}
         >
           <img src={leftArrow} alt="왼쪽 화살표" />
           민원 목록
@@ -203,7 +196,12 @@ const ComplaintDetail: React.FC<ComplaintDetailProps> = ({ complaintId }) => {
           <div className="flex gap-2 items-center">
             <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
             <label className="text-lg font-semibold">민원 처리 중</label>
-            <button className="text-[#0009FF] p-0 ml-1" onClick={() => {setIsPopupOpen(true)}}>
+            <button
+              className="text-[#0009FF] p-0 ml-1"
+              onClick={() => {
+                setIsPopupOpen(true);
+              }}
+            >
               상태수정
             </button>
           </div>

@@ -23,6 +23,10 @@ interface MapOverviewState {
   sidebarOpen: boolean;
   activeSidebar: "complaint" | "vehicle" | "stats" | null;
 
+  // Navigation state
+  currentView: "list" | "detail" | null;
+  lastComplaintListPath: string | null;
+
   // Map state
   mapCenter: { lat: number; lng: number };
   mapZoom: number;
@@ -35,9 +39,14 @@ interface MapOverviewState {
   setMapCenter: (center: { lat: number; lng: number }) => void;
   setMapZoom: (zoom: number) => void;
 
+  // Navigation actions
+  setCurrentView: (view: "list" | "detail" | null) => void;
+  setLastComplaintListPath: (path: string | null) => void;
+
   // Helper actions
   clearSelectedComplaint: () => void;
   openComplaintDetail: (complaintId: string) => void;
+  openComplaintList: () => void;
   resetMapOverview: () => void;
 }
 
@@ -50,6 +59,8 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       selectedComplaint: null,
       sidebarOpen: false,
       activeSidebar: null,
+      currentView: null,
+      lastComplaintListPath: null,
       mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
       mapZoom: 2,
 
@@ -71,11 +82,17 @@ export const useMapOverviewStore = create<MapOverviewState>()(
 
       setMapZoom: (zoom) => set({ mapZoom: zoom }),
 
+      // Navigation actions
+      setCurrentView: (view) => set({ currentView: view }),
+
+      setLastComplaintListPath: (path) => set({ lastComplaintListPath: path }),
+
       // Helper actions
       clearSelectedComplaint: () =>
         set({
           selectedComplaintId: null,
           selectedComplaint: null,
+          currentView: null,
         }),
 
       openComplaintDetail: (complaintId) =>
@@ -83,6 +100,16 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           selectedComplaintId: complaintId,
           activeSidebar: "complaint",
           sidebarOpen: true,
+          currentView: "detail",
+        }),
+
+      openComplaintList: () =>
+        set({
+          selectedComplaintId: null,
+          selectedComplaint: null,
+          activeSidebar: "complaint",
+          sidebarOpen: true,
+          currentView: "list",
         }),
 
       resetMapOverview: () =>
@@ -91,6 +118,8 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           selectedComplaint: null,
           sidebarOpen: false,
           activeSidebar: null,
+          currentView: null,
+          lastComplaintListPath: null,
           mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
           mapZoom: 2,
         }),
