@@ -18,6 +18,16 @@ import truck from "../../assets/icons/map_card/truck.svg";
 import sample from "../../assets/background/sample.png";
 import { createStatusChangeHandler } from "@/lib/popupHandlers";
 import Popup from "../forms/Popup";
+import type { Complaint } from "@/types/complaint";
+
+// Helper function to safely access nested properties
+const getPhoneNumber = (complaint: Complaint | null): string | null => {
+  return complaint?.source?.phone_no || null;
+};
+
+const getFirstUsername = (complaint: Complaint | null): string | null => {
+  return complaint?.notify?.usernames?.[0] || null;
+};
 
 const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
@@ -98,7 +108,7 @@ const ComplaintDetail: React.FC = () => {
   }
 
   if (error) {
-    console.log('Complaint Detail Error: ', error);
+    console.log("Complaint Detail Error: ", error);
 
     return (
       <div className="p-6">
@@ -164,8 +174,10 @@ const ComplaintDetail: React.FC = () => {
 
         <div className="space-y-2">
           <div className="flex gap-2 items-center">
-            <img src={recycle} alt={`재활용`} />
-            <p className="text-xl font-semibold">임시 제목 임시 제목</p>
+            <img src={recycle} alt={`${selectedComplaint?.type || "재활용"}`} />
+            <p className="text-xl font-semibold">
+              {selectedComplaint?.content || "민원 제목"}
+            </p>
             <button
               className="flex p-0 w-[3.2rem]"
               onClick={() => {
@@ -176,26 +188,43 @@ const ComplaintDetail: React.FC = () => {
             </button>
           </div>
           <p className="text-base text-[#7C7C7C] font-semibold">
-            2025.06.12 오전 9시 38분
+            {selectedComplaint?.date
+              ? new Date(selectedComplaint.date).toLocaleString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: true,
+                })
+              : "날짜 정보 없음"}
           </p>
 
           <div className="flex gap-2 items-center">
             <img src={pin} alt="주소 핀" className="w-5 h-5" />
             <label className="text-lg font-semibold">
-              신당동 다산로33-3 공디 아파트
+              {selectedComplaint?.address || "주소 정보 없음"}
             </label>
           </div>
 
           <div className="flex gap-2 items-center">
             <img src={phone} alt="전화" className="w-5 h-5" />
             <label className="text-lg font-semibold">
-              경원 환경 (010-1234-1234)
+              {selectedComplaint?.department || "담당부서"} (
+              {selectedComplaint?.contact ||
+                getPhoneNumber(selectedComplaint) ||
+                "연락처 없음"}
+              )
             </label>
           </div>
 
           <div className="flex gap-2 items-center">
             <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
-            <label className="text-lg font-semibold">민원 처리 중</label>
+            <label className="text-lg font-semibold">
+              {selectedComplaint?.status === "완료"
+                ? "민원 처리 완료"
+                : "민원 처리 중"}
+            </label>
             <button
               className="text-[#0009FF] p-0 ml-1"
               onClick={() => {
@@ -208,9 +237,15 @@ const ComplaintDetail: React.FC = () => {
 
           <div className="flex gap-2 items-center">
             <img src={truck} alt="차량" className="w-5 h-5" />
-            <label className="text-lg font-semibold">180가 6547</label>
+            <label className="text-lg font-semibold">
+              {selectedComplaint?.driver ||
+                getFirstUsername(selectedComplaint) ||
+                "담당자 정보 없음"}
+            </label>
             <p className="text-base font-semibold text-[#7C7C7C]">
-              차량이 수거 중이에요
+              {selectedComplaint?.status === "완료"
+                ? "수거 완료"
+                : "차량이 수거 중이에요"}
             </p>
             <button className="text-[#0009FF] p-0">동선 조회</button>
           </div>
@@ -218,7 +253,9 @@ const ComplaintDetail: React.FC = () => {
           <div className="pt-5">
             <label className="text-lg font-semibold">민원 내용</label>
             <div className="mt-2 p-3 rounded-lg bg-ebebeb h-40">
-              <p className="text-sm whitespace-pre-wrap"></p>
+              <p className="text-sm whitespace-pre-wrap">
+                {selectedComplaint?.content || "민원 내용이 없습니다."}
+              </p>
             </div>
           </div>
         </div>

@@ -4,7 +4,6 @@ import Login from "./pages/Login";
 import ComplaintManage from "./pages/ComplaintManage";
 import MapOverview from "./pages/MapOverview";
 import ComplaintDetail from "./components/map/ComplaintDetail";
-import ComplaintListContainer from "./components/map/ComplaintListContainer";
 
 export const router = createBrowserRouter([
   {
@@ -25,7 +24,7 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "complaints",
-        element: <ComplaintListContainer />,
+        element: <div>Complaint List (rendered in sidebar)</div>,
       },
       {
         path: "complaints/:complaintId",

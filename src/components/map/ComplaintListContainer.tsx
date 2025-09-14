@@ -5,13 +5,15 @@ import { AreaDropdown } from "@/components/ui/AreaDropdown";
 import { complaints } from "../../data/complaintData";
 import { useComplaints } from "../../hooks/useComplaints";
 import type { DateRange } from "react-day-picker";
-import { useOutletContext } from "react-router-dom";
 
-const ComplaintListContainer: React.FC = () => {
+interface ComplaintListContainerProps {
+  dateRange?: DateRange;
+}
+
+const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
+  dateRange,
+}) => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-
-  // Get dateRange from outlet context
-  const { dateRange } = useOutletContext<{ dateRange?: DateRange }>();
 
   // Use the useComplaints hook with the dateRange from context
   //! const { complaints, isLoading, error } = useComplaints(dateRange);
@@ -52,30 +54,30 @@ const ComplaintListContainer: React.FC = () => {
   };
 
   return (
-    <div className="p-6 w-full h-full border border-black">
+    <div className="w-full h-full flex flex-col">
       {isLoading && (
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-500 py-5">
           <p className="text-sm">민원 목록을 불러오는 중...</p>
         </div>
       )}
       {error && (
-        <div className="text-center text-red-500">
+        <div className="text-center text-red-500 py-5">
           <p className="text-sm">에러: {error}</p>
         </div>
       )}
       {!isLoading && !error && complaints.length === 0 && (
-        <div className="text-center text-gray-500">
+        <div className="text-center text-gray-500 py-5">
           <p className="text-sm">해당 기간에 민원이 없습니다.</p>
         </div>
       )}
       {!isLoading && !error && complaints.length > 0 && (
-        <div>
-          <div className="flex items-center justify-between">
-            <div className="mb-4 pb-3 rounded-lg">
-              <p className="text-base text-gray-600 mb-1">
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between px-2 py-5">
+            <div className="rounded-lg">
+              <p className="font-semibold text-base text-[#8D8D8D] mb-1">
                 현재 조회 중인 지역은
               </p>
-              <h3 className="text-xl font-semibold text-gray-800">
+              <h3 className="text-xl font-bold">
                 서울특별시 도봉구 {getSelectedAreaDisplay(selectedAreas)}
               </h3>
             </div>
@@ -88,10 +90,15 @@ const ComplaintListContainer: React.FC = () => {
               triangleIcon={triangle}
             />
           </div>
-          <div className="space-y-2">
-            {complaints.map((complaint) => (
-              <ComplaintListCard key={complaint.id} complaint={complaint} />
-            ))}
+          <div className="px-2 pb-5">
+            <p className="font-semibold text-sm pb-1 mb-5 border-b border-d9d9d9">
+              전체 민원 목록
+            </p>
+            <div className="h-[60%] space-y-2 overflow-y-auto">
+              {complaints.map((complaint) => (
+                <ComplaintListCard key={complaint.id} complaint={complaint} />
+              ))}
+            </div>
           </div>
         </div>
       )}

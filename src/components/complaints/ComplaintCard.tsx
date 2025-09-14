@@ -26,7 +26,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
   onCardClick,
 }) => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
-  const bad = true; //! 여기 수정
+  const bad = complaint.source?.bad || false;
 
   const handleStatusClick = () => {
     setIsPopupOpen(true);

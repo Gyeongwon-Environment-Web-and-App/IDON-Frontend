@@ -1,17 +1,7 @@
 // stores/mapOverviewStore.ts
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
-// Define complaint interface (matching complaintTableStore)
-interface Complaint {
-  id: string;
-  date: string;
-  address: string;
-  type: string;
-  status: "처리중" | "완료";
-  content: string;
-  [key: string]: unknown;
-}
+import type { Complaint } from "@/types/complaint";
 
 // Define map overview state interface
 interface MapOverviewState {
