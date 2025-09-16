@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import type { DateRange } from "react-day-picker";
+import React, { useState } from 'react';
+
+import { ko } from 'date-fns/locale';
+import type { DateRange } from 'react-day-picker';
+
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { ko } from "date-fns/locale";
-import { Button } from "@/components/ui/button";
-import calendar from "../../assets/icons/categories/map_categories/calendar.svg";
+} from '@/components/ui/popover';
+
+import calendar from '../../assets/icons/categories/map_categories/calendar.svg';
 
 interface DateRangePickerProps {
   dateRange?: DateRange;
@@ -22,8 +25,8 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   dateRange,
   onDateRangeChange,
   placeholder,
-  className = "",
-  containerClassName = "",
+  className = '',
+  containerClassName = '',
 }) => {
   const [open, setOpen] = useState(false);
 
@@ -70,9 +73,15 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         <PopoverTrigger asChild>
           <div className="inline-flex items-center cursor-pointer">
             <Button className="cursor-pointer bg-white outline-none shadow-none p-0 hover:bg-white">
-              <img src={calendar} alt="캘린더 아이콘" className="h-5 w-5 md:h-6 md:w-6" />
+              <img
+                src={calendar}
+                alt="캘린더 아이콘"
+                className="h-5 w-5 md:h-6 md:w-6"
+              />
             </Button>
-            <span className={`text-base font-medium md:text-xl md:font-semibold ml-2 ${className}`}>
+            <span
+              className={`text-base font-medium md:text-xl md:font-semibold ml-2 ${className}`}
+            >
               {formatDateDisplay()}
             </span>
           </div>
@@ -87,7 +96,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
             locale={ko}
             captionLayout="dropdown"
             disabled={(date) =>
-              date > new Date() || date < new Date("1900-01-01")
+              date > new Date() || date < new Date('1900-01-01')
             }
             className="rounded-md border custom-calendar"
           />

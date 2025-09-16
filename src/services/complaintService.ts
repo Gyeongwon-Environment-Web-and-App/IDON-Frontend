@@ -1,6 +1,7 @@
-import apiClient from "@/lib/api";
-import type { Complaint } from "@/types/complaint";
-import type { DateRange } from "react-day-picker";
+import type { DateRange } from 'react-day-picker';
+
+import apiClient from '@/lib/api';
+import type { Complaint } from '@/types/complaint';
 
 const formatDate = (date: Date): string => {
   // Ensure we have a valid Date object
@@ -8,7 +9,7 @@ const formatDate = (date: Date): string => {
 
   // Check if the date is valid
   if (isNaN(dateObj.getTime())) {
-    throw new Error("Invalid date provided");
+    throw new Error('Invalid date provided');
   }
 
   // Return full ISO string format with timezone (e.g., "2025-09-12T05:31:22.827Z")
@@ -40,12 +41,12 @@ export const complaintService = {
   async getComplaints(dateRange?: DateRange): Promise<Complaint[]> {
     const dateRangeRequest = getDateRangeFromPicker(dateRange);
 
-    console.log("Request body (ISO format):", {
+    console.log('Request body (ISO format):', {
       startDate: dateRangeRequest.startDate,
       endDate: dateRangeRequest.endDate,
     });
 
-    const response = await apiClient.post("/complaint/getByDates", {
+    const response = await apiClient.post('/complaint/getByDates', {
       startDate: dateRangeRequest.startDate,
       endDate: dateRangeRequest.endDate,
     });

@@ -1,27 +1,30 @@
-import { CustomPieChart } from "./CustomPieChart";
-import { TimeSlotBarChart } from "./TimeSlotBarChart";
-import type { DateRange } from "react-day-picker";
-import {
-  complaintTypeData,
-  dongComplaintData,
-  complaintData,
-  timeSlotData,
-  weekdayData,
-} from "../../data/chartData";
+import { useState } from 'react';
+
+import { Download, Printer } from 'lucide-react';
+import type { DateRange } from 'react-day-picker';
+
+import { AreaDropdown } from '@/components/ui/AreaDropdown';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Download, Printer } from "lucide-react";
-import { useState } from "react";
-import DateRangePicker from "../common/DateRangePicker";
-import WeekDayBarChart from "./WeekDayBarChart";
-import type { BarChartItem } from "@/types/stats";
-import triangle from "../../assets/icons/actions/triangle.svg";
-import { AreaDropdown } from "@/components/ui/AreaDropdown";
+} from '@/components/ui/dropdown-menu';
+import type { BarChartItem } from '@/types/stats';
+
+import triangle from '../../assets/icons/actions/triangle.svg';
+import {
+  complaintData,
+  complaintTypeData,
+  dongComplaintData,
+  timeSlotData,
+  weekdayData,
+} from '../../data/chartData';
+import DateRangePicker from '../common/DateRangePicker';
+import { CustomPieChart } from './CustomPieChart';
+import { TimeSlotBarChart } from './TimeSlotBarChart';
+import WeekDayBarChart from './WeekDayBarChart';
 
 // 날짜 포매팅 함수
 const formatDate = (date: Date): string => {
@@ -40,13 +43,13 @@ const highestComplaintTime = (data: BarChartItem[]) => {
   let maxComplaints = -1;
   let minComplaints = Infinity;
   let totalComplaints = 0;
-  let maxTime = "";
-  let minTime = "";
+  let maxTime = '';
+  let minTime = '';
 
   data.forEach((item) => {
     // 각 시간대의 총 민원 수 계산 (time 제외한 모든 카테고리 합계)
     const totalTimeComplaints = Object.keys(item)
-      .filter((key) => key !== "time")
+      .filter((key) => key !== 'time')
       .reduce((sum, key) => sum + Number(item[key]), 0);
 
     // 가장 많은 민원 시간대 찾기
@@ -77,22 +80,22 @@ const ComplaintStats = () => {
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrashType, setSelectedTrashType] =
-    useState<string>("쓰레기 종류");
-  const [selectedTimeline, setSelectedTimeline] = useState<string>("시간대");
-  const [selectedWeekday, setSelectedWeekday] = useState<string>("요일별");
+    useState<string>('쓰레기 종류');
+  const [selectedTimeline, setSelectedTimeline] = useState<string>('시간대');
+  const [selectedWeekday, setSelectedWeekday] = useState<string>('요일별');
 
   const getTrashTypeColor = (type: string) => {
     switch (type) {
-      case "음식물":
-        return "#F5694A";
-      case "재활용":
-        return "#58CC02";
-      case "일반":
-        return "#59B9FF";
-      case "기타":
-        return "#AF8AFF";
+      case '음식물':
+        return '#F5694A';
+      case '재활용':
+        return '#58CC02';
+      case '일반':
+        return '#59B9FF';
+      case '기타':
+        return '#AF8AFF';
       default:
-        return "black";
+        return 'black';
     }
   };
 
@@ -101,10 +104,10 @@ const ComplaintStats = () => {
   };
 
   const getSelectedAreaDisplay = (areas: string[]) => {
-    if (areas.length === 0) return "전체 지역";
+    if (areas.length === 0) return '전체 지역';
 
-    const 쌍문Children = ["쌍문 1동", "쌍문 2동", "쌍문 3동", "쌍문 4동"];
-    const 방학Children = ["방학 1동", "방학 3동"];
+    const 쌍문Children = ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'];
+    const 방학Children = ['방학 1동', '방학 3동'];
 
     const selected쌍문Children = 쌍문Children.filter((child) =>
       areas.includes(child)
@@ -116,18 +119,18 @@ const ComplaintStats = () => {
     const displayParts = [];
 
     if (selected쌍문Children.length === 쌍문Children.length) {
-      displayParts.push("쌍문동");
+      displayParts.push('쌍문동');
     } else if (selected쌍문Children.length > 0) {
-      displayParts.push(selected쌍문Children.join(", "));
+      displayParts.push(selected쌍문Children.join(', '));
     }
 
     if (selected방학Children.length === 방학Children.length) {
-      displayParts.push("방학동");
+      displayParts.push('방학동');
     } else if (selected방학Children.length > 0) {
-      displayParts.push(selected방학Children.join(", "));
+      displayParts.push(selected방학Children.join(', '));
     }
 
-    return displayParts.join(", ");
+    return displayParts.join(', ');
   };
 
   // 가장 많고 적은 민원 시간대 계산
@@ -135,15 +138,15 @@ const ComplaintStats = () => {
   const weekdayStats = highestComplaintTime(weekdayData);
 
   const DongChartColors = [
-    "#72E900",
-    "#8ADEAB",
-    "#3CC092",
-    "#00BA13",
-    "#007A0C",
-    "#004207",
+    '#72E900',
+    '#8ADEAB',
+    '#3CC092',
+    '#00BA13',
+    '#007A0C',
+    '#004207',
   ];
-  const TrashChartColors = ["#58CC02", "#59B9FF", "#AF8AFF", "#F5694A"];
-  const ComplaintChartColors = ["red", "#a8a8a8"];
+  const TrashChartColors = ['#58CC02', '#59B9FF', '#AF8AFF', '#F5694A'];
+  const ComplaintChartColors = ['red', '#a8a8a8'];
 
   return (
     <div className="w-[100%] h-screen">
@@ -160,7 +163,9 @@ const ComplaintStats = () => {
                   }}
                   className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
                 >
-                  <span className="text-sm font-semibold">{selectedTrashType}</span>
+                  <span className="text-sm font-semibold">
+                    {selectedTrashType}
+                  </span>
                   <img src={triangle} alt="쓰레기 종류 선택" />
                 </Button>
               </DropdownMenuTrigger>
@@ -170,7 +175,7 @@ const ComplaintStats = () => {
               >
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType("음식물");
+                    setSelectedTrashType('음식물');
                   }}
                   className="text-[#F5694A]"
                 >
@@ -178,7 +183,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType("재활용");
+                    setSelectedTrashType('재활용');
                   }}
                   className="text-[#58CC02]"
                 >
@@ -186,7 +191,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType("일반");
+                    setSelectedTrashType('일반');
                   }}
                   className="text-[#59B9FF]"
                 >
@@ -194,7 +199,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType("기타");
+                    setSelectedTrashType('기타');
                   }}
                   className="text-[#AF8AFF]"
                 >
@@ -219,28 +224,28 @@ const ComplaintStats = () => {
               >
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline("연도별");
+                    setSelectedTimeline('연도별');
                   }}
                 >
                   연도별
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline("월별");
+                    setSelectedTimeline('월별');
                   }}
                 >
                   월별
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline("주간");
+                    setSelectedTimeline('주간');
                   }}
                 >
                   주간
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline("일간");
+                    setSelectedTimeline('일간');
                   }}
                 >
                   일간
@@ -264,35 +269,35 @@ const ComplaintStats = () => {
               >
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedWeekday("월요일");
+                    setSelectedWeekday('월요일');
                   }}
                 >
                   월요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedWeekday("화요일");
+                    setSelectedWeekday('화요일');
                   }}
                 >
                   화요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedWeekday("수요일");
+                    setSelectedWeekday('수요일');
                   }}
                 >
                   수요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedWeekday("목요일");
+                    setSelectedWeekday('목요일');
                   }}
                 >
                   목요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedWeekday("금요일");
+                    setSelectedWeekday('금요일');
                   }}
                 >
                   금요일
@@ -350,7 +355,7 @@ const ComplaintStats = () => {
             containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
           />
           <p className="text-base font-semibold text-8d8d8d">
-            최근{" "}
+            최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}
@@ -396,7 +401,7 @@ const ComplaintStats = () => {
         </section>
         <section className="mt-10">
           <p className="font-semibold text-8d8d8d">
-            최근{" "}
+            최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}
@@ -442,7 +447,7 @@ const ComplaintStats = () => {
         </section>
         <section className="mt-10">
           <p className="font-semibold text-8d8d8d">
-            최근{" "}
+            최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}
@@ -488,7 +493,7 @@ const ComplaintStats = () => {
         </section>
         <section className="mt-10">
           <p className="font-semibold text-8d8d8d">
-            최근{" "}
+            최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}
@@ -521,7 +526,7 @@ const ComplaintStats = () => {
         </section>
         <section className="mt-7 md:mt-10">
           <p className="font-semibold text-8d8d8d">
-            최근{" "}
+            최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)
               : formatDate(new Date())}

@@ -1,14 +1,16 @@
-import React, { useState } from "react";
-import type { Complaint } from "../../types/complaint";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Separator } from "@/components/ui/separator";
-import Popup from "../forms/Popup";
-import food from "../../assets/icons/categories/tags/food.svg";
-import general from "../../assets/icons/categories/tags/general.svg";
-import other from "../../assets/icons/categories/tags/other.svg";
-import recycle from "../../assets/icons/categories/tags/recycle.svg";
-import attentionRed from "../../assets/icons/common/attention_red.svg";
-import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
+import React, { useState } from 'react';
+
+import { Checkbox } from '@/components/ui/checkbox';
+import { Separator } from '@/components/ui/separator';
+import { formatDateToYYMMDD } from '@/utils/formatDateToYYMMDD';
+
+import food from '../../assets/icons/categories/tags/food.svg';
+import general from '../../assets/icons/categories/tags/general.svg';
+import other from '../../assets/icons/categories/tags/other.svg';
+import recycle from '../../assets/icons/categories/tags/recycle.svg';
+import attentionRed from '../../assets/icons/common/attention_red.svg';
+import type { Complaint } from '../../types/complaint';
+import Popup from '../forms/Popup';
 
 interface ComplaintCardProps {
   complaint: Complaint;
@@ -42,7 +44,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
   };
 
   const getPopupMessage = () => {
-    if (complaint.status === "처리중") {
+    if (complaint.status === '처리중') {
       return (
         <>
           <p className="pb-2">
@@ -51,7 +53,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           <p>수정하시겠습니까?</p>
         </>
       );
-    } else if (complaint.status === "완료") {
+    } else if (complaint.status === '완료') {
       return (
         <>
           <p className="pb-2">
@@ -61,14 +63,14 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
         </>
       );
     }
-    return "";
+    return '';
   };
 
   const truncateString = (str: string, maxLength: number) => {
     if (str.length <= maxLength) {
       return str;
     } else {
-      return str.slice(0, maxLength - 3) + "...";
+      return str.slice(0, maxLength - 3) + '...';
     }
   };
 
@@ -99,7 +101,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           <Separator orientation="vertical" className="h-4" />
           {complaint.region_nm}
           <img
-            src={bad ? attentionRed : ""}
+            src={bad ? attentionRed : ''}
             alt="악성민원 태그"
             className="w-5"
           />
@@ -107,11 +109,11 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
         <div className="flex font-bold text-lg">
           <img
             src={
-              complaint.type === "재활용"
+              complaint.type === '재활용'
                 ? recycle
-                : complaint.type === "일반"
+                : complaint.type === '일반'
                   ? general
-                  : complaint.type === "음식물"
+                  : complaint.type === '음식물'
                     ? food
                     : other
             }
@@ -123,7 +125,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
       </div>
       <div
         className={`flex items-center font-semibold justify-center text-center text-white cursor-pointer w-16 text-base rounded-r ${
-          complaint.status === "완료" ? "bg-light-green" : "bg-[#B1B1B1]"
+          complaint.status === '완료' ? 'bg-light-green' : 'bg-[#B1B1B1]'
         }`}
         onClick={handleStatusClick}
       >

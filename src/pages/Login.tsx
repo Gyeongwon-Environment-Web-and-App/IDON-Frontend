@@ -1,6 +1,7 @@
-import React, { useState } from "react";
-import mdLogo from "../assets/icons/brand/mid_logo.svg";
-import { authService, type LoginResult } from "../services/authService";
+import React, { useState } from 'react';
+
+import mdLogo from '../assets/icons/brand/mid_logo.svg';
+import { authService, type LoginResult } from '../services/authService';
 
 interface LoginProps {
   onLogin: (userData: {
@@ -13,7 +14,7 @@ interface LoginProps {
 }
 
 const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const [serial, setSerial] = useState("");
+  const [serial, setSerial] = useState('');
   const [autoLogin, setAutoLogin] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
   const [error, setError] = useState(false);
@@ -25,10 +26,10 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
 
     // 로그인 성공 시 로컬 스토리지에 사용자 정보 저장 (자동 로그인용)
     if (result.success && result.data && autoLogin) {
-      localStorage.setItem("userData", JSON.stringify(result.data));
-      localStorage.setItem("serial_no", result.data.serial_no.toString());
-      localStorage.setItem("userToken", result.data.token);
-      console.log("userToken: ", result.data.token);
+      localStorage.setItem('userData', JSON.stringify(result.data));
+      localStorage.setItem('serial_no', result.data.serial_no.toString());
+      localStorage.setItem('userToken', result.data.token);
+      console.log('userToken: ', result.data.token);
     }
 
     return result;
@@ -48,11 +49,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
         onLogin(result.data);
       } else {
         // 로그인 실패 시 에러 메시지 표시
-        alert(result?.message || "로그인에 실패했습니다.");
+        alert(result?.message || '로그인에 실패했습니다.');
       }
     } catch (error) {
-      console.error("로그인 처리 중 오류:", error);
-      alert("로그인 처리 중 오류가 발생했습니다.");
+      console.error('로그인 처리 중 오류:', error);
+      alert('로그인 처리 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
@@ -82,11 +83,11 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               className={`w-full px-5 py-3 text-xl border rounded focus:outline-none transition-colors duration-200 ${
                 isFocused
                   ? error
-                    ? "border-[#FF3D3D] outline-[#FF3D3D]"
-                    : "border-[#00BA13] outline-[#00BA13]"
+                    ? 'border-[#FF3D3D] outline-[#FF3D3D]'
+                    : 'border-[#00BA13] outline-[#00BA13]'
                   : error
-                    ? "border-[#FF3D3D]"
-                    : "border-gray-300"
+                    ? 'border-[#FF3D3D]'
+                    : 'border-gray-300'
               }`}
               value={serial}
               onChange={handleSerialChange}
@@ -94,7 +95,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               onBlur={() => setIsFocused(false)}
               required
               autoComplete="off"
-              placeholder={isFocused ? "" : "시리얼코드"}
+              placeholder={isFocused ? '' : '시리얼코드'}
             />
             {error && (
               <p className="text-[#FF3D3D] text-sm mt-2">
@@ -121,12 +122,12 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             type="submit"
             className={`w-full py-2 text-lg rounded transition outline-none border-none focus:outline-none ${
               serial
-                ? "bg-[#00BA13] text-white hover:bg-green-700"
-                : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                ? 'bg-[#00BA13] text-white hover:bg-green-700'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             }`}
             disabled={loading}
           >
-            {loading ? "로그인 중..." : "로그인"}
+            {loading ? '로그인 중...' : '로그인'}
           </button>
         </form>
       </div>

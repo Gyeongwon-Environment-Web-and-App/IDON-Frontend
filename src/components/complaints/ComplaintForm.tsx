@@ -1,14 +1,15 @@
-import React, { useEffect, useRef } from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { AddressService } from "../../services/addressService";
-import { useComplaintFormStore } from "../../stores/complaintFormStore";
-import { useComplaintFormUIStore } from "../../stores/complaintFormUIStore";
-import underArrow from "../../assets/icons/navigation/arrows/under_arrow.svg";
-import attention from "../../assets/icons/common/attention.svg";
-import attentionRed from "../../assets/icons/common/attention_red.svg";
-import FileAttach from "../forms/FileAttach";
-import AdvancedKakaoMap from "../map/AdvancedKakaoMap";
-import apiClient from "../../lib/api";
+import React, { useEffect, useRef } from 'react';
+
+import attention from '../../assets/icons/common/attention.svg';
+import attentionRed from '../../assets/icons/common/attention_red.svg';
+import underArrow from '../../assets/icons/navigation/arrows/under_arrow.svg';
+import { useAuth } from '../../hooks/useAuth';
+import apiClient from '../../lib/api';
+import { AddressService } from '../../services/addressService';
+import { useComplaintFormStore } from '../../stores/complaintFormStore';
+import { useComplaintFormUIStore } from '../../stores/complaintFormUIStore';
+import FileAttach from '../forms/FileAttach';
+import AdvancedKakaoMap from '../map/AdvancedKakaoMap';
 
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
@@ -36,7 +37,7 @@ export default function ComplaintForm({
     setError,
     setTempAddress,
     setAddressFrequencyInfo,
-    setPhoneFrequencyInfo
+    setPhoneFrequencyInfo,
   } = useComplaintFormStore();
 
   // Get UI state and actions from Zustand store
@@ -87,9 +88,9 @@ export default function ComplaintForm({
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [loading, error, setShowAddressSearch]);
 
@@ -97,7 +98,7 @@ export default function ComplaintForm({
   const searchAddresses = async () => {
     if (!tempAddress.trim() || tempAddress.length < 2) {
       setAddresses([]);
-      setError("주소를 2글자 이상 입력해주세요.");
+      setError('주소를 2글자 이상 입력해주세요.');
       return;
     }
 
@@ -111,20 +112,20 @@ export default function ComplaintForm({
       setAddresses(results);
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "주소 검색에 실패했습니다.";
+        err instanceof Error ? err.message : '주소 검색에 실패했습니다.';
 
       // 더 친화적인 에러 메시지로 변환
       let userFriendlyMessage = errorMessage;
-      if (errorMessage.includes("검색 시간이 초과되었습니다")) {
-        userFriendlyMessage = "검색 시간이 초과되었습니다. 다시 시도해주세요.";
-      } else if (errorMessage.includes("API 키가 유효하지 않습니다")) {
+      if (errorMessage.includes('검색 시간이 초과되었습니다')) {
+        userFriendlyMessage = '검색 시간이 초과되었습니다. 다시 시도해주세요.';
+      } else if (errorMessage.includes('API 키가 유효하지 않습니다')) {
         userFriendlyMessage =
-          "API 설정에 문제가 있습니다. 관리자에게 문의해주세요.";
-      } else if (errorMessage.includes("API 호출 한도를 초과했습니다")) {
+          'API 설정에 문제가 있습니다. 관리자에게 문의해주세요.';
+      } else if (errorMessage.includes('API 호출 한도를 초과했습니다')) {
         userFriendlyMessage =
-          "일일 검색 한도를 초과했습니다. 내일 다시 시도해주세요.";
-      } else if (errorMessage.includes("잘못된 요청입니다")) {
-        userFriendlyMessage = "검색어를 확인해주세요. (예: 시루봉로200길)";
+          '일일 검색 한도를 초과했습니다. 내일 다시 시도해주세요.';
+      } else if (errorMessage.includes('잘못된 요청입니다')) {
+        userFriendlyMessage = '검색어를 확인해주세요. (예: 시루봉로200길)';
       }
 
       setError(userFriendlyMessage);
@@ -162,32 +163,32 @@ export default function ComplaintForm({
           `/complaint/getFrequencyByAddress/${encodeURIComponent(selectedAddress)}`
         );
         setAddressFrequencyInfo(response.data.numberOfComplaints);
-        console.log("주소 빈도 정보: ", response.data);
+        console.log('주소 빈도 정보: ', response.data);
       } catch (error) {
         if (
           error &&
-          typeof error === "object" &&
-          "response" in error &&
+          typeof error === 'object' &&
+          'response' in error &&
           error.response &&
-          typeof error.response === "object" &&
-          "status" in error.response &&
+          typeof error.response === 'object' &&
+          'status' in error.response &&
           error.response.status === 404
         ) {
           try {
             const response = await apiClient.get(
-              "/complaint/getFrequencyByAddress",
+              '/complaint/getFrequencyByAddress',
               {
                 params: { address: selectedAddress },
               }
             );
             setAddressFrequencyInfo(response.data.numberOfComplaints);
-            console.log("주소 빈도 정보: ", response.data);
+            console.log('주소 빈도 정보: ', response.data);
           } catch (fallbackError) {
-            console.log("주소 빈도 정보 조회 실패: ", fallbackError);
+            console.log('주소 빈도 정보 조회 실패: ', fallbackError);
             setAddressFrequencyInfo(null);
           }
         } else {
-          console.log("주소 빈도 정보 조회 실패: ", error);
+          console.log('주소 빈도 정보 조회 실패: ', error);
           setAddressFrequencyInfo(null);
         }
       }
@@ -199,34 +200,36 @@ export default function ComplaintForm({
   const handlePhoneClick = (phone_no: string) => {
     setTimeout(async () => {
       try {
-        const response = await apiClient.get(`/complaint/getFrequencyByAddress/${encodeURIComponent(phone_no)}`);
+        const response = await apiClient.get(
+          `/complaint/getFrequencyByAddress/${encodeURIComponent(phone_no)}`
+        );
         setPhoneFrequencyInfo(response.data.numberOfComplaints);
-        console.log("전화번호 빈도 정보: ", response.data);
-      }catch (error) {
+        console.log('전화번호 빈도 정보: ', response.data);
+      } catch (error) {
         if (
           error &&
-          typeof error === "object" &&
-          "response" in error &&
+          typeof error === 'object' &&
+          'response' in error &&
           error.response &&
-          typeof error.response === "object" &&
-          "status" in error.response &&
+          typeof error.response === 'object' &&
+          'status' in error.response &&
           error.response.status === 404
         ) {
           try {
             const response = await apiClient.get(
-              "/complaint/getFrequencyByAddress",
+              '/complaint/getFrequencyByAddress',
               {
                 params: { address: phone_no },
               }
             );
             setPhoneFrequencyInfo(response.data.numberOfComplaints);
-            console.log("전화번호 빈도 정보: ", response.data);
+            console.log('전화번호 빈도 정보: ', response.data);
           } catch (fallbackError) {
-            console.log("전화번호 빈도 정보 조회 실패: ", fallbackError);
+            console.log('전화번호 빈도 정보 조회 실패: ', fallbackError);
             setPhoneFrequencyInfo(null);
           }
         } else {
-          console.log("전화번호 빈도 정보 조회 실패: ", error);
+          console.log('전화번호 빈도 정보 조회 실패: ', error);
           setPhoneFrequencyInfo(null);
         }
       }
@@ -243,7 +246,7 @@ export default function ComplaintForm({
 
     // 지도가 닫혀있으면 열기
     if (!formData.address.trim()) {
-      alert("먼저 주소를 입력해주세요.");
+      alert('먼저 주소를 입력해주세요.');
       return;
     }
 
@@ -271,14 +274,14 @@ export default function ComplaintForm({
           updateFormData({ coordinates });
           setShowMap(true);
         } else {
-          setError("주소의 좌표 정보를 가져올 수 없습니다.");
+          setError('주소의 좌표 정보를 가져올 수 없습니다.');
         }
       } else {
-        setError("입력한 주소를 찾을 수 없습니다. 주소를 다시 확인해주세요.");
+        setError('입력한 주소를 찾을 수 없습니다. 주소를 다시 확인해주세요.');
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : "주소 검색에 실패했습니다.";
+        err instanceof Error ? err.message : '주소 검색에 실패했습니다.';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -293,7 +296,7 @@ export default function ComplaintForm({
       !formData.type.trim()
     ) {
       window.alert(
-        "필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)"
+        '필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)'
       );
       return;
     }
@@ -302,7 +305,7 @@ export default function ComplaintForm({
 
   const getSourceData = () => {
     if (!formData.source) {
-      return { phone_no: "", bad: false };
+      return { phone_no: '', bad: false };
     }
     return formData.source;
   };
@@ -328,7 +331,7 @@ export default function ComplaintForm({
               id="address"
               autoComplete="off"
               className={`border px-3 py-2 rounded w-full outline-none ${
-                error ? "border-red-500" : "border-light-border"
+                error ? 'border-red-500' : 'border-light-border'
               }`}
               value={tempAddress}
               onChange={(e) => {
@@ -339,7 +342,7 @@ export default function ComplaintForm({
                 setShowAddressSearch(false);
               }}
               onKeyDown={(e) => {
-                if (e.key === "Enter") {
+                if (e.key === 'Enter') {
                   e.preventDefault();
                   // 임시 주소를 실제 주소로 업데이트
                   updateFormData({ address: tempAddress });
@@ -358,7 +361,7 @@ export default function ComplaintForm({
               <div
                 ref={dropdownRef}
                 className="absolute z-50 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto"
-                style={{ top: "100%", left: 0 }}
+                style={{ top: '100%', left: 0 }}
               >
                 {loading && (
                   <div className="p-4 text-center text-gray-500">
@@ -444,19 +447,19 @@ export default function ComplaintForm({
           >
             <button
               type="button"
-              className={`w-full text-left font-bold ${showMap ? "bg-white border-light-border rounded-t border-b-0" : "bg-lighter-green border-light-green rounded"} border px-4 -mt-1 md:mt-2 focus:outline-none flex`}
+              className={`w-full text-left font-bold ${showMap ? 'bg-white border-light-border rounded-t border-b-0' : 'bg-lighter-green border-light-green rounded'} border px-4 -mt-1 md:mt-2 focus:outline-none flex`}
               onClick={toggleMap}
               disabled={loading}
             >
               {loading
-                ? "위치 확인 중..."
+                ? '위치 확인 중...'
                 : showMap
-                  ? "클릭해서 지도 접기"
-                  : "지도에서 민원 위치 확인하기"}
+                  ? '클릭해서 지도 접기'
+                  : '지도에서 민원 위치 확인하기'}
               <img
                 src={underArrow}
                 alt="아래방향 화살표"
-                className={`pl-2 w-6 h-5 transition-transform ${showMap ? "rotate-180 ml-2" : ""}`}
+                className={`pl-2 w-6 h-5 transition-transform ${showMap ? 'rotate-180 ml-2' : ''}`}
               />
             </button>
 
@@ -468,7 +471,7 @@ export default function ComplaintForm({
               isVisible={showMap}
               resetCenter={resetMapCenter}
               className="w-full rounded-b-lg"
-              style={{ height: "300px" }}
+              style={{ height: '300px' }}
             />
           </div>
 
@@ -500,28 +503,28 @@ export default function ComplaintForm({
 
           {/* 민원 접수 경로 */}
           <label
-            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
+            className={`md:col-span-1 col-span-3 font-bold text-[1rem] pt-5 ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
           >
             민원 접수 경로
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
+            className={`flex col-span-3 md:mt-5 text-[0.73rem] md:text-sm border border-light-border rounded ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
           >
-            {["경원환경", "120", "구청", "주민센터"].map((label, idx, arr) => (
+            {['경원환경', '120', '구청', '주민센터'].map((label, idx, arr) => (
               <button
                 key={label}
                 type="button"
                 className={`
                   flex-1 px-4 font-bold
-                  ${formData.route === label ? "bg-lighter-green" : ""}
-                  ${idx === 0 ? "rounded-l" : ""}
-                  ${idx === arr.length - 1 ? "rounded-r" : ""}
+                  ${formData.route === label ? 'bg-lighter-green' : ''}
+                  ${idx === 0 ? 'rounded-l' : ''}
+                  ${idx === arr.length - 1 ? 'rounded-r' : ''}
                   focus:outline-none
                 `}
                 style={{
                   borderRight:
-                    idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
+                    idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
                 }}
                 onClick={() => updateFormData({ route: label })}
               >
@@ -531,24 +534,24 @@ export default function ComplaintForm({
           </div>
           <input
             type="text"
-            placeholder={focus.routeInput ? "" : "직접 입력"}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== "경원환경" ? "md:mb-5" : ""}`}
+            placeholder={focus.routeInput ? '' : '직접 입력'}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
             value={
-              !["경원환경", "다산콜(120)", "구청", "주민센터"].includes(
+              !['경원환경', '다산콜(120)', '구청', '주민센터'].includes(
                 formData.route
               )
                 ? formData.route
-                : ""
+                : ''
             }
             onChange={(e) => updateFormData({ route: e.target.value })}
             onFocus={() => setFocus({ routeInput: true })}
             onBlur={() => setFocus({ routeInput: false })}
-            onClick={() => updateFormData({ route: "" })}
+            onClick={() => updateFormData({ route: '' })}
           />
           <div className="h-5 md:hidden"></div>
 
           {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
-          {formData.route === "경원환경" && (
+          {formData.route === '경원환경' && (
             <>
               <div className="hidden md:block md:col-span-1"></div>
               <input
@@ -588,20 +591,20 @@ export default function ComplaintForm({
           <div
             className={`flex col-span-3 md:my-5 text-[0.73rem] md:text-sm border border-light-border rounded`}
           >
-            {["재활용", "일반", "음식물", "기타"].map((label, idx, arr) => (
+            {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
               <button
                 key={label}
                 type="button"
                 className={`
                   flex-1 px-4 font-bold
-                  ${formData.type === label ? "bg-lighter-green" : ""}
-                  ${idx === 0 ? "rounded-l" : ""}
-                  ${idx === arr.length - 1 ? "rounded-r" : ""}
+                  ${formData.type === label ? 'bg-lighter-green' : ''}
+                  ${idx === 0 ? 'rounded-l' : ''}
+                  ${idx === arr.length - 1 ? 'rounded-r' : ''}
                   focus:outline-none
                 `}
                 style={{
                   borderRight:
-                    idx !== arr.length - 1 ? "1px solid #ACACAC" : "none",
+                    idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
                 }}
                 onClick={() => updateFormData({ type: label })}
               >
@@ -612,16 +615,16 @@ export default function ComplaintForm({
           <input
             type="text"
             value={
-              !["재활용", "일반", "음식물", "기타"].includes(formData.type)
+              !['재활용', '일반', '음식물', '기타'].includes(formData.type)
                 ? formData.type
-                : ""
+                : ''
             }
-            placeholder={focus.trashInput ? "" : "직접 입력"}
+            placeholder={focus.trashInput ? '' : '직접 입력'}
             className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
             onFocus={() => setFocus({ trashInput: true })}
             onBlur={() => setFocus({ trashInput: false })}
             onChange={(e) => updateFormData({ type: e.target.value })}
-            onClick={() => updateFormData({ type: "" })}
+            onClick={() => updateFormData({ type: '' })}
           />
 
           {/* 쓰레기 상세 종류 */}
@@ -630,7 +633,7 @@ export default function ComplaintForm({
           </label>
           <input
             type="text"
-            placeholder={focus.input3 ? "" : "입력란"}
+            placeholder={focus.input3 ? '' : '입력란'}
             className="w-full md:w-[200px] md:col-span-1 col-span-3 border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold md:my-5 -mt-5"
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
@@ -643,7 +646,7 @@ export default function ComplaintForm({
           <FileAttach
             formData={formData}
             setFormData={(updates) => {
-              if (typeof updates === "function") {
+              if (typeof updates === 'function') {
                 updateFormData(updates(formData));
               } else {
                 updateFormData(updates);
@@ -678,7 +681,7 @@ export default function ComplaintForm({
             />
             <label
               htmlFor="malicious"
-              className={`flex items-center text-[1rem] ${formData.source.bad ? "text-red" : ""}`}
+              className={`flex items-center text-[1rem] ${formData.source.bad ? 'text-red' : ''}`}
             >
               <img
                 src={formData.source.bad ? attentionRed : attention}

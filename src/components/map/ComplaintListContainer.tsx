@@ -1,10 +1,13 @@
-import React, { useState } from "react";
-import triangle from "../../assets/icons/actions/triangle.svg";
-import ComplaintListCard from "./ComplaintListCard";
-import { AreaDropdown } from "@/components/ui/AreaDropdown";
-import { complaints } from "../../data/complaintData";
-import { useComplaints } from "../../hooks/useComplaints";
-import type { DateRange } from "react-day-picker";
+import React, { useState } from 'react';
+
+import type { DateRange } from 'react-day-picker';
+
+import { AreaDropdown } from '@/components/ui/AreaDropdown';
+
+import triangle from '../../assets/icons/actions/triangle.svg';
+import { complaints } from '../../data/complaintData';
+import { useComplaints } from '../../hooks/useComplaints';
+import ComplaintListCard from './ComplaintListCard';
 
 interface ComplaintListContainerProps {
   dateRange?: DateRange;
@@ -24,10 +27,10 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   };
 
   const getSelectedAreaDisplay = (areas: string[]) => {
-    if (areas.length === 0 || areas.length === 8) return "전체 지역";
+    if (areas.length === 0 || areas.length === 8) return '전체 지역';
 
-    const 쌍문Children = ["쌍문 1동", "쌍문 2동", "쌍문 3동", "쌍문 4동"];
-    const 방학Children = ["방학 1동", "방학 3동"];
+    const 쌍문Children = ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'];
+    const 방학Children = ['방학 1동', '방학 3동'];
 
     const selected쌍문Children = 쌍문Children.filter((child) =>
       areas.includes(child)
@@ -39,18 +42,18 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
     const displayParts = [];
 
     if (selected쌍문Children.length === 쌍문Children.length) {
-      displayParts.push("쌍문동");
+      displayParts.push('쌍문동');
     } else if (selected쌍문Children.length > 0) {
-      displayParts.push(selected쌍문Children.join(", "));
+      displayParts.push(selected쌍문Children.join(', '));
     }
 
     if (selected방학Children.length === 방학Children.length) {
-      displayParts.push("방학동");
+      displayParts.push('방학동');
     } else if (selected방학Children.length > 0) {
-      displayParts.push(selected방학Children.join(", "));
+      displayParts.push(selected방학Children.join(', '));
     }
 
-    return displayParts.join(", ");
+    return displayParts.join(', ');
   };
 
   return (
@@ -94,7 +97,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
             <p className="font-semibold text-sm pb-1 mb-5 border-b border-d9d9d9">
               전체 민원 목록
             </p>
-            <div className="h-[60%] space-y-2 overflow-y-auto">
+            <div className="h-[60%] space-y-2 overflow-y-auto scrollbar-hide">
               {complaints.map((complaint) => (
                 <ComplaintListCard key={complaint.id} complaint={complaint} />
               ))}

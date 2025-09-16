@@ -1,11 +1,12 @@
-import React, { useEffect, useRef, useState, useCallback, useId } from "react";
-import { getDongInfo } from "../../utils/dongMapping";
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+
 import {
-  useKakaoMaps,
+  type KakaoInfoWindow,
   type KakaoMap,
   type KakaoMarker,
-  type KakaoInfoWindow,
-} from "../../hooks/useKakaoMaps";
+  useKakaoMaps,
+} from '../../hooks/useKakaoMaps';
+import { getDongInfo } from '../../utils/dongMapping';
 
 interface AdvancedKakaoMapProps {
   latitude?: number;
@@ -24,8 +25,8 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
   address,
   isVisible,
   resetCenter,
-  className = "w-full rounded-b-lg",
-  style = { height: "300px" },
+  className = 'w-full rounded-b-lg',
+  style = { height: '300px' },
   onMarkerClick,
 }) => {
   const mapId = useId();
@@ -36,7 +37,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
 
   const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
 
-  const [dongInfo, setDongInfo] = useState<string>("");
+  const [dongInfo, setDongInfo] = useState<string>('');
   const [dongInfoLoading, setDongInfoLoading] = useState(false);
   const [hasInitialized, setHasInitialized] = useState(false);
 
@@ -58,7 +59,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
   useEffect(() => {
     const fetchDongInfo = async () => {
       if (!address) {
-        setDongInfo("");
+        setDongInfo('');
         return;
       }
 
@@ -67,8 +68,8 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         const result = await getDongInfo(address);
         setDongInfo(result);
       } catch (error) {
-        console.error("동 정보 추출 실패:", error);
-        setDongInfo("");
+        console.error('동 정보 추출 실패:', error);
+        setDongInfo('');
       } finally {
         setDongInfoLoading(false);
       }
@@ -86,7 +87,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
     try {
       // Clean up existing map instance
       if (mapInstanceRef.current && mapRef.current) {
-        mapRef.current.innerHTML = "";
+        mapRef.current.innerHTML = '';
       }
 
       // Use provided coordinates if available, otherwise default center
@@ -133,17 +134,17 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         const infoContent = `
         <div style="padding: 10px; min-width: 200px;">
           <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
-            민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
+            민원 발생 위치${dongInfo ? `: ${dongInfo}` : ''}
           </h3>
-          <p style="margin: 0; font-size: 12px; color: #666;">${address || "주소 정보 없음"}</p>
-          ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
+          <p style="margin: 0; font-size: 12px; color: #666;">${address || '주소 정보 없음'}</p>
+          ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ''}
         </div>
       `;
         newInfoWindow.setContent(infoContent);
         newInfoWindow.open(newMap, marker);
 
         // Add click event to marker
-        window.kakao.maps.event.addListener(marker, "click", () => {
+        window.kakao.maps.event.addListener(marker, 'click', () => {
           newInfoWindow.open(newMap, marker);
           onMarkerClick?.(marker);
         });
@@ -151,7 +152,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         setHasInitialized(true);
       }
     } catch (error) {
-      console.error("❌ 지도 초기화 실패:", error);
+      console.error('❌ 지도 초기화 실패:', error);
     }
   }, [
     isLoaded,
@@ -170,7 +171,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
       const infoWindowInstance = infoWindowInstanceRef.current;
 
       if (!mapInstance || !infoWindowInstance) {
-        console.log("❌ 지도 인스턴스 또는 정보창이 없음");
+        console.log('❌ 지도 인스턴스 또는 정보창이 없음');
         return;
       }
 
@@ -188,7 +189,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         // Remove existing marker
         if (markerInstanceRef.current) {
           markerInstanceRef.current.setMap(null);
-          console.log("🗑️ 기존 마커 제거");
+          console.log('🗑️ 기존 마커 제거');
         }
 
         // Create new marker
@@ -203,26 +204,26 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         const infoContent = `
         <div style="padding: 10px; min-width: 200px;">
           <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
-            민원 발생 위치${dongInfo ? `: ${dongInfo}` : ""}
+            민원 발생 위치${dongInfo ? `: ${dongInfo}` : ''}
           </h3>
-          <p style="margin: 0; font-size: 12px; color: #666;">${address || "주소 정보 없음"}</p>
-          ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
+          <p style="margin: 0; font-size: 12px; color: #666;">${address || '주소 정보 없음'}</p>
+          ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ''}
         </div>
       `;
 
         infoWindowInstance.setContent(infoContent);
         infoWindowInstance.open(mapInstance, newMarker);
-        console.log("💬 정보창 열기");
+        console.log('💬 정보창 열기');
 
         // Add click event to marker
-        window.kakao.maps.event.addListener(newMarker, "click", () => {
+        window.kakao.maps.event.addListener(newMarker, 'click', () => {
           if (infoWindowInstance) {
             infoWindowInstance.open(mapInstance, newMarker);
           }
           onMarkerClick?.(newMarker);
         });
       } catch (error) {
-        console.error("❌ 좌표 업데이트 실패:", error);
+        console.error('❌ 좌표 업데이트 실패:', error);
       }
     },
     [
@@ -278,10 +279,10 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
               const infoContent = `
               <div style="padding: 10px; min-width: 200px;">
                 <h3 style="margin: 0 0 5px 0; font-size: 14px; font-weight: bold;">
-                  검색된 위치${dongInfo ? `: ${dongInfo}` : ""}
+                  검색된 위치${dongInfo ? `: ${dongInfo}` : ''}
                 </h3>
                 <p style="margin: 0; font-size: 12px; color: #666;">${address}</p>
-                ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ""}
+                ${dongInfoLoading ? '<p style="margin: 5px 0 0 0; font-size: 11px; color: #999;">동 정보 로딩 중...</p>' : ''}
               </div>
             `;
               infoWindowInstance.setContent(infoContent);
@@ -289,7 +290,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
             }
 
             // Add click event
-            window.kakao.maps.event.addListener(newMarker, "click", () => {
+            window.kakao.maps.event.addListener(newMarker, 'click', () => {
               if (infoWindowInstance) {
                 infoWindowInstance.open(mapInstance, newMarker);
               }
@@ -300,7 +301,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
           }
         });
       } catch (error) {
-        console.error("❌ 주소 지오코딩 오류:", error);
+        console.error('❌ 주소 지오코딩 오류:', error);
       }
     },
     [dongInfo, dongInfoLoading, hasInitialized, resetCenter, onMarkerClick]
@@ -360,7 +361,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         infoWindowInstanceRef.current.close();
       }
       if (currentMapRef) {
-        currentMapRef.innerHTML = "";
+        currentMapRef.innerHTML = '';
       }
     };
   }, []);

@@ -1,5 +1,8 @@
-import React from "react";
-import { useIsMobile } from "@/hooks/use-mobile"; // 기존 훅 사용
+import React from 'react';
+
+import { useIsMobile } from '@/hooks/use-mobile';
+
+// 기존 훅 사용
 
 interface TextForwardProps {
   options: string[];
@@ -46,8 +49,8 @@ const TextForward: React.FC<TextForwardProps> = ({
               key={option}
               className={`w-full px-0 rounded-lg border border-dark-gray font-bold text-sm transition-all ${
                 isSelected
-                  ? "bg-lighter-green text-dark-gray"
-                  : "bg-white text-black"
+                  ? 'bg-lighter-green text-dark-gray'
+                  : 'bg-white text-black'
               }`}
               onClick={() => handleMobileClick(option)}
             >
@@ -74,8 +77,8 @@ const TextForward: React.FC<TextForwardProps> = ({
             <div
               className={`w-5 h-5 border rounded flex items-center justify-center cursor-pointer ${
                 selectedValues.includes(option)
-                  ? "bg-[#00BA13] border-[#006F0B]"
-                  : "border-black"
+                  ? 'bg-[#00BA13] border-[#006F0B]'
+                  : 'border-black'
               }`}
             >
               {selectedValues.includes(option) && (

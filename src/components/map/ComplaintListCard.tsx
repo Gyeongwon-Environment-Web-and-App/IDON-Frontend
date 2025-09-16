@@ -1,7 +1,9 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
-import type { Complaint } from "../../types/complaint";
-import sample from "../../assets/background/sample.png";
+import React from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
+import sample from '../../assets/background/sample.png';
+import type { Complaint } from '../../types/complaint';
 
 interface ComplaintListCardProps {
   complaint: Complaint;
@@ -16,11 +18,14 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
   };
 
   return (
-    <div className="scrollbar-hide" onClick={handleCardClick}>
-      <div className="flex">
+    <div className="" onClick={handleCardClick}>
+      <div className="flex items-start gap-3">
         <img src={sample} alt="임시 이미지" className="rounded-lg w-40" />
-        <div className="">
-          <h3 className="font-semibold text-sm">{complaint.content}</h3>
+        <div className="py-1">
+          <div className="flex">
+            {complaint.category === ''}
+            <p className="font-semibold text-lg">{complaint.content}</p>
+          </div>
           <p className="text-xs text-gray-600 mt-1">{complaint.address}</p>
           <p className="text-xs text-gray-500 mt-1">{complaint.date}</p>
         </div>

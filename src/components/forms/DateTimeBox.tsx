@@ -1,26 +1,29 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from 'react';
+
+import { ko } from 'date-fns/locale';
+
+import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
-  PopoverTrigger,
   PopoverContent,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { ko } from "date-fns/locale";
-import attentionRed from "../../assets/icons/common/attention_red.svg";
-import redo from "../../assets/icons/actions/redo.svg";
-import { useComplaintFormStore } from "../../stores/complaintFormStore";
+  PopoverTrigger,
+} from '@/components/ui/popover';
+
+import redo from '../../assets/icons/actions/redo.svg';
+import attentionRed from '../../assets/icons/common/attention_red.svg';
+import { useComplaintFormStore } from '../../stores/complaintFormStore';
 
 function formatDateTime(date: Date) {
   // 연, 월, 일
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
 
   // 오전/오후, 시, 분
   let hour = date.getHours();
-  const minute = String(date.getMinutes()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, '0');
   const isAM = hour < 12;
-  const ampm = isAM ? "오전" : "오후";
+  const ampm = isAM ? '오전' : '오후';
   if (!isAM) hour = hour === 12 ? 12 : hour - 12;
   if (hour === 0) hour = 12;
 
@@ -93,7 +96,7 @@ export default function DateTimeBox({
                 }}
                 captionLayout="dropdown"
                 disabled={(date) =>
-                  date > new Date() || date < new Date("1900-01-01")
+                  date > new Date() || date < new Date('1900-01-01')
                 }
                 className="custom-calendar"
               />

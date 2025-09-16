@@ -1,5 +1,6 @@
-import React, { useRef, useState } from "react";
-import type { ComplaintFormData } from "../../types/complaint";
+import React, { useRef, useState } from 'react';
+
+import type { ComplaintFormData } from '../../types/complaint';
 
 interface FileAttachProps {
   formData: ComplaintFormData;
@@ -38,8 +39,8 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
           size: selectedFile.size,
         };
 
-        console.log("새로 추가된 파일:", newFile);
-        console.log("파일 크기:", selectedFile.size, "바이트");
+        console.log('새로 추가된 파일:', newFile);
+        console.log('파일 크기:', selectedFile.size, '바이트');
 
         setFormData((prev) => ({
           ...prev,
@@ -53,14 +54,14 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
       fileReader.onerror = () => {
         setFileUploadFail(true);
         setUploading(false);
-        console.error("파일 읽기 실패");
+        console.error('파일 읽기 실패');
       };
 
       // 파일을 Data URL로 읽기
       fileReader.readAsDataURL(selectedFile);
     } catch (err: unknown) {
       setFileUploadFail(true);
-      console.error("파일 처리 중 에러 발생:", err);
+      console.error('파일 처리 중 에러 발생:', err);
       setUploading(false);
     }
   };
@@ -75,7 +76,7 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
           type="file"
           ref={fileInputRef}
           onChange={handleChange}
-          style={{ display: "none" }}
+          style={{ display: 'none' }}
         />
 
         <button
@@ -88,12 +89,12 @@ const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
 
         <span className="ml-5">
           {uploading
-            ? "업로드 중..."
+            ? '업로드 중...'
             : formData.uploadedFiles.length > 0
               ? formData.uploadedFiles[formData.uploadedFiles.length - 1].name
               : fileUploadFail
-                ? "업로드 실패"
-                : "선택된 파일 없음"}
+                ? '업로드 실패'
+                : '선택된 파일 없음'}
         </span>
       </div>
       <div className="col-span-1"></div>

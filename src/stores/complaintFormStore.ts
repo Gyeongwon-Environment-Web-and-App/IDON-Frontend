@@ -1,7 +1,8 @@
 // stores/complaintFormStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { ComplaintFormData } from "../types/complaint";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+import type { ComplaintFormData } from '../types/complaint';
 
 // Define address interface for type safety
 interface AddressData {
@@ -41,14 +42,14 @@ interface ComplaintFormState {
 
 // Step 2: Initial form data
 const initialFormData: ComplaintFormData = {
-  address: "",
+  address: '',
   datetime: new Date().toISOString(),
-  category: "",
-  type: "",
-  content: "",
-  route: "",
+  category: '',
+  type: '',
+  content: '',
+  route: '',
   source: {
-    phone_no: "",
+    phone_no: '',
     bad: false,
   },
   notify: {
@@ -68,7 +69,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
       addresses: [],
       loading: false,
       error: null,
-      tempAddress: "",
+      tempAddress: '',
       addressFrequencyInfo: null,
       phoneFrequencyInfo: null,
 
@@ -88,8 +89,10 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
 
       setTempAddress: (address) => set({ tempAddress: address }),
 
-      setAddressFrequencyInfo: (addressInfo) => set({ addressFrequencyInfo: addressInfo }),
-      setPhoneFrequencyInfo: (phoneInfo) => set({ phoneFrequencyInfo: phoneInfo }),
+      setAddressFrequencyInfo: (addressInfo) =>
+        set({ addressFrequencyInfo: addressInfo }),
+      setPhoneFrequencyInfo: (phoneInfo) =>
+        set({ phoneFrequencyInfo: phoneInfo }),
 
       resetForm: () =>
         set({
@@ -98,12 +101,12 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
           addresses: [],
           loading: false,
           error: null,
-          tempAddress: "",
+          tempAddress: '',
           addressFrequencyInfo: null,
         }),
     }),
     {
-      name: "complaint-form-storage", // localStorage key
+      name: 'complaint-form-storage', // localStorage key
       // Only persist form data, not UI state
       partialize: (state) => ({
         formData: state.formData,

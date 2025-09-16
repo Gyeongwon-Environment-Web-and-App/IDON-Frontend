@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import home from "../../assets/icons/navigation/mobile_menu/home.svg";
-import homeGreen from "../../assets/icons/navigation/mobile_menu/home_green.svg";
-import mapIcon from "../../assets/icons/navigation/mobile_menu/mapIcon.svg";
-import mapIconGreen from "../../assets/icons/navigation/mobile_menu/mapIcon_green.svg";
-import vehicle from "../../assets/icons/navigation/mobile_menu/vehicle.svg";
-import vehicleGreen from "../../assets/icons/navigation/mobile_menu/vehicle_green.svg";
-import stats from "../../assets/icons/navigation/mobile_menu/stats.svg";
-import statsGreen from "../../assets/icons/navigation/mobile_menu/stats_green.svg";
-import complaint from "../../assets/icons/navigation/mobile_menu/complaint.svg";
-import complaintGreen from "../../assets/icons/navigation/mobile_menu/complaint_green.svg";
+import { useEffect, useState } from 'react';
+
+import { useLocation, useNavigate } from 'react-router-dom';
+
+import complaint from '../../assets/icons/navigation/mobile_menu/complaint.svg';
+import complaintGreen from '../../assets/icons/navigation/mobile_menu/complaint_green.svg';
+import home from '../../assets/icons/navigation/mobile_menu/home.svg';
+import homeGreen from '../../assets/icons/navigation/mobile_menu/home_green.svg';
+import mapIcon from '../../assets/icons/navigation/mobile_menu/mapIcon.svg';
+import mapIconGreen from '../../assets/icons/navigation/mobile_menu/mapIcon_green.svg';
+import stats from '../../assets/icons/navigation/mobile_menu/stats.svg';
+import statsGreen from '../../assets/icons/navigation/mobile_menu/stats_green.svg';
+import vehicle from '../../assets/icons/navigation/mobile_menu/vehicle.svg';
+import vehicleGreen from '../../assets/icons/navigation/mobile_menu/vehicle_green.svg';
 
 const MobileBottomNav = () => {
   const navigate = useNavigate();
@@ -17,74 +19,74 @@ const MobileBottomNav = () => {
   const [activeTab, setActiveTab] = useState(() => {
     // 현재 URL에 따라 초기 탭 설정
     switch (location.pathname) {
-      case "/":
-        return "home";
-      case "/map/overview":
-        return "map";
-      case "/complaints/form":
-        return "complaint";
-      case "/complaints/stats":
-        return "stats";
+      case '/':
+        return 'home';
+      case '/map/overview':
+        return 'map';
+      case '/complaints/form':
+        return 'complaint';
+      case '/complaints/stats':
+        return 'stats';
       default:
-        return "home";
+        return 'home';
     }
   });
 
   // URL 변경 시 활성 탭 업데이트
   useEffect(() => {
     switch (location.pathname) {
-      case "/":
-        setActiveTab("home");
+      case '/':
+        setActiveTab('home');
         break;
-      case "/map/overview":
-        setActiveTab("map");
+      case '/map/overview':
+        setActiveTab('map');
         break;
-      case "/complaints/form":
-        setActiveTab("complaint");
+      case '/complaints/form':
+        setActiveTab('complaint');
         break;
-      case "/complaints/stats":
-        setActiveTab("stats");
+      case '/complaints/stats':
+        setActiveTab('stats');
         break;
       default:
-        setActiveTab("home");
+        setActiveTab('home');
     }
   }, [location.pathname]);
 
   const menuItems = [
     {
-      id: "complaint",
-      label: "민원",
+      id: 'complaint',
+      label: '민원',
       icon: complaint,
       activeIcon: complaintGreen,
-      route: "/complaints/form",
+      route: '/complaints/form',
     },
     {
-      id: "stats",
-      label: "통계",
+      id: 'stats',
+      label: '통계',
       icon: stats,
       activeIcon: statsGreen,
-      route: "/complaints/stats",
+      route: '/complaints/stats',
     },
     {
-      id: "home",
-      label: "홈",
+      id: 'home',
+      label: '홈',
       icon: home,
       activeIcon: homeGreen,
-      route: "/",
+      route: '/',
     },
     {
-      id: "map",
-      label: "지도",
+      id: 'map',
+      label: '지도',
       icon: mapIcon,
       activeIcon: mapIconGreen,
-      route: "/",
+      route: '/',
     },
     {
-      id: "vehicle",
-      label: "차량",
+      id: 'vehicle',
+      label: '차량',
       icon: vehicle,
       activeIcon: vehicleGreen,
-      route: "/",
+      route: '/',
     },
   ];
 
@@ -119,7 +121,7 @@ const MobileBottomNav = () => {
               />
               <span
                 className={`text-xs font-medium ${
-                  isActive ? "text-green-600" : "text-gray-500"
+                  isActive ? 'text-green-600' : 'text-gray-500'
                 }`}
               >
                 {item.label}

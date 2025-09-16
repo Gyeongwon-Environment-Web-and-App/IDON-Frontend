@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 // Global SDK state management
 interface KakaoSDKState {
@@ -67,7 +67,7 @@ class KakaoSDKManager {
       const apiKey = import.meta.env.VITE_KAKAO_JAVASCRIPT_KEY;
 
       if (!apiKey) {
-        const error = "Kakao Maps API key is not defined";
+        const error = 'Kakao Maps API key is not defined';
         this.state.error = error;
         this.state.isLoading = false;
         this.state.loadPromise = null;
@@ -82,11 +82,11 @@ class KakaoSDKManager {
       );
       if (existingScript) {
         // Script exists, wait for it to load
-        existingScript.addEventListener("load", () => {
+        existingScript.addEventListener('load', () => {
           this.initializeSDK().then(resolve).catch(reject);
         });
-        existingScript.addEventListener("error", () => {
-          const error = "Failed to load existing Kakao Maps SDK";
+        existingScript.addEventListener('error', () => {
+          const error = 'Failed to load existing Kakao Maps SDK';
           this.state.error = error;
           this.state.isLoading = false;
           this.state.loadPromise = null;
@@ -96,18 +96,18 @@ class KakaoSDKManager {
         return;
       }
 
-      const script = document.createElement("script");
+      const script = document.createElement('script');
       script.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${apiKey}&libraries=services&autoload=false`;
       script.async = true;
       script.defer = true;
-      script.crossOrigin = "anonymous";
+      script.crossOrigin = 'anonymous';
 
       script.onload = () => {
         this.initializeSDK().then(resolve).catch(reject);
       };
 
       script.onerror = () => {
-        const error = "Failed to load Kakao Maps SDK";
+        const error = 'Failed to load Kakao Maps SDK';
         this.state.error = error;
         this.state.isLoading = false;
         this.state.loadPromise = null;
@@ -123,7 +123,7 @@ class KakaoSDKManager {
 
   private async initializeSDK(): Promise<void> {
     try {
-      if (window.kakao?.maps && "load" in window.kakao.maps) {
+      if (window.kakao?.maps && 'load' in window.kakao.maps) {
         await new Promise<void>((resolve) => {
           (
             window.kakao.maps as unknown as {
@@ -144,7 +144,7 @@ class KakaoSDKManager {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Failed to initialize Kakao Maps SDK";
+          : 'Failed to initialize Kakao Maps SDK';
       this.state.error = errorMessage;
       this.state.isLoading = false;
       this.state.loadPromise = null;

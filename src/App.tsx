@@ -1,10 +1,12 @@
-import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Login from "./pages/Login";
-import ComplaintManage from "./pages/ComplaintManage";
-import MapOverview from "./pages/MapOverview";
-import MainPage from "./pages/MainPage";
-import { useAuth } from "./hooks/useAuth";
+import React from 'react';
+
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
+
+import { useAuth } from './hooks/useAuth';
+import ComplaintManage from './pages/ComplaintManage';
+import Login from './pages/Login';
+import MainPage from './pages/MainPage';
+import MapOverview from './pages/MapOverview';
 
 const App: React.FC = () => {
   return (

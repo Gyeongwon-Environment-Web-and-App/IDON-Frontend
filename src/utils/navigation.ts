@@ -4,7 +4,7 @@
  * Navigate to complaint list view
  */
 export const navigateToComplaintList = (navigate: (path: string) => void) => {
-  navigate("/map/overview/complaints");
+  navigate('/map/overview/complaints');
 };
 
 /**
@@ -21,14 +21,14 @@ export const navigateToComplaintDetail = (
  * Navigate back to map overview
  */
 export const navigateToMapOverview = (navigate: (path: string) => void) => {
-  navigate("/map/overview");
+  navigate('/map/overview');
 };
 
 /**
  * Check if current path is complaint list
  */
 export const isComplaintListPath = (pathname: string): boolean => {
-  return pathname === "/map/overview/complaints";
+  return pathname === '/map/overview/complaints';
 };
 
 /**
@@ -36,8 +36,8 @@ export const isComplaintListPath = (pathname: string): boolean => {
  */
 export const isComplaintDetailPath = (pathname: string): boolean => {
   return (
-    pathname.includes("/map/overview/complaints/") &&
-    pathname !== "/map/overview/complaints"
+    pathname.includes('/map/overview/complaints/') &&
+    pathname !== '/map/overview/complaints'
   );
 };
 

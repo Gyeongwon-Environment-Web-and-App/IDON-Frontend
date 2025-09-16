@@ -1,40 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { type ColumnDef } from "@tanstack/react-table";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
-import { DataTable } from "@/components/ui/data-table";
+import React, { useEffect, useState } from 'react';
+
+import { type ColumnDef } from '@tanstack/react-table';
 import {
-  Download,
-  Search,
   ChevronLeft,
   ChevronRight,
   ChevronsLeft,
   ChevronsRight,
-} from "lucide-react";
+  Download,
+  Search,
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DataTable } from '@/components/ui/data-table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from '@/components/ui/dropdown-menu';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip";
-import type { Complaint } from "../../types/complaint";
-import Popup from "../forms/Popup";
-import triangle from "../../assets/icons/actions/triangle.svg";
-import filter from "../../assets/icons/actions/filter.svg";
-import deleteIcon from "../../assets/icons/actions/delete.svg";
-import DateRangePicker from "../common/DateRangePicker";
-import ComplaintCard from "./ComplaintCard";
-import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
-import { useComplaintTableStore } from "@/stores/complaintTableStore";
-import { createStatusChangeHandler } from "@/lib/popupHandlers";
-import { useComplaints } from "@/hooks/useComplaints";
+} from '@/components/ui/tooltip';
+import { useComplaints } from '@/hooks/useComplaints';
+import { createStatusChangeHandler } from '@/lib/popupHandlers';
+import { useComplaintTableStore } from '@/stores/complaintTableStore';
+import { formatDateToYYMMDD } from '@/utils/formatDateToYYMMDD';
+
+import deleteIcon from '../../assets/icons/actions/delete.svg';
+import filter from '../../assets/icons/actions/filter.svg';
+import triangle from '../../assets/icons/actions/triangle.svg';
+import type { Complaint } from '../../types/complaint';
+import DateRangePicker from '../common/DateRangePicker';
+import Popup from '../forms/Popup';
+import ComplaintCard from './ComplaintCard';
 
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
@@ -114,7 +117,7 @@ const ComplaintTable: React.FC = () => {
   // 컬럼 정의
   const columns: ColumnDef<Complaint>[] = [
     {
-      id: "select",
+      id: 'select',
       header: () => (
         <div className="flex justify-center items-center pr-4">
           <Checkbox
@@ -140,34 +143,34 @@ const ComplaintTable: React.FC = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "number",
-      header: "연번",
+      accessorKey: 'number',
+      header: '연번',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("number")}</div>
+        <div className="text-center">{row.getValue('number')}</div>
       ),
     },
     {
-      accessorKey: "date",
-      header: "접수 일자",
+      accessorKey: 'date',
+      header: '접수 일자',
       cell: ({ row }) => (
         <div className="text-center">
-          {formatDateToYYMMDD(row.getValue("date"))}
+          {formatDateToYYMMDD(row.getValue('date'))}
         </div>
       ),
     },
     {
-      accessorKey: "type",
-      header: "종류",
+      accessorKey: 'type',
+      header: '종류',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("type")}</div>
+        <div className="text-center">{row.getValue('type')}</div>
       ),
     },
     {
-      accessorKey: "region_nm",
-      header: "주소",
+      accessorKey: 'region_nm',
+      header: '주소',
       cell: ({ row }) => {
         const address: string = row.original.address;
-        const regionNm: string = row.getValue("region_nm");
+        const regionNm: string = row.getValue('region_nm');
 
         return (
           <TooltipProvider>
@@ -186,42 +189,42 @@ const ComplaintTable: React.FC = () => {
       },
     },
     {
-      accessorKey: "content",
-      header: "민원 내용",
+      accessorKey: 'content',
+      header: '민원 내용',
       cell: ({ row }) => (
-        <div className="text-left">{row.getValue("content")}</div>
+        <div className="text-left">{row.getValue('content')}</div>
       ),
     },
     {
-      accessorKey: "contact",
-      header: "연락처",
+      accessorKey: 'contact',
+      header: '연락처',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("contact")}</div>
+        <div className="text-center">{row.getValue('contact')}</div>
       ),
     },
     {
-      accessorKey: "driver",
-      header: "담당 기사",
+      accessorKey: 'driver',
+      header: '담당 기사',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("driver")}</div>
+        <div className="text-center">{row.getValue('driver')}</div>
       ),
     },
     {
-      accessorKey: "department",
-      header: "구청/대행",
+      accessorKey: 'department',
+      header: '구청/대행',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue("department")}</div>
+        <div className="text-center">{row.getValue('department')}</div>
       ),
     },
     {
-      accessorKey: "status",
-      header: "처리결과",
+      accessorKey: 'status',
+      header: '처리결과',
       cell: ({ row }) => {
-        const status = row.getValue("status") as string;
+        const status = row.getValue('status') as string;
         return (
           <div
             className={`text-center cursor-pointer py-1 rounded ${
-              status === "완료" ? "text-green-600 font-medium" : "text-gray-500"
+              status === '완료' ? 'text-green-600 font-medium' : 'text-gray-500'
             }`}
             onClick={() => {
               // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
@@ -239,7 +242,7 @@ const ComplaintTable: React.FC = () => {
   ];
 
   // 시간 필터링 함수
-  const handleSortChange = (order: "최근" | "옛") => {
+  const handleSortChange = (order: '최근' | '옛') => {
     setSortOrder(order);
 
     // ISO 날짜 문자열을 Date 객체로 변환하는 함수 (시간 제외)
@@ -256,7 +259,7 @@ const ComplaintTable: React.FC = () => {
 
       // 날짜가 동일한 경우 연번으로 정렬
       if (dateA.getTime() === dateB.getTime()) {
-        if (order === "최근") {
+        if (order === '최근') {
           return b.number - a.number; // 연번이 작은 것이 위로 (1, 2, 3...)
         } else {
           return a.number - b.number; // 연번이 큰 것이 위로 (7, 6, 5...)
@@ -264,7 +267,7 @@ const ComplaintTable: React.FC = () => {
       }
 
       // 날짜가 다른 경우 날짜로 정렬
-      if (order === "최근") {
+      if (order === '최근') {
         return dateB.getTime() - dateA.getTime(); // 최신순 (최신 날짜가 위로)
       } else {
         return dateA.getTime() - dateB.getTime(); // 오래된순 (오래된 날짜가 위로)
@@ -276,7 +279,7 @@ const ComplaintTable: React.FC = () => {
 
   // 필터링 함수
   const handleFilterChange = (filterType: string) => {
-    if (filterType === "전체 민원") {
+    if (filterType === '전체 민원') {
       setFilteredComplaints(complaints);
       return;
     }
@@ -316,7 +319,7 @@ const ComplaintTable: React.FC = () => {
 
   // Enter 키 처리
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === 'Enter') {
       handleSearch(searchTerm);
     }
   };
@@ -385,7 +388,7 @@ const ComplaintTable: React.FC = () => {
           <div className="relative flex flex-1 md:flex-auto md:max-w-80">
             <Search
               className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
-                isSearchFocused ? "text-light-green" : "text-[#575757]"
+                isSearchFocused ? 'text-light-green' : 'text-[#575757]'
               }`}
             />
             <input
@@ -435,24 +438,24 @@ const ComplaintTable: React.FC = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem
-                    onClick={() => handleFilterChange("전체 민원")}
+                    onClick={() => handleFilterChange('전체 민원')}
                   >
                     전체 민원
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleFilterChange("음식물")}
+                    onClick={() => handleFilterChange('음식물')}
                   >
                     음식물
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleFilterChange("재활용")}
+                    onClick={() => handleFilterChange('재활용')}
                   >
                     재활용
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("생활")}>
+                  <DropdownMenuItem onClick={() => handleFilterChange('생활')}>
                     생활
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange("기타")}>
+                  <DropdownMenuItem onClick={() => handleFilterChange('기타')}>
                     기타
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -463,7 +466,7 @@ const ComplaintTable: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="flex items-center w-8 border border-a2a2a2 md:border-[#575757] outline-none text-sm p-0"
-                    title={`현재: ${sortOrder === "최근" ? "최근순" : "오래된순"}`}
+                    title={`현재: ${sortOrder === '최근' ? '최근순' : '오래된순'}`}
                   >
                     <img
                       src={filter}
@@ -473,10 +476,10 @@ const ComplaintTable: React.FC = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => handleSortChange("최근")}>
+                  <DropdownMenuItem onClick={() => handleSortChange('최근')}>
                     최근 민원 순
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleSortChange("옛")}>
+                  <DropdownMenuItem onClick={() => handleSortChange('옛')}>
                     옛 민원 순
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -532,15 +535,15 @@ const ComplaintTable: React.FC = () => {
             data={complaintsWithCallbacks}
             onRowClick={(complaint) => handleRowClick(complaint.id)}
             clickableColumnIds={[
-              "select",
-              "number",
-              "date",
-              "type",
-              "region_nm",
-              "content",
-              "contact",
-              "driver",
-              "department",
+              'select',
+              'number',
+              'date',
+              'type',
+              'region_nm',
+              'content',
+              'contact',
+              'driver',
+              'department',
             ]}
           />
         )}
@@ -596,7 +599,7 @@ const ComplaintTable: React.FC = () => {
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((page) => (
               <Button
                 key={page}
-                variant={page === 1 ? "default" : "outline"}
+                variant={page === 1 ? 'default' : 'outline'}
                 size="sm"
                 className="w-8 h-8 border-none outline-none shadow-none text-sm"
               >

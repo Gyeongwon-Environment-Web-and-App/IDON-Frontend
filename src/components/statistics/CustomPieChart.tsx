@@ -1,6 +1,8 @@
-import React from "react";
-import { PieChart, Pie, Tooltip, Cell, ResponsiveContainer } from "recharts";
-import type { PieChartProps } from "../../types/stats";
+import React from 'react';
+
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+
+import type { PieChartProps } from '../../types/stats';
 
 // Custom Tooltip Component
 interface CustomTooltipProps {

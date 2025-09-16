@@ -1,13 +1,15 @@
-import type { BarChartProps } from "@/types/stats";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
   ResponsiveContainer,
-} from "recharts";
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+import type { BarChartProps } from '@/types/stats';
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -44,7 +46,9 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
       <div className="bg-white border border-[#757575] rounded-lg p-2 md:p-5 mt-2 md:mt-5 md:py-5 md:w-48 w-72 text-center">
         <div className="font-semibold text-lg md:text-2xl text-gray-text mb-2 md:mb-4 flex items-center justify-center">
           <p>{timeRange} </p>
-          <span className="block md:hidden ml-2 text-black">({totalComplaints}건)</span>
+          <span className="block md:hidden ml-2 text-black">
+            ({totalComplaints}건)
+          </span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
           {uniqueEntries.map((entry, index) => (
@@ -67,23 +71,23 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
 };
 
 const timeSlot = [
-  "8:30",
-  "9:30",
-  "10:30",
-  "11:30",
-  "12:30",
-  "1:30",
-  "2:30",
-  "3:30",
-  "4:30",
-  "5:30",
+  '8:30',
+  '9:30',
+  '10:30',
+  '11:30',
+  '12:30',
+  '1:30',
+  '2:30',
+  '3:30',
+  '4:30',
+  '5:30',
 ];
 
 export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
   // 데이터에서 카테고리 키들을 추출 (time 제외)
-  const categories = Object.keys(data[0] || {}).filter((key) => key !== "time");
+  const categories = Object.keys(data[0] || {}).filter((key) => key !== 'time');
 
   // 데이터를 timeSlot 인덱스로 변환 (0.5 단위로 조정하여 tick 사이에 위치)
   const transformedData = data.map((item, index) => ({
@@ -100,7 +104,7 @@ export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
       value: value, // 0이어도 명시적으로 표시
       color: colors[index % colors.length],
       payload: {
-        time: data[hoveredIndex]?.time || "8:30~9:30",
+        time: data[hoveredIndex]?.time || '8:30~9:30',
         [category]: value,
       },
     };

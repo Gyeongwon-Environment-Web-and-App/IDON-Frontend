@@ -1,6 +1,6 @@
 // stores/mainPageStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Define main page state interface
 interface MainPageState {
@@ -77,7 +77,7 @@ export const useMainPageStore = create<MainPageState>()(
         }),
     }),
     {
-      name: "main-page-storage", // localStorage key
+      name: 'main-page-storage', // localStorage key
       // Only persist currentImageIndex and loadedImages
       partialize: (state) => ({
         currentImageIndex: state.currentImageIndex,

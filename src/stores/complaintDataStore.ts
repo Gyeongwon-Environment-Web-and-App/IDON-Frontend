@@ -1,7 +1,7 @@
 // stores/complaintDataStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import axios from "axios";
+import axios from 'axios';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Define complaint data interface
 interface ComplaintData {
@@ -25,7 +25,7 @@ interface ComplaintData {
     longitude: number;
   };
   createdAt: string;
-  status: "처리중" | "완료";
+  status: '처리중' | '완료';
   [key: string]: any;
 }
 
@@ -222,15 +222,15 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setLoadingComplaints(true);
           setComplaintsError(null);
 
-          const response = await axios.get("/api/complaints");
+          const response = await axios.get('/api/complaints');
           setComplaints(response.data);
         } catch (error) {
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to fetch complaints";
+              : 'Failed to fetch complaints';
           setComplaintsError(errorMessage);
-          console.error("Failed to fetch complaints:", error);
+          console.error('Failed to fetch complaints:', error);
         } finally {
           setLoadingComplaints(false);
         }
@@ -250,23 +250,23 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setAreasError(null);
 
           // Check cache first
-          const cachedAreas = getAreaCache("all-areas");
+          const cachedAreas = getAreaCache('all-areas');
           if (cachedAreas) {
             setAreas(cachedAreas);
             setLoadingAreas(false);
             return;
           }
 
-          const response = await axios.get("/api/areas");
+          const response = await axios.get('/api/areas');
           const areas = response.data;
 
           setAreas(areas);
-          setAreaCache("all-areas", areas);
+          setAreaCache('all-areas', areas);
         } catch (error) {
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to fetch areas";
+            error instanceof Error ? error.message : 'Failed to fetch areas';
           setAreasError(errorMessage);
-          console.error("Failed to fetch areas:", error);
+          console.error('Failed to fetch areas:', error);
         } finally {
           setLoadingAreas(false);
         }
@@ -278,7 +278,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         try {
           setComplaintsError(null);
 
-          const response = await axios.post("/api/complaints", complaintData);
+          const response = await axios.post('/api/complaints', complaintData);
           const newComplaint = response.data;
 
           addComplaint(newComplaint);
@@ -287,9 +287,9 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           const errorMessage =
             error instanceof Error
               ? error.message
-              : "Failed to submit complaint";
+              : 'Failed to submit complaint';
           setComplaintsError(errorMessage);
-          console.error("Failed to submit complaint:", error);
+          console.error('Failed to submit complaint:', error);
           return false;
         }
       },
@@ -312,7 +312,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setAddressCache(`frequency-${address}`, frequency);
           return frequency;
         } catch (error) {
-          console.error("Failed to get address frequency:", error);
+          console.error('Failed to get address frequency:', error);
           return 0;
         }
       },
@@ -331,7 +331,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         }),
     }),
     {
-      name: "complaint-data-storage", // localStorage key
+      name: 'complaint-data-storage', // localStorage key
       // Only persist data, not cache or loading states
       partialize: (state) => ({
         complaints: state.complaints,

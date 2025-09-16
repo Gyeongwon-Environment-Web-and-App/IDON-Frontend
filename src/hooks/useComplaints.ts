@@ -1,7 +1,9 @@
-import { complaintService } from "@/services/complaintService";
-import type { Complaint } from "@/types/complaint";
-import type { DateRange } from "react-day-picker";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
+
+import type { DateRange } from 'react-day-picker';
+
+import { complaintService } from '@/services/complaintService';
+import type { Complaint } from '@/types/complaint';
 
 export const useComplaints = (dateRange?: DateRange) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -26,6 +28,10 @@ export const useComplaints = (dateRange?: DateRange) => {
     loadComplaints(dateRange);
   }, [dateRange, loadComplaints]);
 
-
-  return { complaints, isLoading, error, refetch: () => loadComplaints(dateRange) };
+  return {
+    complaints,
+    isLoading,
+    error,
+    refetch: () => loadComplaints(dateRange),
+  };
 };

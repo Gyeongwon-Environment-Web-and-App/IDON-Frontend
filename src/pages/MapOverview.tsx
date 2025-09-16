@@ -1,10 +1,12 @@
-import { useRef, useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation, Outlet } from "react-router-dom";
-import MapSideMenu from "@/components/map/MapSideMenu";
-import SimpleKakaoMap from "@/components/map/SimpleKakaoMap";
-import MapFilters from "@/components/map/MapFilters";
-import { useMapOverviewStore } from "@/stores/mapOverviewStore";
-import type { DateRange } from "react-day-picker";
+import { useEffect, useRef, useState } from 'react';
+
+import type { DateRange } from 'react-day-picker';
+import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
+
+import MapFilters from '@/components/map/MapFilters';
+import MapSideMenu from '@/components/map/MapSideMenu';
+import SimpleKakaoMap from '@/components/map/SimpleKakaoMap';
+import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 
 export default function MapOverview() {
   const { complaintId } = useParams<{ complaintId?: string }>();
@@ -31,16 +33,16 @@ export default function MapOverview() {
   useEffect(() => {
     const pathname = location.pathname;
 
-    if (pathname.includes("/complaints/") && complaintId) {
+    if (pathname.includes('/complaints/') && complaintId) {
       // Navigate to complaint detail view
       setSelectedComplaintId(complaintId);
-      setCurrentView("detail");
+      setCurrentView('detail');
       openComplaintDetail(complaintId);
-    } else if (pathname.includes("/complaints") && !complaintId) {
+    } else if (pathname.includes('/complaints') && !complaintId) {
       // Navigate to complaint list view
-      setCurrentView("list");
+      setCurrentView('list');
       openComplaintList();
-    } else if (pathname === "/map/overview") {
+    } else if (pathname === '/map/overview') {
       // Base map overview - no specific view
       setCurrentView(null);
       clearSelectedComplaint();
@@ -61,7 +63,7 @@ export default function MapOverview() {
 
     // If sidebar is closed, navigate back to base overview
     if (!isOpen) {
-      navigate("/map/overview");
+      navigate('/map/overview');
     }
   };
 

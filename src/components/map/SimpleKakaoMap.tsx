@@ -1,5 +1,6 @@
-import React, { forwardRef, useEffect, useRef, useId } from "react";
-import { useKakaoMaps, type KakaoMap } from "../../hooks/useKakaoMaps";
+import React, { forwardRef, useEffect, useId, useRef } from 'react';
+
+import { type KakaoMap, useKakaoMaps } from '../../hooks/useKakaoMaps';
 
 interface SimpleKakaoMapProps {
   center?: { lat: number; lng: number };
@@ -13,7 +14,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     {
       center = { lat: 37.6714001064975, lng: 127.041485813197 },
       zoom = 2,
-      className = "w-full h-full",
+      className = 'w-full h-full',
       style,
     },
     ref
@@ -33,7 +34,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           // Kakao Maps doesn't have a direct destroy method, but we can clear the container
           const container = containerRef.current;
           if (container) {
-            container.innerHTML = "";
+            container.innerHTML = '';
           }
         }
 
@@ -58,7 +59,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         // Set ref for parent component
         if (
           ref &&
-          typeof ref === "object" &&
+          typeof ref === 'object' &&
           ref.current !== undefined &&
           containerRef.current
         ) {
@@ -66,7 +67,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             containerRef.current;
         }
       } catch (error) {
-        console.error("Failed to initialize map:", error);
+        console.error('Failed to initialize map:', error);
       }
     }, [isLoaded, center.lat, center.lng, zoom, ref]);
 
@@ -79,7 +80,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         mapInstanceRef.current.setCenter(newCenter);
         mapInstanceRef.current.setLevel(zoom);
       } catch (error) {
-        console.error("Failed to update map:", error);
+        console.error('Failed to update map:', error);
       }
     }, [center.lat, center.lng, zoom, isLoaded]);
 
@@ -94,7 +95,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     useEffect(() => {
       return () => {
         if (mapInstanceRef.current && containerRef.current) {
-          containerRef.current.innerHTML = "";
+          containerRef.current.innerHTML = '';
           mapInstanceRef.current = null;
         }
       };
@@ -133,7 +134,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           containerRef.current = node;
           if (
             ref &&
-            typeof ref === "object" &&
+            typeof ref === 'object' &&
             ref.current !== undefined &&
             node
           ) {
@@ -143,14 +144,14 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         className={className}
         style={{
           ...style,
-          pointerEvents: "auto",
-          touchAction: "none",
-          userSelect: "none",
+          pointerEvents: 'auto',
+          touchAction: 'none',
+          userSelect: 'none',
         }}
       />
     );
   }
 );
 
-SimpleKakaoMap.displayName = "SimpleKakaoMap";
+SimpleKakaoMap.displayName = 'SimpleKakaoMap';
 export default SimpleKakaoMap;

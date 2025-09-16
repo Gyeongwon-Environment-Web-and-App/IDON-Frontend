@@ -1,12 +1,14 @@
-import React, { useState, useEffect } from "react";
-import TextForward from "../forms/TextForward";
-import general from "../../assets/icons/categories/tags/general.svg";
-import recycle from "../../assets/icons/categories/tags/recycle.svg";
-import other from "../../assets/icons/categories/tags/other.svg";
-import food from "../../assets/icons/categories/tags/food.svg";
-import X from "../../assets/icons/navigation/arrows/X.svg";
-import { formatAddressWithDong } from "../../utils/dongMapping";
-import { useComplaintFormStore } from "../../stores/complaintFormStore";
+import React, { useEffect, useState } from 'react';
+
+import food from '../../assets/icons/categories/tags/food.svg';
+import general from '../../assets/icons/categories/tags/general.svg';
+import other from '../../assets/icons/categories/tags/other.svg';
+import recycle from '../../assets/icons/categories/tags/recycle.svg';
+import X from '../../assets/icons/navigation/arrows/X.svg';
+import { useComplaintFormStore } from '../../stores/complaintFormStore';
+import { formatAddressWithDong } from '../../utils/dongMapping';
+import TextForward from '../forms/TextForward';
+
 // import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 interface ComplaintConfirmProps {
@@ -31,7 +33,7 @@ export default function ComplaintConfirm({
   useEffect(() => {
     const formatAddress = async () => {
       if (!formData.address) {
-        setFormattedAddress("");
+        setFormattedAddress('');
         return;
       }
 
@@ -40,7 +42,7 @@ export default function ComplaintConfirm({
         const result = await formatAddressWithDong(formData.address);
         setFormattedAddress(result);
       } catch (error) {
-        console.error("Address formatting error:", error);
+        console.error('Address formatting error:', error);
         setFormattedAddress(formData.address); // Fallback to original address
       } finally {
         setIsLoadingAddress(false);
@@ -51,13 +53,13 @@ export default function ComplaintConfirm({
   }, [formData.address]);
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return "0 Bytes";
+    if (bytes === 0) return '0 Bytes';
 
     const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
 
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
   const getNotifyData = () => {
@@ -72,23 +74,23 @@ export default function ComplaintConfirm({
         <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
           <section className="md:mr-[3rem] md:w-[65%] w-full">
             <p className="text-dark-gray">
-              민원 종류 -{" "}
+              민원 종류 -{' '}
               <span className="text-black my-3 md:my-5">
                 {formData.type}
                 {formData.category && ` (${formData.category})`}
               </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5">
-              민원 접수 종류 -{" "}
+              민원 접수 종류 -{' '}
               <span className="text-black">
-                {formData.route}{" "}
+                {formData.route}{' '}
                 {formData.source.phone_no
                   ? `(${formData.source.phone_no})`
-                  : ""}
+                  : ''}
               </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5">
-              민원 발생 주소 -{" "}
+              민원 발생 주소 -{' '}
               <span className="text-black">
                 {isLoadingAddress ? (
                   <span className="text-gray-500">주소 정보 로딩 중...</span>
@@ -100,7 +102,7 @@ export default function ComplaintConfirm({
             <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
               민원 내용
               <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
-                {formData.content}{" "}
+                {formData.content}{' '}
               </span>
             </p>
 
@@ -133,7 +135,7 @@ export default function ComplaintConfirm({
                             });
                           }}
                         />
-                        {file.type.startsWith("image/") ? (
+                        {file.type.startsWith('image/') ? (
                           <div className="w-8 h-8 rounded overflow-hidden relative group mr-2">
                             <img
                               src={file.url}
@@ -141,7 +143,7 @@ export default function ComplaintConfirm({
                               className="w-8 h-8 object-cover"
                               onError={(e) => {
                                 e.currentTarget.src =
-                                  "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OCA1NkM1Mi40MTgzIDU2IDU2IDUyLjQxODMgNT2gNDhDNTYgNTYuNDE4MyA1Mi40MTgzIDYwIDQ4IDYwQzQzLjU4MTcgNjAgNDAgNTYuNDE4MyA0MCA1MkM0MCA0Ny41ODE3IDQzLjU4MTcgNDQgNDggNDRaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik02NCA2NEgzMkMyOS43OTQ5IDY0IDI4IDYyLjIwNTEgMjggNjBWMzJDMjggMjkuNzk0OSAyOS43OTQ5IDI4IDMyIDI4SDY0QzY2LjIwNTEgMjggNjggMjkuNzk0OSA2OCAzMlY2MEM2OCA2Mi4yMDUxIDY2LjIwNTEgNjQgNjQgNjRaIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K";
+                                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OCA1NkM1Mi40MTgzIDU2IDU2IDUyLjQxODMgNT2gNDhDNTYgNTYuNDE4MyA1Mi40MTgzIDYwIDQ4IDYwQzQzLjU4MTcgNjAgNDAgNTYuNDE4MyA0MCA1MkM0MCA0Ny41ODE3IDQzLjU4MTcgNDQgNDggNDRaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik02NCA2NEgzMkMyOS43OTQ5IDY0IDI4IDYyLjIwNTEgMjggNjBWMzJDMjggMjkuNzk0OSAyOS43OTQ5IDI4IDMyIDI4SDY0QzY2LjIwNTEgMjggNjggMjkuNzk0OSA2OCAzMlY2MEM2OCA2Mi4yMDUxIDY2LjIwNTEgNjQgNjQgNjRaIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
                               }}
                             />
                           </div>
@@ -177,15 +179,15 @@ export default function ComplaintConfirm({
               <div className="flex">
                 <img
                   src={
-                    formData.type === "음식물"
+                    formData.type === '음식물'
                       ? food
-                      : formData.type === "재활용"
+                      : formData.type === '재활용'
                         ? recycle
-                        : formData.type === "기타"
+                        : formData.type === '기타'
                           ? other
-                          : formData.type === "일반"
+                          : formData.type === '일반'
                             ? general
-                            : ""
+                            : ''
                   }
                   className="w-1/3 mr-2"
                   alt="쓰레기 종류 태그"
@@ -206,12 +208,12 @@ export default function ComplaintConfirm({
         <div className="flex items-center justify-center my-8">
           <TextForward
             options={[
-              "소장님께 전달",
-              "민원팀에게 전달",
-              "담당 기사님께 전달",
-              "담당 팀장님께 전달",
+              '소장님께 전달',
+              '민원팀에게 전달',
+              '담당 기사님께 전달',
+              '담당 팀장님께 전달',
             ]}
-            mobileOptions={["소장님", "민원팀", "담당 기사님", "팀장님"]} // 모바일용 짧은 텍스트
+            mobileOptions={['소장님', '민원팀', '담당 기사님', '팀장님']} // 모바일용 짧은 텍스트
             selectedValues={getNotifyData()}
             onChange={(updatedList) =>
               updateFormData({

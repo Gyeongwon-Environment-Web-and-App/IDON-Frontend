@@ -1,7 +1,9 @@
 // hooks/useAuth.ts
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../stores/authStore";
+import { useEffect } from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
+import { useAuthStore } from '../stores/authStore';
 
 export const useAuth = () => {
   const navigate = useNavigate();
@@ -35,7 +37,7 @@ export const useAuth = () => {
 
     // Navigate after state update
     setTimeout(() => {
-      navigate("/");
+      navigate('/');
     }, 0);
   };
 
@@ -45,7 +47,7 @@ export const useAuth = () => {
 
     // Navigate after state update
     setTimeout(() => {
-      navigate("/login");
+      navigate('/login');
     }, 0);
   };
 

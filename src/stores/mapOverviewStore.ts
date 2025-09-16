@@ -1,7 +1,8 @@
 // stores/mapOverviewStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { Complaint } from "@/types/complaint";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+import type { Complaint } from '@/types/complaint';
 
 // Define map overview state interface
 interface MapOverviewState {
@@ -11,10 +12,10 @@ interface MapOverviewState {
 
   // Sidebar state
   sidebarOpen: boolean;
-  activeSidebar: "complaint" | "vehicle" | "stats" | null;
+  activeSidebar: 'complaint' | 'vehicle' | 'stats' | null;
 
   // Navigation state
-  currentView: "list" | "detail" | null;
+  currentView: 'list' | 'detail' | null;
   lastComplaintListPath: string | null;
 
   // Map state
@@ -25,12 +26,12 @@ interface MapOverviewState {
   setSelectedComplaintId: (id: string | null) => void;
   setSelectedComplaint: (complaint: Complaint | null) => void;
   setSidebarOpen: (open: boolean) => void;
-  setActiveSidebar: (sidebar: "complaint" | "vehicle" | "stats" | null) => void;
+  setActiveSidebar: (sidebar: 'complaint' | 'vehicle' | 'stats' | null) => void;
   setMapCenter: (center: { lat: number; lng: number }) => void;
   setMapZoom: (zoom: number) => void;
 
   // Navigation actions
-  setCurrentView: (view: "list" | "detail" | null) => void;
+  setCurrentView: (view: 'list' | 'detail' | null) => void;
   setLastComplaintListPath: (path: string | null) => void;
 
   // Helper actions
@@ -88,18 +89,18 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       openComplaintDetail: (complaintId) =>
         set({
           selectedComplaintId: complaintId,
-          activeSidebar: "complaint",
+          activeSidebar: 'complaint',
           sidebarOpen: true,
-          currentView: "detail",
+          currentView: 'detail',
         }),
 
       openComplaintList: () =>
         set({
           selectedComplaintId: null,
           selectedComplaint: null,
-          activeSidebar: "complaint",
+          activeSidebar: 'complaint',
           sidebarOpen: true,
-          currentView: "list",
+          currentView: 'list',
         }),
 
       resetMapOverview: () =>
@@ -115,7 +116,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
         }),
     }),
     {
-      name: "map-overview-storage", // localStorage key
+      name: 'map-overview-storage', // localStorage key
       // Only persist essential state, not UI state
       partialize: (state) => ({
         mapCenter: state.mapCenter,

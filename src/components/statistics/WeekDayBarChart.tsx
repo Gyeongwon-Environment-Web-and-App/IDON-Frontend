@@ -1,13 +1,15 @@
-import type { BarChartProps } from "@/types/stats";
-import React, { useState } from "react";
+import React, { useState } from 'react';
+
 import {
-  BarChart,
   Bar,
-  XAxis,
-  YAxis,
+  BarChart,
   CartesianGrid,
   ResponsiveContainer,
-} from "recharts";
+  XAxis,
+  YAxis,
+} from 'recharts';
+
+import type { BarChartProps } from '@/types/stats';
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -43,7 +45,9 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
       <div className="bg-white border border-[#757575] rounded-lg p-2 md:p-5 mt-2 md:mt-5 md:py-5 md:w-48 w-72 text-center">
         <div className="font-semibold text-lg md:text-2xl text-gray-text mb-2 md:mb-4 flex items-center justify-center">
           <p>{timeRange}</p>
-          <span className="block md:hidden ml-2 text-black">({totalComplaints}건)</span>
+          <span className="block md:hidden ml-2 text-black">
+            ({totalComplaints}건)
+          </span>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-1 gap-2">
           {uniqueEntries.map((entry, index) => (
@@ -69,7 +73,7 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
   // 데이터에서 카테고리 키들을 추출 (time 제외)
-  const categories = Object.keys(data[0] || {}).filter((key) => key !== "time");
+  const categories = Object.keys(data[0] || {}).filter((key) => key !== 'time');
 
   // 현재 호버된 인덱스에 따른 툴팁 데이터 생성
   const currentTooltipData = categories.map((category, index) => {
@@ -79,7 +83,7 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
       value: value, // 0이어도 명시적으로 표시
       color: colors[index % colors.length],
       payload: {
-        time: data[hoveredIndex]?.time || "월요일",
+        time: data[hoveredIndex]?.time || '월요일',
         [category]: value,
       },
     };

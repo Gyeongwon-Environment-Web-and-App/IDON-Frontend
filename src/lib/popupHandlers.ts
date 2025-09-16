@@ -1,5 +1,6 @@
-import React from "react";
-import type { Complaint } from "../types/complaint";
+import React from 'react';
+
+import type { Complaint } from '../types/complaint';
 
 // Status change handler interface
 export interface StatusChangeHandler {
@@ -11,13 +12,13 @@ export interface StatusChangeHandler {
 // Create reusable status change handler
 export const createStatusChangeHandler = (
   complaintId: string | null,
-  currentStatus: "처리중" | "완료" | null,
+  currentStatus: '처리중' | '완료' | null,
   onUpdate: (id: string, updates: Partial<Complaint>) => void,
   onClose: () => void
 ): StatusChangeHandler => {
   const handleConfirm = () => {
     if (complaintId && currentStatus) {
-      const newStatus = currentStatus === "처리중" ? "완료" : "처리중";
+      const newStatus = currentStatus === '처리중' ? '완료' : '처리중';
       onUpdate(complaintId, { status: newStatus });
     }
     onClose();
@@ -28,42 +29,42 @@ export const createStatusChangeHandler = (
   };
 
   const getMessage = () => {
-    if (currentStatus === "처리중") {
+    if (currentStatus === '처리중') {
       return React.createElement(
         React.Fragment,
         null,
         React.createElement(
-          "p",
-          { className: "pb-2" },
-          "처리결과를 ",
+          'p',
+          { className: 'pb-2' },
+          '처리결과를 ',
           React.createElement(
-            "span",
-            { className: "text-darker-green" },
-            "완료"
+            'span',
+            { className: 'text-darker-green' },
+            '완료'
           ),
-          "로"
+          '로'
         ),
-        React.createElement("p", null, "수정하시겠습니까?")
+        React.createElement('p', null, '수정하시겠습니까?')
       );
-    } else if (currentStatus === "완료") {
+    } else if (currentStatus === '완료') {
       return React.createElement(
         React.Fragment,
         null,
         React.createElement(
-          "p",
-          { className: "pb-2" },
-          "처리결과를 ",
+          'p',
+          { className: 'pb-2' },
+          '처리결과를 ',
           React.createElement(
-            "span",
-            { className: "text-[#8E8E8E]" },
-            "처리중"
+            'span',
+            { className: 'text-[#8E8E8E]' },
+            '처리중'
           ),
-          "으로"
+          '으로'
         ),
-        React.createElement("p", null, "되돌리시겠습니까?")
+        React.createElement('p', null, '되돌리시겠습니까?')
       );
     }
-    return React.createElement("div", null, "");
+    return React.createElement('div', null, '');
   };
 
   return {

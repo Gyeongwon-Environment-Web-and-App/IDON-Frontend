@@ -1,15 +1,16 @@
 // stores/complaintTableStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import type { DateRange } from "react-day-picker";
-import type { Complaint } from "../types/complaint";
+import type { DateRange } from 'react-day-picker';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
+
+import type { Complaint } from '../types/complaint';
 
 // Define complaint table state interface
 interface ComplaintTableState {
   // Filter and search state
   dateRange: DateRange | undefined;
   searchTerm: string;
-  sortOrder: "최근" | "옛";
+  sortOrder: '최근' | '옛';
 
   // Data state
   complaints: Complaint[];
@@ -18,18 +19,18 @@ interface ComplaintTableState {
   // UI state
   isPopupOpen: boolean;
   selectedComplaintId: string | null;
-  selectedComplaintStatus: "처리중" | "완료" | null;
+  selectedComplaintStatus: '처리중' | '완료' | null;
   selectedRows: Set<string>;
 
   // Actions
   setDateRange: (range: DateRange | undefined) => void;
   setSearchTerm: (term: string) => void;
-  setSortOrder: (order: "최근" | "옛") => void;
+  setSortOrder: (order: '최근' | '옛') => void;
   setComplaints: (complaints: Complaint[]) => void;
   setFilteredComplaints: (complaints: Complaint[]) => void;
   setIsPopupOpen: (isOpen: boolean) => void;
   setSelectedComplaintId: (id: string | null) => void;
-  setSelectedComplaintStatus: (status: "처리중" | "완료" | null) => void;
+  setSelectedComplaintStatus: (status: '처리중' | '완료' | null) => void;
   setSelectedRows: (rows: Set<string>) => void;
 
   // Helper actions
@@ -48,8 +49,8 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
     (set, get) => ({
       // Initial state
       dateRange: undefined,
-      searchTerm: "",
-      sortOrder: "최근",
+      searchTerm: '',
+      sortOrder: '최근',
       complaints: [],
       filteredComplaints: [],
       isPopupOpen: false,
@@ -132,8 +133,8 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
       resetTable: () =>
         set({
           dateRange: undefined,
-          searchTerm: "",
-          sortOrder: "최근",
+          searchTerm: '',
+          sortOrder: '최근',
           complaints: [],
           filteredComplaints: [],
           isPopupOpen: false,
@@ -143,7 +144,7 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
         }),
     }),
     {
-      name: "complaint-table-storage", // localStorage key
+      name: 'complaint-table-storage', // localStorage key
       // Only persist data, not UI state
       partialize: (state) => ({
         dateRange: state.dateRange,

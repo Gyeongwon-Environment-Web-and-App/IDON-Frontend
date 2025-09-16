@@ -1,5 +1,6 @@
-import apiClient from "../lib/api";
-import axios from "axios";
+import axios from 'axios';
+
+import apiClient from '../lib/api';
 
 // Type definitions for API responses
 export interface User {
@@ -54,33 +55,33 @@ export const authService = {
 
       return {
         success: false,
-        message: "Unexpected response status",
+        message: 'Unexpected response status',
       };
     } catch (error) {
-      console.error("Login failed:", error);
+      console.error('Login failed:', error);
 
       if (axios.isAxiosError(error)) {
         if (error.response?.status === 404) {
           return {
             success: false,
-            message: "존재하지 않는 시리얼 번호입니다.",
+            message: '존재하지 않는 시리얼 번호입니다.',
           };
         } else if (error.response?.status === 400) {
           return {
             success: false,
-            message: "잘못된 요청입니다.",
+            message: '잘못된 요청입니다.',
           };
         } else if (error.response?.status === 500) {
           return {
             success: false,
-            message: "서버 오류가 발생했습니다.",
+            message: '서버 오류가 발생했습니다.',
           };
         }
       }
 
       return {
         success: false,
-        message: "로그인 중 오류가 발생했습니다.",
+        message: '로그인 중 오류가 발생했습니다.',
       };
     }
   },
@@ -89,16 +90,16 @@ export const authService = {
    * Logout user (clear local storage)
    */
   logout: () => {
-    localStorage.removeItem("userData");
-    localStorage.removeItem("serial_no");
-    localStorage.removeItem("userToken");
+    localStorage.removeItem('userData');
+    localStorage.removeItem('serial_no');
+    localStorage.removeItem('userToken');
   },
 
   /**
    * Get current user data from localStorage
    */
   getCurrentUser: () => {
-    const userData = localStorage.getItem("userData");
+    const userData = localStorage.getItem('userData');
     return userData ? JSON.parse(userData) : null;
   },
 
@@ -106,11 +107,11 @@ export const authService = {
    * Check if user is authenticated
    */
   isAuthenticated: () => {
-    const token = localStorage.getItem("userToken");
+    const token = localStorage.getItem('userToken');
     return !!token;
   },
 
   getToken: () => {
-    return localStorage.getItem("userToken");
-  }
+    return localStorage.getItem('userToken');
+  },
 };

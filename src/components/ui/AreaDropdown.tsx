@@ -1,8 +1,9 @@
-import React, { useState, useRef, useEffect, Fragment } from "react";
-import { Button } from "@/components/ui/button";
-import { useAreaSelection } from "@/hooks/useAreaSelection";
-import triangle from "@/assets/icons/actions/triangle.svg";
-import { cn } from "@/lib/utils";
+import React, { Fragment, useEffect, useRef, useState } from 'react';
+
+import triangle from '@/assets/icons/actions/triangle.svg';
+import { Button } from '@/components/ui/button';
+import { useAreaSelection } from '@/hooks/useAreaSelection';
+import { cn } from '@/lib/utils';
 
 interface AreaDropdownProps {
   buttonText?: string;
@@ -15,15 +16,15 @@ interface AreaDropdownProps {
 
 // Hardcoded area hierarchy for better performance
 const areaHierarchy = {
-  쌍문동: ["쌍문 1동", "쌍문 2동", "쌍문 3동", "쌍문 4동"],
-  방학동: ["방학 1동", "방학 3동"],
+  쌍문동: ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'],
+  방학동: ['방학 1동', '방학 3동'],
 };
 
 export const AreaDropdown: React.FC<AreaDropdownProps> = ({
-  buttonText = "구역 선택",
-  buttonClassName = "flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2",
-  contentClassName = "w-28 !p-0",
-  childItemClassName = "pl-10 bg-f0f0f0 rounded-none",
+  buttonText = '구역 선택',
+  buttonClassName = 'flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2',
+  contentClassName = 'w-28 !p-0',
+  childItemClassName = 'pl-10 bg-f0f0f0 rounded-none',
   triangleIcon = triangle,
   onSelectionChange,
 }) => {
@@ -53,11 +54,11 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen]);
 
@@ -101,7 +102,7 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
       {isOpen && (
         <div
           className={cn(
-            "absolute top-full right-0 md:left-0 mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md",
+            'absolute top-full right-0 md:left-0 mt-1 z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover p-1 text-popover-foreground shadow-md',
             contentClassName
           )}
         >
@@ -114,7 +115,7 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
               className="accent-[#656565]"
             />
             <label htmlFor="checkbox-allAreas">
-              {selectedAreas.length === allItems ? "전체 해제" : "전체 선택"}
+              {selectedAreas.length === allItems ? '전체 해제' : '전체 선택'}
             </label>
           </div>
 
@@ -137,7 +138,7 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
                 <div
                   key={childArea}
                   className={cn(
-                    "relative flex cursor-pointer select-none items-center rounded-sm py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground",
+                    'relative flex cursor-pointer select-none items-center rounded-sm py-1.5 text-sm outline-none transition-colors hover:bg-accent hover:text-accent-foreground',
                     childItemClassName
                   )}
                 >

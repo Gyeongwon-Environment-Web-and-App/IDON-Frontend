@@ -1,23 +1,26 @@
-import React, { useEffect, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import Header from "@/components/common/Header";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useAuthStore } from "@/stores/authStore";
-import { useMainPageStore } from "@/stores/mainPageStore";
-import MobileBottomNav from "@/components/layout/MobileBottomNav";
-import leftArrow from "../assets/icons/navigation/arrows/arrow_left_white.svg";
-import rightArrow from "../assets/icons/navigation/arrows/arrow_right_white.svg";
-import rightArrowGray from "../assets/icons/navigation/arrows/gray_arrow_right.svg";
-import truck from "../assets/icons/navigation/home_menu/vehicle.svg";
-import folder from "../assets/icons/navigation/home_menu/folder.svg";
-import write from "../assets/icons/navigation/home_menu/write.svg";
-import mapping from "../assets/icons/navigation/home_menu/mapping.svg";
-import notice from "../assets/icons/common/notice.svg";
-import bg1 from "../assets/background/bg1.webp";
-import bg2 from "../assets/background/bg2.webp";
-import bg3 from "../assets/background/bg3.webp";
-import bg4 from "../assets/background/bg4.webp";
-import bg5 from "../assets/background/bg5.webp";
+import React, { useCallback, useEffect, useMemo } from 'react';
+
+import { useNavigate } from 'react-router-dom';
+
+import Header from '@/components/common/Header';
+import MobileBottomNav from '@/components/layout/MobileBottomNav';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useAuthStore } from '@/stores/authStore';
+import { useMainPageStore } from '@/stores/mainPageStore';
+
+import bg1 from '../assets/background/bg1.webp';
+import bg2 from '../assets/background/bg2.webp';
+import bg3 from '../assets/background/bg3.webp';
+import bg4 from '../assets/background/bg4.webp';
+import bg5 from '../assets/background/bg5.webp';
+import notice from '../assets/icons/common/notice.svg';
+import leftArrow from '../assets/icons/navigation/arrows/arrow_left_white.svg';
+import rightArrow from '../assets/icons/navigation/arrows/arrow_right_white.svg';
+import rightArrowGray from '../assets/icons/navigation/arrows/gray_arrow_right.svg';
+import folder from '../assets/icons/navigation/home_menu/folder.svg';
+import mapping from '../assets/icons/navigation/home_menu/mapping.svg';
+import truck from '../assets/icons/navigation/home_menu/vehicle.svg';
+import write from '../assets/icons/navigation/home_menu/write.svg';
 
 const MainPage: React.FC = () => {
   // Get logout function from Zustand store
@@ -128,32 +131,32 @@ const MainPage: React.FC = () => {
   //! 네비게이팅 수정!
   const menuButtons = [
     {
-      title: "민원 관리",
-      description: "입력한 민원을 간편하게 관리",
+      title: '민원 관리',
+      description: '입력한 민원을 간편하게 관리',
       icon: folder,
-      route: "/complaints/table",
-      alt: "민원 관리 아이콘",
+      route: '/complaints/table',
+      alt: '민원 관리 아이콘',
     },
     {
-      title: "민원 등록",
-      description: "간편하게 실시간 민원 입력",
+      title: '민원 등록',
+      description: '간편하게 실시간 민원 입력',
       icon: write,
-      route: "/complaints/form",
-      alt: "민원 등록 아이콘",
+      route: '/complaints/form',
+      alt: '민원 등록 아이콘',
     },
     {
-      title: "지도",
-      description: "간략화된 정보를 지도로 조회",
+      title: '지도',
+      description: '간략화된 정보를 지도로 조회',
       icon: mapping,
-      route: "/map/overview",
-      alt: "지도 아이콘",
+      route: '/map/overview',
+      alt: '지도 아이콘',
     },
     {
-      title: "차량 조회",
-      description: "업체에서 사용되는 차량 조회",
+      title: '차량 조회',
+      description: '업체에서 사용되는 차량 조회',
       icon: truck,
-      route: "/",
-      alt: "차량 아이콘",
+      route: '/',
+      alt: '차량 아이콘',
     },
   ];
 
@@ -168,10 +171,10 @@ const MainPage: React.FC = () => {
             type="image/webp"
           />
           <img
-            src={backgroundImages[currentImageIndex].replace(".webp", ".jpg")}
+            src={backgroundImages[currentImageIndex].replace('.webp', '.jpg')}
             alt={`배경 이미지 ${currentImageIndex + 1}`}
             className={`4xl:h-[43vh] md:h-[40vh] h-[33vh] w-screen object-cover object-center transition-all duration-200 ${
-              isTransitioning ? "scale-105" : "scale-100"
+              isTransitioning ? 'scale-105' : 'scale-100'
             }`}
             loading="eager"
           />
@@ -216,8 +219,8 @@ const MainPage: React.FC = () => {
               }}
               disabled={isTransitioning}
               className={`w-[15px] h-[15px] !p-0 rounded-full transition-all duration-200 ${
-                index === currentImageIndex ? "bg-white" : "bg-white/50"
-              } ${isTransitioning ? "opacity-50" : "hover:bg-white/75"}`}
+                index === currentImageIndex ? 'bg-white' : 'bg-white/50'
+              } ${isTransitioning ? 'opacity-50' : 'hover:bg-white/75'}`}
             />
           ))}
         </div>
@@ -225,22 +228,20 @@ const MainPage: React.FC = () => {
 
       {/* 화면 하단 */}
       <div className="absolute md:flex md:flex-row flex-col justify-center items-center text-left md:text-center top-[42%] md:top-[53%] w-screen 2xl:px-80">
-        <p className="md:hidden font-bold text-lg px-7 pt-8 pb-4">
-          메인 메뉴
-        </p>
+        <p className="md:hidden font-bold text-lg px-7 pt-8 pb-4">메인 메뉴</p>
         {/* 기능 페이지 이동 버튼들 */}
         <div className="grid grid-cols-2 gap-4 md:gap-6 md:w-[60rem] lg:w-[80rem] xl:w-[100rem] md:mr-4 items-center px-4 4xl:pt-5">
           {menuButtons.map((button, index) => (
             <button
               key={index}
               className={`rounded-xl w-full h-[10rem] flex flex-col-reverse md:flex-row justify-around items-start md:items-center bg-white md:border-none md:shadow-custom border-[1.5px] border-[#C8C8C8] p-0 xxs:px-[0.2rem] xs:px-[0.8rem] md:px-5 py-5 md:py-0 ${
-                button.title === "민원 등록" || button.title === "민원 관리"
-                  ? "hover:green-shadow"
-                  : button.title === "지도"
-                    ? "hover:blue-shadow"
-                    : button.title === "차량 조회"
-                      ? "hover:gray-shadow"
-                      : ""
+                button.title === '민원 등록' || button.title === '민원 관리'
+                  ? 'hover:green-shadow'
+                  : button.title === '지도'
+                    ? 'hover:blue-shadow'
+                    : button.title === '차량 조회'
+                      ? 'hover:gray-shadow'
+                      : ''
               }`}
               onClick={() => handleCardClick(button.route)}
             >
@@ -266,7 +267,11 @@ const MainPage: React.FC = () => {
               공지사항
               <img src={notice} alt="공지사항 아이콘" />
             </div>
-            <img src={rightArrowGray} alt="오른쪽 화살표" className="cursor-pointer" />
+            <img
+              src={rightArrowGray}
+              alt="오른쪽 화살표"
+              className="cursor-pointer"
+            />
           </div>
           <div className="h-72 w-full mt-2 flex justify-center items-center font-semibold">
             개발 중입니다!

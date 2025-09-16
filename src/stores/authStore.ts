@@ -1,6 +1,6 @@
 // stores/authStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Define user data interface
 interface UserData {
@@ -29,7 +29,7 @@ interface AuthState {
 // Helper function to check if token is expired
 const isTokenExpired = (token: string): boolean => {
   try {
-    const payload = JSON.parse(atob(token.split(".")[1]));
+    const payload = JSON.parse(atob(token.split('.')[1]));
     const currentTime = Date.now();
     const tokenExpTime = payload.exp * 1000; // Convert to milliseconds
     return tokenExpTime < currentTime;
@@ -51,9 +51,9 @@ export const useAuthStore = create<AuthState>()(
       // Actions
       login: (userData: UserData) => {
         // Store data in localStorage for persistence
-        localStorage.setItem("userData", JSON.stringify(userData));
-        localStorage.setItem("serial_no", userData.serial_no);
-        localStorage.setItem("userToken", userData.token);
+        localStorage.setItem('userData', JSON.stringify(userData));
+        localStorage.setItem('serial_no', userData.serial_no);
+        localStorage.setItem('userToken', userData.token);
 
         // Update Zustand state
         set({
@@ -66,12 +66,12 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         // Clear all storage
-        localStorage.removeItem("userData");
-        localStorage.removeItem("serial_no");
-        localStorage.removeItem("userToken");
-        sessionStorage.removeItem("userData");
-        sessionStorage.removeItem("serial_no");
-        sessionStorage.removeItem("userToken");
+        localStorage.removeItem('userData');
+        localStorage.removeItem('serial_no');
+        localStorage.removeItem('userToken');
+        sessionStorage.removeItem('userData');
+        sessionStorage.removeItem('serial_no');
+        sessionStorage.removeItem('userToken');
 
         // Update Zustand state
         set({
@@ -84,8 +84,8 @@ export const useAuthStore = create<AuthState>()(
 
       checkAuthStatus: () => {
         try {
-          const userData = localStorage.getItem("userData");
-          const token = localStorage.getItem("userToken");
+          const userData = localStorage.getItem('userData');
+          const token = localStorage.getItem('userToken');
 
           if (userData && token) {
             if (isTokenExpired(token)) {
@@ -123,7 +123,7 @@ export const useAuthStore = create<AuthState>()(
       },
     }),
     {
-      name: "auth-storage", // localStorage key
+      name: 'auth-storage', // localStorage key
       // Only persist authentication state, not loading state
       partialize: (state) => ({
         isAuthenticated: state.isAuthenticated,

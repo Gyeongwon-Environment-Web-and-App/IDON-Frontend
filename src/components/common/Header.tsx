@@ -1,18 +1,21 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from 'react';
+
+import { Menu, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
 import {
   Sheet,
-  SheetContent,
-  SheetTrigger,
   SheetClose,
-  SheetTitle,
+  SheetContent,
   SheetDescription,
-} from "@/components/ui/sheet";
-import { Menu, X } from "lucide-react";
-import long_logo from "../../assets/icons/brand/long_logo.svg";
-import logo from "../../assets/icons/brand/logo.svg";
-import topArrow from "../../assets/icons/navigation/arrows/top_arrow.svg";
-import bottomArrow from "../../assets/icons/navigation/arrows/bottom_arrow.svg";
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
+
+import logo from '../../assets/icons/brand/logo.svg';
+import long_logo from '../../assets/icons/brand/long_logo.svg';
+import bottomArrow from '../../assets/icons/navigation/arrows/bottom_arrow.svg';
+import topArrow from '../../assets/icons/navigation/arrows/top_arrow.svg';
 
 interface HeaderProps {
   onLogout: () => void;
@@ -20,32 +23,32 @@ interface HeaderProps {
 
 const menuItems = [
   {
-    label: "지도",
+    label: '지도',
     submenu: [
-      { name: "민원 목록", route: "/map/overview" },
-      { name: "차량 조회", route: "/map/overview" },
-      { name: "구역별 통계", route: "/map/overview" },
-      { name: "관할 구역 수정", route: "/" },
+      { name: '민원 목록', route: '/map/overview' },
+      { name: '차량 조회', route: '/map/overview' },
+      { name: '구역별 통계', route: '/map/overview' },
+      { name: '관할 구역 수정', route: '/' },
     ],
   },
   {
-    label: "차량 관리",
+    label: '차량 관리',
     submenu: [
-      { name: "차량 정보", route: "/" },
-      { name: "차량 등록 / 수정", route: "/" },
-      { name: "기사정보", route: "/" },
-      { name: "기사등록 / 수정", route: "/" },
+      { name: '차량 정보', route: '/' },
+      { name: '차량 등록 / 수정', route: '/' },
+      { name: '기사정보', route: '/' },
+      { name: '기사등록 / 수정', route: '/' },
     ],
   },
   {
-    label: "민원",
+    label: '민원',
     submenu: [
-      { name: "내역 / 관리", route: "/complaints/table" },
-      { name: "민원 등록 / 수정", route: "/complaints/form" },
-      { name: "전체 통계", route: "/complaints/stats" },
+      { name: '내역 / 관리', route: '/complaints/table' },
+      { name: '민원 등록 / 수정', route: '/complaints/form' },
+      { name: '전체 통계', route: '/complaints/stats' },
     ],
   },
-  { label: "통계", submenu: [] },
+  { label: '통계', submenu: [] },
 ];
 
 export default function Header({ onLogout }: HeaderProps) {
@@ -64,7 +67,7 @@ export default function Header({ onLogout }: HeaderProps) {
 
   const handleLogout = () => {
     onLogout();
-    alert("로그아웃 되었습니다.");
+    alert('로그아웃 되었습니다.');
   };
 
   return (
@@ -73,7 +76,7 @@ export default function Header({ onLogout }: HeaderProps) {
         {/* 로고 */}
         <div
           className="cursor-pointer mb-2 md:ml-6"
-          onClick={() => navigate("/")}
+          onClick={() => navigate('/')}
         >
           {/* 작은 화면용 로고 */}
           <img
@@ -101,7 +104,7 @@ export default function Header({ onLogout }: HeaderProps) {
             >
               {/* 상단 메뉴 텍스트 */}
               <div
-                className={`cursor-pointer px-4 pt-7 pb-4 font-bold lg:text-xl text-md ${showDropdown ? "border-b-2 border-black" : ""}`}
+                className={`cursor-pointer px-4 pt-7 pb-4 font-bold lg:text-xl text-md ${showDropdown ? 'border-b-2 border-black' : ''}`}
               >
                 {item.label}
               </div>
@@ -147,9 +150,9 @@ export default function Header({ onLogout }: HeaderProps) {
               className="w-[300px] sm:w-[400px] relative h-screen [&>button:first-child]:hidden !p-0 border-none z-[9999]"
               style={{
                 left: 0,
-                right: "auto",
-                transform: "translateX(0)",
-                position: "fixed",
+                right: 'auto',
+                transform: 'translateX(0)',
+                position: 'fixed',
                 zIndex: 9999,
               }}
             >
@@ -188,7 +191,7 @@ export default function Header({ onLogout }: HeaderProps) {
                       {item.submenu.length > 0 && (
                         <img
                           src={isMenuExpanded(idx) ? topArrow : bottomArrow}
-                          alt={isMenuExpanded(idx) ? "접기" : "펼치기"}
+                          alt={isMenuExpanded(idx) ? '접기' : '펼치기'}
                           className="w-4 h-4 transition-transform"
                         />
                       )}

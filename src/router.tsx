@@ -1,39 +1,40 @@
-import { createBrowserRouter } from "react-router-dom";
-import MainPage from "./pages/MainPage";
-import Login from "./pages/Login";
-import ComplaintManage from "./pages/ComplaintManage";
-import MapOverview from "./pages/MapOverview";
-import ComplaintDetail from "./components/map/ComplaintDetail";
+import { createBrowserRouter } from 'react-router-dom';
+
+import ComplaintDetail from './components/map/ComplaintDetail';
+import ComplaintManage from './pages/ComplaintManage';
+import Login from './pages/Login';
+import MainPage from './pages/MainPage';
+import MapOverview from './pages/MapOverview';
 
 export const router = createBrowserRouter([
   {
-    path: "/",
+    path: '/',
     element: <MainPage />,
   },
   {
-    path: "/login",
+    path: '/login',
     element: <Login onLogin={() => {}} />,
   },
   {
-    path: "/complaints/table",
+    path: '/complaints/table',
     element: <ComplaintManage />,
   },
   {
-    path: "/map/overview",
+    path: '/map/overview',
     element: <MapOverview />,
     children: [
       {
-        path: "complaints",
+        path: 'complaints',
         element: <div>Complaint List (rendered in sidebar)</div>,
       },
       {
-        path: "complaints/:complaintId",
+        path: 'complaints/:complaintId',
         element: <ComplaintDetail />,
       },
     ],
   },
   {
-    path: "/map/overview/:complaintId",
+    path: '/map/overview/:complaintId',
     element: <MapOverview />,
   },
 ]);

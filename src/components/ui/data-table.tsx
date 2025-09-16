@@ -1,18 +1,20 @@
-"use client";
+'use client';
 
-import * as React from "react";
+import * as React from 'react';
+
 import {
   type ColumnDef,
   type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type SortingState,
   useReactTable,
-} from "@tanstack/react-table";
+  type VisibilityState,
+} from '@tanstack/react-table';
+
 import {
   Table,
   TableBody,
@@ -20,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from '@/components/ui/table';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -33,7 +35,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   onRowClick,
-  clickableColumnIds
+  clickableColumnIds,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -75,7 +77,7 @@ export function DataTable<TData, TValue>({
                     <TableHead
                       key={header.id}
                       className={`text-center text-white font-bold text-base ${
-                        !isLastHeader ? "border-r border-white" : ""
+                        !isLastHeader ? 'border-r border-white' : ''
                       }`}
                     >
                       {header.isPlaceholder
@@ -95,8 +97,8 @@ export function DataTable<TData, TValue>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                  className={onRowClick ? "hover:bg-gray-50" : ""}
+                  data-state={row.getIsSelected() && 'selected'}
+                  className={onRowClick ? 'hover:bg-gray-50' : ''}
                 >
                   {row.getVisibleCells().map((cell, index) => {
                     const isLastCell =
@@ -105,7 +107,7 @@ export function DataTable<TData, TValue>({
                       <TableCell
                         key={cell.id}
                         className={`text-base text-black ${
-                          !isLastCell ? "border-r border-d9d9d9" : ""
+                          !isLastCell ? 'border-r border-d9d9d9' : ''
                         }`}
                         onClick={(e) => {
                           // Prevent row click when clicking on checkboxes or buttons
@@ -114,9 +116,15 @@ export function DataTable<TData, TValue>({
                               'input[type="checkbox"], button, [role="button"]'
                             );
 
-                            const isClickableColumn = !clickableColumnIds || clickableColumnIds.includes(cell.column.id);
+                            const isClickableColumn =
+                              !clickableColumnIds ||
+                              clickableColumnIds.includes(cell.column.id);
 
-                            if (!isInteractive && onRowClick && isClickableColumn) {
+                            if (
+                              !isInteractive &&
+                              onRowClick &&
+                              isClickableColumn
+                            ) {
                               onRowClick(row.original);
                             }
                           }

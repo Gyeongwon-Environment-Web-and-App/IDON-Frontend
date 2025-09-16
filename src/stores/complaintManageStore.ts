@@ -1,17 +1,17 @@
 // stores/complaintManageStore.ts
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 // Define complaint manage state interface
 interface ComplaintManageState {
   // Tab and UI state
-  activeTab: "manage" | "register" | "stats";
+  activeTab: 'manage' | 'register' | 'stats';
   showConfirm: boolean;
   hasUnsavedChanges: boolean;
   isPopupOpen: boolean;
 
   // Actions
-  setActiveTab: (tab: "manage" | "register" | "stats") => void;
+  setActiveTab: (tab: 'manage' | 'register' | 'stats') => void;
   setShowConfirm: (show: boolean) => void;
   setHasUnsavedChanges: (hasChanges: boolean) => void;
   setIsPopupOpen: (isOpen: boolean) => void;
@@ -33,7 +33,7 @@ export const useComplaintManageStore = create<ComplaintManageState>()(
   persist(
     (set) => ({
       // Initial state
-      activeTab: "register",
+      activeTab: 'register',
       showConfirm: false,
       hasUnsavedChanges: false,
       isPopupOpen: false,
@@ -69,7 +69,7 @@ export const useComplaintManageStore = create<ComplaintManageState>()(
       },
     }),
     {
-      name: "complaint-manage-storage", // localStorage key
+      name: 'complaint-manage-storage', // localStorage key
       // Only persist activeTab, not UI state
       partialize: (state) => ({
         activeTab: state.activeTab,

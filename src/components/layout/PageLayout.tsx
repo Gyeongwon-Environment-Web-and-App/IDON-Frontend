@@ -1,4 +1,4 @@
-import React from "react";
+import React from 'react';
 
 interface Tab {
   label: string;
@@ -34,7 +34,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           {tabs.map((tab) => (
             <div
               key={tab.value}
-              className={`text-center py-2 cursor-pointer border-b border-[#9f9f9f] ${activeTab === tab.value ? "text-green-600 font-bold" : ""}`}
+              className={`text-center py-2 cursor-pointer border-b border-[#9f9f9f] ${activeTab === tab.value ? 'text-green-600 font-bold' : ''}`}
               onClick={() => onTabClick(tab.value)}
             >
               {tab.label}
@@ -49,7 +49,7 @@ const PageLayout: React.FC<PageLayoutProps> = ({
           {tabTitle} {icon}
         </h2>
         <hr
-          className={`hidden ${tabTitle === "민원 내역 / 관리" && "2xl:w-[110%]"} md:block md:my-4 border-under border-[1.1px]`}
+          className={`hidden ${tabTitle === '민원 내역 / 관리' && '2xl:w-[110%]'} md:block md:my-4 border-under border-[1.1px]`}
         />
         <div className="md:mt-3">{children}</div>
       </main>

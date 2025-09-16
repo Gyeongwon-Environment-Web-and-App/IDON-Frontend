@@ -149,7 +149,7 @@ const cacheTimestamps = new Map<string, number>();
 
 // 도봉구 주소인지 확인하는 함수
 export const isDobongAddress = (address: string): boolean => {
-  const dobongKeywords = ["도봉구", "방학", "쌍문", "창동", "도봉동", "마들"];
+  const dobongKeywords = ['도봉구', '방학', '쌍문', '창동', '도봉동', '마들'];
 
   return dobongKeywords.some((keyword) => address.includes(keyword));
 };
@@ -168,14 +168,14 @@ const cleanExpiredCache = () => {
 // 주소를 검색에 최적화된 키워드로 변환
 const formatSearchKeyword = (address: string): string => {
   // 1. 불필요한 공백 제거 및 정규화
-  let keyword = address.trim().replace(/\s+/g, " ");
+  let keyword = address.trim().replace(/\s+/g, ' ');
 
   // 2. 서울시 -> 서울로 변환 (더 일반적인 형식)
-  keyword = keyword.replace(/서울시/g, "서울");
-  keyword = keyword.replace(/서울특별시/g, "서울");
+  keyword = keyword.replace(/서울시/g, '서울');
+  keyword = keyword.replace(/서울특별시/g, '서울');
 
   // 3. 도봉구 주소인 경우 더 구체적인 검색어 생성
-  if (keyword.includes("도봉구")) {
+  if (keyword.includes('도봉구')) {
     // 도로명 주소 패턴 (개선): "서울 도봉구 [도로명길] [번호]" - "길" 포함
     const roadWithGilPattern = /서울\s*도봉구\s*([가-힣]+로\d*길)\s*(\d+)/;
     const roadWithGilMatch = keyword.match(roadWithGilPattern);
@@ -211,7 +211,7 @@ const formatSearchKeyword = (address: string): string => {
   }
 
   // 4. 기본적으로 도봉구 키워드 제거 (더 넓은 검색)
-  keyword = keyword.replace(/서울\s*도봉구\s*/, "");
+  keyword = keyword.replace(/서울\s*도봉구\s*/, '');
 
   return keyword;
 };
@@ -222,7 +222,7 @@ const getCoordinatesFromAddress = async (
 ): Promise<{ lat: number; lng: number } | null> => {
   return new Promise((resolve) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
-      console.error("Kakao Maps Geocoder not loaded");
+      console.error('Kakao Maps Geocoder not loaded');
       resolve(null);
       return;
     }
@@ -244,7 +244,7 @@ const getCoordinatesFromAddress = async (
         const addressInfo = result[0];
         if (addressInfo && addressInfo.x && addressInfo.y) {
           console.log(
-            `✅ 주소 좌표 찾음: ${addressInfo.x}, ${addressInfo.y} (${addressInfo.address_name || "Unknown"})`
+            `✅ 주소 좌표 찾음: ${addressInfo.x}, ${addressInfo.y} (${addressInfo.address_name || 'Unknown'})`
           );
           resolve({
             lat: parseFloat(addressInfo.y),
@@ -271,8 +271,8 @@ const getDetailedDongInfo = async (
 ): Promise<string> => {
   return new Promise((resolve) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
-      console.error("Kakao Maps Geocoder not loaded");
-      resolve("");
+      console.error('Kakao Maps Geocoder not loaded');
+      resolve('');
       return;
     }
 
@@ -287,7 +287,7 @@ const getDetailedDongInfo = async (
         result.length > 0
       ) {
         // 3단계 행정구역(동 레벨) 찾기
-        const dongRegion = result.find((region) => region.region_type === "H");
+        const dongRegion = result.find((region) => region.region_type === 'H');
         if (dongRegion && dongRegion.region_3depth_name) {
           console.log(`✅ 세부 동 정보 찾음: ${dongRegion.region_3depth_name}`);
           resolve(dongRegion.region_3depth_name);
@@ -295,13 +295,13 @@ const getDetailedDongInfo = async (
           console.warn(
             `No 3-depth region found for coordinates: ${lat}, ${lng}`
           );
-          resolve("");
+          resolve('');
         }
       } else {
         console.warn(
           `Failed to get region code for coordinates: ${lat}, ${lng}, status: ${status}`
         );
-        resolve("");
+        resolve('');
       }
     });
   });
@@ -314,8 +314,8 @@ const getDongFromCoordinates = async (
 ): Promise<string> => {
   return new Promise((resolve) => {
     if (!window.kakao?.maps?.services?.Geocoder) {
-      console.error("Kakao Maps Geocoder not loaded");
-      resolve("");
+      console.error('Kakao Maps Geocoder not loaded');
+      resolve('');
       return;
     }
 
@@ -348,17 +348,17 @@ const getDongFromCoordinates = async (
             console.warn(
               `Could not extract dong from address: ${addressInfo.address.address_name}`
             );
-            resolve("");
+            resolve('');
           }
         } else {
           console.warn(`No address info found for coordinates: ${lat}, ${lng}`);
-          resolve("");
+          resolve('');
         }
       } else {
         console.warn(
           `Failed to get address for coordinates: ${lat}, ${lng}, status: ${status}`
         );
-        resolve("");
+        resolve('');
       }
     });
   });
@@ -378,7 +378,7 @@ const extractDongFromAddress = (address: string): string => {
     }
 
     // 도봉구 키워드가 있는 경우
-    if (address.includes("도봉구")) {
+    if (address.includes('도봉구')) {
       // 동 패턴 찾기 (방학동, 쌍문동, 창동, 도봉동, 마들동)
       const dongPatterns = [
         /방학\s*[1-2]?동/,
@@ -397,10 +397,10 @@ const extractDongFromAddress = (address: string): string => {
       }
     }
 
-    return "";
+    return '';
   } catch (error) {
-    console.error("동 정보 추출 오류:", error);
-    return "";
+    console.error('동 정보 추출 오류:', error);
+    return '';
   }
 };
 
@@ -412,7 +412,7 @@ export const extractDongInfo = async (address: string): Promise<string> => {
 
     // 도봉구 주소가 아니면 빈 문자열 반환
     if (!isDobongAddress(address)) {
-      return "";
+      return '';
     }
 
     // 캐시 확인
@@ -449,8 +449,8 @@ export const extractDongInfo = async (address: string): Promise<string> => {
       pendingRequests.delete(address);
     }
   } catch (error) {
-    console.error("동 정보 추출 오류:", error);
-    return "";
+    console.error('동 정보 추출 오류:', error);
+    return '';
   }
 };
 
@@ -460,7 +460,7 @@ const performDongExtraction = async (address: string): Promise<string> => {
   const coords = await getCoordinatesFromAddress(address);
   if (!coords) {
     console.warn(`Could not find coordinates for address: ${address}`);
-    return "";
+    return '';
   }
 
   // 2. 좌표를 세부 행정동 정보로 변환 (coord2RegionCode 사용)
@@ -471,7 +471,7 @@ const performDongExtraction = async (address: string): Promise<string> => {
   }
 
   // 3. fallback: 기존 coord2Address 방식 사용
-  console.log("Falling back to coord2Address method");
+  console.log('Falling back to coord2Address method');
   const dongInfo = await getDongFromCoordinates(coords.lat, coords.lng);
 
   if (dongInfo) {
@@ -479,7 +479,7 @@ const performDongExtraction = async (address: string): Promise<string> => {
   }
 
   console.warn(`Could not extract dong info for address: ${address}`);
-  return "";
+  return '';
 };
 
 // 주소 포맷팅 함수 (동 정보 포함) - 비동기 버전

@@ -204,7 +204,7 @@ button {
   }
 }
 
-.custom-calendar [data-selected-single="true"] {
+.custom-calendar [data-selected-single='true'] {
   background-color: #00ba13 !important;
   color: white !important;
   border-radius: 9999px !important;
@@ -219,13 +219,13 @@ button {
   background-color: white;
 }
 
-.custom-calendar [data-today="true"] {
+.custom-calendar [data-today='true'] {
   color: #00ba13 !important;
 }
 
-.custom-calendar [data-today="true"]:hover,
-.custom-calendar [data-today="true"]:focus,
-.custom-calendar [data-today="true"]:active {
+.custom-calendar [data-today='true']:hover,
+.custom-calendar [data-today='true']:focus,
+.custom-calendar [data-today='true']:active {
   background-color: transparent !important;
   outline: none !important;
   box-shadow: none !important;
@@ -242,12 +242,12 @@ button {
   text-transform: none;
 }
 
-.custom-calendar [data-range-middle="true"] {
+.custom-calendar [data-range-middle='true'] {
   background-color: #ceffd4 !important;
 }
 
-.custom-calendar [data-range-start="true"],
-.custom-calendar [data-range-end="true"] {
+.custom-calendar [data-range-start='true'],
+.custom-calendar [data-range-end='true'] {
   background-color: #00ba13 !important;
   font-weight: bold;
 }
