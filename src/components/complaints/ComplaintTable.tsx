@@ -143,18 +143,18 @@ const ComplaintTable: React.FC = () => {
       enableHiding: false,
     },
     {
-      accessorKey: 'number',
+      accessorKey: 'id',
       header: '연번',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue('number')}</div>
+        <div className="text-center">{row.getValue('id')}</div>
       ),
     },
     {
-      accessorKey: 'date',
+      accessorKey: 'datetime',
       header: '접수 일자',
       cell: ({ row }) => (
         <div className="text-center">
-          {formatDateToYYMMDD(row.getValue('date'))}
+          {formatDateToYYMMDD(row.getValue('datetime'))}
         </div>
       ),
     },
@@ -166,17 +166,24 @@ const ComplaintTable: React.FC = () => {
       ),
     },
     {
-      accessorKey: 'region_nm',
+      accessorKey: 'category',
+      header: '카테고리',
+      cell: ({ row }) => (
+        <div className="text-center">{row.original.category}</div>
+      ),
+    },
+    {
+      accessorKey: 'address',
       header: '주소',
       cell: ({ row }) => {
         const address: string = row.original.address;
-        const regionNm: string = row.getValue('region_nm');
+        const shortAddress = address.split(' ').slice(-2).join(' '); // Get last two parts
 
         return (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="text-center cursor-pointer">{regionNm}</div>
+                <div className="text-center cursor-pointer">{shortAddress}</div>
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-md break-words text-base text-black">
@@ -196,45 +203,50 @@ const ComplaintTable: React.FC = () => {
       ),
     },
     {
-      accessorKey: 'contact',
+      accessorKey: 'user.phone_no',
       header: '연락처',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue('contact')}</div>
+        <div className="text-center">{row.original.user.phone_no}</div>
       ),
     },
     {
-      accessorKey: 'driver',
+      accessorKey: 'teams',
       header: '담당 기사',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue('driver')}</div>
+        <div className="text-center">
+          {row.original.teams[0]?.drivers[0]?.name || '담당자 없음'}
+        </div>
       ),
     },
     {
-      accessorKey: 'department',
+      accessorKey: 'teams',
       header: '구청/대행',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue('department')}</div>
+        <div className="text-center">
+          {row.original.teams[0]?.team_nm || '담당팀 없음'}
+        </div>
       ),
     },
     {
       accessorKey: 'status',
       header: '처리결과',
       cell: ({ row }) => {
-        const status = row.getValue('status') as string;
+        const status = row.original.status;
+        const statusText = status ? '완료' : '처리중';
         return (
           <div
             className={`text-center cursor-pointer py-1 rounded ${
-              status === '완료' ? 'text-green-600 font-medium' : 'text-gray-500'
+              status ? 'text-green-600 font-medium' : 'text-gray-500'
             }`}
             onClick={() => {
               // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
               const onStatusChange = row.original.onStatusChange;
               if (onStatusChange) {
-                onStatusChange(row.original.id);
+                onStatusChange(row.original.id.toString());
               }
             }}
           >
-            {status}
+            {statusText}
           </div>
         );
       },
@@ -254,15 +266,15 @@ const ComplaintTable: React.FC = () => {
 
     // 정렬된 데이터 생성
     const sorted = [...filteredComplaints].sort((a, b) => {
-      const dateA = parseDate(a.date);
-      const dateB = parseDate(b.date);
+      const dateA = parseDate(a.datetime);
+      const dateB = parseDate(b.datetime);
 
-      // 날짜가 동일한 경우 연번으로 정렬
+      // 날짜가 동일한 경우 ID로 정렬
       if (dateA.getTime() === dateB.getTime()) {
         if (order === '최근') {
-          return b.number - a.number; // 연번이 작은 것이 위로 (1, 2, 3...)
+          return b.id - a.id; // ID가 작은 것이 위로 (1, 2, 3...)
         } else {
-          return a.number - b.number; // 연번이 큰 것이 위로 (7, 6, 5...)
+          return a.id - b.id; // ID가 큰 것이 위로 (7, 6, 5...)
         }
       }
 
@@ -303,14 +315,16 @@ const ComplaintTable: React.FC = () => {
     const filtered = complaints.filter((complaint) => {
       const searchLower = searchValue.toLowerCase();
       return (
-        complaint.number.toString().includes(searchLower) ||
-        complaint.date.toLowerCase().includes(searchLower) ||
+        complaint.id.toString().includes(searchLower) ||
+        complaint.datetime.toLowerCase().includes(searchLower) ||
         complaint.type.toLowerCase().includes(searchLower) ||
         complaint.content.toLowerCase().includes(searchLower) ||
-        complaint.department.toLowerCase().includes(searchLower) ||
+        complaint.teams[0]?.team_nm.toLowerCase().includes(searchLower) ||
         complaint.address.toLowerCase().includes(searchLower) ||
-        complaint.contact.toLowerCase().includes(searchLower) ||
-        complaint.status.toLowerCase().includes(searchLower)
+        complaint.user.phone_no.toLowerCase().includes(searchLower) ||
+        (complaint.status ? '완료' : '처리중')
+          .toLowerCase()
+          .includes(searchLower)
       );
     });
 
@@ -536,14 +550,14 @@ const ComplaintTable: React.FC = () => {
             onRowClick={(complaint) => handleRowClick(complaint.id)}
             clickableColumnIds={[
               'select',
-              'number',
-              'date',
+              'id',
+              'datetime',
               'type',
-              'region_nm',
+              'category',
+              'address',
               'content',
-              'contact',
-              'driver',
-              'department',
+              'user.phone_no',
+              'teams',
             ]}
           />
         )}

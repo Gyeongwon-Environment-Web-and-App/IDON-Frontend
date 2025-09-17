@@ -64,12 +64,12 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
           </div>
           <div className="flex items-center">
             <img
-              src={complaint.status ? yellowCircle : greenCircle}
+              src={complaint.status ? greenCircle : yellowCircle}
               alt="처리중 원"
               className="ml-0.5 mr-1"
             />
             <p className="text-sm text-black font-semibold">
-              {complaint.status ? '처리중' : '완료'}
+              {complaint.status ? '완료' : '처리중'}
             </p>
           </div>
         </div>

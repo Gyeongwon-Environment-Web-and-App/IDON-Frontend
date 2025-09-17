@@ -57,6 +57,13 @@ export default function ComplaintForm({
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mapDropdownRef = useRef<HTMLDivElement>(null);
 
+  // Ensure formData.categories is initialized
+  useEffect(() => {
+    if (!formData.categories) {
+      updateFormData({ categories: [] });
+    }
+  }, [formData.categories, updateFormData]);
+
   // formData.address가 변경될 때 tempAddress 동기화
   useEffect(() => {
     setTempAddress(formData.address);
@@ -634,12 +641,54 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.input3 ? '' : '입력란'}
-            className="w-full md:w-[200px] md:col-span-1 col-span-3 border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold md:my-5 -mt-5"
+            className="w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold"
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
-            value={formData.category}
-            onChange={(e) => updateFormData({ category: e.target.value })}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                const input = e.target as HTMLInputElement;
+                const value = input.value.trim();
+                if (
+                  value &&
+                  (!formData.categories || !formData.categories.includes(value))
+                ) {
+                  // Only allow one category, replace if exists
+                  updateFormData({
+                    categories: [value],
+                  });
+                  input.value = '';
+                }
+              }
+            }}
           />
+          {formData.categories && formData.categories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mt-2">
+              {formData.categories.map((category, index) => (
+                <span
+                  key={index}
+                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center gap-1"
+                >
+                  {category}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (formData.categories) {
+                        updateFormData({
+                          categories: formData.categories.filter(
+                            (_, i) => i !== index
+                          ),
+                        });
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+            </div>
+          )}
           <div className="hidden md:block md:col-span-3"></div>
 
           {/* 파일 첨부 */}

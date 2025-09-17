@@ -5,7 +5,6 @@ import type { DateRange } from 'react-day-picker';
 import { AreaDropdown } from '@/components/ui/AreaDropdown';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
-import { complaints } from '../../data/complaintData';
 import { useComplaints } from '../../hooks/useComplaints';
 import ComplaintListCard from './ComplaintListCard';
 
@@ -19,8 +18,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
   // Use the useComplaints hook with the dateRange from context
-  //! const { complaints, isLoading, error } = useComplaints(dateRange);
-  const { isLoading, error } = useComplaints(dateRange);
+  const { complaints, isLoading, error } = useComplaints(dateRange);
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);

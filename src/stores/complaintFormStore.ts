@@ -44,7 +44,7 @@ interface ComplaintFormState {
 const initialFormData: ComplaintFormData = {
   address: '',
   datetime: new Date().toISOString(),
-  category: '',
+  categories: [],
   type: '',
   content: '',
   route: '',
@@ -103,6 +103,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
           error: null,
           tempAddress: '',
           addressFrequencyInfo: null,
+          phoneFrequencyInfo: null,
         }),
     }),
     {
@@ -112,6 +113,17 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
         formData: state.formData,
         tempAddress: state.tempAddress,
       }),
+      // Migration function to handle old data structure
+      migrate: (persistedState: unknown) => {
+        const state = persistedState as {
+          formData?: { categories?: string[] };
+        };
+        if (state.formData && !state.formData.categories) {
+          state.formData.categories = [];
+        }
+        return state;
+      },
+      version: 1,
     }
   )
 );

@@ -1,7 +1,58 @@
+// New API Response Types
+export interface User {
+  name: string;
+  serial_no: string;
+  phone_no: string;
+}
+
+export interface Address {
+  address: string;
+  region_nm: string;
+}
+
+export interface Source {
+  phone_no: string;
+  bad: boolean;
+}
+
+export interface Driver {
+  id: number;
+  name: string;
+  phone_no: string;
+}
+
+export interface Team {
+  id: number;
+  category: string;
+  team_nm: string;
+  drivers: Driver[];
+}
+
+export interface ComplaintExtended {
+  id: number;
+  datetime: string;
+  content: string;
+  status: boolean;
+  category: string;
+  type: string;
+  route: string;
+  bad: boolean;
+  user: User;
+  address: Address;
+  source: Source;
+  teams: Team[];
+}
+
+export interface ComplaintApiResponse {
+  message: string;
+  complaints_extended: ComplaintExtended[];
+}
+
+// Form Data Interface (for creating new complaints)
 export interface ComplaintFormData {
   address: string;
   datetime: string;
-  category: string;
+  categories: string[];
   type: string;
   content: string;
   route: string;
@@ -25,8 +76,9 @@ export interface ComplaintFormData {
   }>;
 }
 
+// Main Complaint interface
 export interface Complaint {
-  id: string;
+  id: number;
   address: string;
   datetime: string;
   category: string;
@@ -51,14 +103,8 @@ export interface Complaint {
     type: string;
     size: number;
   }>;
-  // Legacy fields for backward compatibility
-  number?: number;
-  date?: string;
-  department?: string;
-  region_nm?: string;
-  contact?: string;
-  driver?: string;
-  status?: boolean;
-  onStatusChange?: (id: string) => void;
-  [key: string]: unknown;
+  // Fields from API response
+  status: boolean;
+  user: User;
+  teams: Team[];
 }

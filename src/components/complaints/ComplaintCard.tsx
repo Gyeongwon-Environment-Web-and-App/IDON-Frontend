@@ -95,11 +95,11 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
             checked={isSelected}
             onCheckedChange={(value) => onSelectChange?.(complaint.id, !!value)}
           />
-          <span className="font-medium">{complaint.number}</span>
+          <span className="font-medium">{complaint.id}</span>
           <Separator orientation="vertical" className="h-4" />
-          {formatDateToYYMMDD(complaint.date)}
+          {formatDateToYYMMDD(complaint.datetime)}
           <Separator orientation="vertical" className="h-4" />
-          {complaint.region_nm}
+          {complaint.user.name}
           <img
             src={bad ? attentionRed : ''}
             alt="악성민원 태그"

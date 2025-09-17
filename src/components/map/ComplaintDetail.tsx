@@ -191,8 +191,8 @@ const ComplaintDetail: React.FC = () => {
             </button>
           </div>
           <p className="text-base text-[#7C7C7C] font-semibold">
-            {selectedComplaint?.date
-              ? new Date(selectedComplaint.date).toLocaleString('ko-KR', {
+            {selectedComplaint?.datetime
+              ? new Date(selectedComplaint.datetime).toLocaleString('ko-KR', {
                   year: 'numeric',
                   month: '2-digit',
                   day: '2-digit',
@@ -213,8 +213,8 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-2 items-center">
             <img src={phone} alt="전화" className="w-5 h-5" />
             <label className="text-lg font-semibold">
-              {selectedComplaint?.department || '담당부서'} (
-              {selectedComplaint?.contact ||
+              {selectedComplaint?.teams[0]?.team_nm || '담당부서'} (
+              {selectedComplaint?.user.phone_no ||
                 getPhoneNumber(selectedComplaint) ||
                 '연락처 없음'}
               )
@@ -241,14 +241,12 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-2 items-center">
             <img src={truck} alt="차량" className="w-5 h-5" />
             <label className="text-lg font-semibold">
-              {selectedComplaint?.driver ||
+              {selectedComplaint?.teams[0]?.drivers[0]?.name ||
                 getFirstUsername(selectedComplaint) ||
                 '담당자 정보 없음'}
             </label>
             <p className="text-base font-semibold text-[#7C7C7C]">
-              {selectedComplaint?.status === '완료'
-                ? '수거 완료'
-                : '차량이 수거 중이에요'}
+              {selectedComplaint?.status ? '수거 완료' : '차량이 수거 중이에요'}
             </p>
             <button className="text-[#0009FF] p-0">동선 조회</button>
           </div>
