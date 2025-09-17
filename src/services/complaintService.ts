@@ -92,6 +92,13 @@ export const complaintService = {
     return complaints;
   },
 
+  async getComplaintById(id: string): Promise<Complaint> {
+    const response = await apiClient.get<ComplaintExtended>(
+      `/complaint/getById/${id}`
+    );
+    return convertComplaintExtendedToComplaint(response.data);
+  },
+
   async updateComplaintStatus(id: string, status: string): Promise<Complaint> {
     const response = await apiClient.patch(`/complaints/${id}`, { status });
     return response.data;

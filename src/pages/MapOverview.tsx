@@ -27,6 +27,7 @@ export default function MapOverview() {
     openComplaintDetail,
     openComplaintList,
     clearSelectedComplaint,
+    setActiveSidebar,
   } = useMapOverviewStore();
 
   // Handle URL parameter changes and route-based navigation
@@ -38,14 +39,20 @@ export default function MapOverview() {
       setSelectedComplaintId(complaintId);
       setCurrentView('detail');
       openComplaintDetail(complaintId);
+      setSidebarOpen(true);
+      setActiveSidebar('complaint');
     } else if (pathname.includes('/complaints') && !complaintId) {
       // Navigate to complaint list view
       setCurrentView('list');
       openComplaintList();
+      setSidebarOpen(true);
+      setActiveSidebar('complaint');
     } else if (pathname === '/map/overview') {
       // Base map overview - no specific view
       setCurrentView(null);
       clearSelectedComplaint();
+      setSidebarOpen(false);
+      setActiveSidebar(null);
     }
   }, [
     location.pathname,
@@ -55,6 +62,8 @@ export default function MapOverview() {
     openComplaintDetail,
     openComplaintList,
     clearSelectedComplaint,
+    setSidebarOpen,
+    setActiveSidebar,
   ]);
 
   // Handle sidebar change and sync with URL

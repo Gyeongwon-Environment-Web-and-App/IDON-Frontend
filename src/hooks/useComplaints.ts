@@ -8,16 +8,16 @@ import type { Complaint } from '@/types/complaint';
 export const useComplaints = (dateRange?: DateRange) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const loadComplaints = useCallback(async (currentDateRange?: DateRange) => {
     setIsLoading(true);
-    setError(null);
+    setFetchError(null);
     try {
       const data = await complaintService.getComplaints(currentDateRange);
       setComplaints(data);
     } catch (error) {
-      setError('민원 불러오기 실패');
+      setFetchError('민원 불러오기 실패');
       console.log(error);
     } finally {
       setIsLoading(false);
@@ -28,10 +28,26 @@ export const useComplaints = (dateRange?: DateRange) => {
     loadComplaints(dateRange);
   }, [dateRange, loadComplaints]);
 
+  const getComplaintById = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setFetchError(null);
+    try {
+      const data = await complaintService.getComplaintById(id);
+      return data;
+    } catch (error) {
+      setFetchError('민원 불러오기 실패');
+      console.log(error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   return {
     complaints,
     isLoading,
-    error,
+    fetchError,
     refetch: () => loadComplaints(dateRange),
+    getComplaintById,
   };
 };

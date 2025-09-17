@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { Search } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 
 import logo from '../../assets/icons/brand/logo.svg';
 import chartIcon from '../../assets/icons/common/chart.svg';
@@ -14,6 +14,7 @@ import truckWhite from '../../assets/icons/common/truck_white.svg';
 import grayLeftArrow from '../../assets/icons/navigation/arrows/gray_arrow_left.svg';
 import grayRightArrow from '../../assets/icons/navigation/arrows/gray_arrow_right.svg';
 import { useMapOverviewStore } from '../../stores/mapOverviewStore';
+import ComplaintDetail from './ComplaintDetail';
 import ComplaintListContainer from './ComplaintListContainer';
 
 type SidebarType = 'complaint' | 'vehicle' | 'stats' | null;
@@ -31,6 +32,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedTrash, setSelectedTrash] = useState<string>('');
   const navigate = useNavigate();
+  const { complaintId } = useParams<{ complaintId?: string }>();
   const onSidebarChangeRef = React.useRef(onSidebarChange);
 
   // Update ref when callback changes
@@ -66,11 +68,9 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       setActiveSidebar(type);
       onSidebarChange(true);
 
-      // Navigate to appropriate route based on sidebar type
       if (type === 'complaint') {
-        navigate('/map/overview/complaints');
+          navigate('/map/overview/complaints');
       }
-      // Add other sidebar types as needed
     }
   };
 
@@ -81,7 +81,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
 
   // 각 사이드바에 들어갈 content 컴포넌트
   const sidebarContents = {
-    complaint: <ComplaintListContainer dateRange={dateRange} />,
+    complaint: complaintId ? (
+      <ComplaintDetail />
+    ) : (
+      <ComplaintListContainer dateRange={dateRange} />
+    ),
     vehicle: <div className="p-6">차량 정보 컴포넌트</div>,
     stats: <div className="p-6">구역별 통계 컴포넌트</div>,
   };

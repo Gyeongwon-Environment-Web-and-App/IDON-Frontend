@@ -18,7 +18,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
 
   // Use the useComplaints hook with the dateRange from context
-  const { complaints, isLoading, error } = useComplaints(dateRange);
+  const { complaints, isLoading, fetchError } = useComplaints(dateRange);
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);
@@ -61,17 +61,17 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
           <p className="text-sm">민원 목록을 불러오는 중...</p>
         </div>
       )}
-      {error && (
+      {fetchError && (
         <div className="text-center text-red-500 py-5">
-          <p className="text-sm">에러: {error}</p>
+          <p className="text-sm">에러: {fetchError}</p>
         </div>
       )}
-      {!isLoading && !error && complaints.length === 0 && (
+      {!isLoading && !fetchError && complaints.length === 0 && (
         <div className="text-center text-gray-500 py-5">
           <p className="text-sm">해당 기간에 민원이 없습니다.</p>
         </div>
       )}
-      {!isLoading && !error && complaints.length > 0 && (
+      {!isLoading && !fetchError && complaints.length > 0 && (
         <div className="flex flex-col h-full">
           <div className="flex items-center justify-between px-2 py-5">
             <div className="rounded-lg">

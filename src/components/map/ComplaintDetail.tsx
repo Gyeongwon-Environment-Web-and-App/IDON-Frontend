@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
+import { useComplaints } from '@/hooks/useComplaints';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
@@ -36,12 +37,9 @@ const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
   const { selectedComplaintId, selectedComplaint, setSelectedComplaint } =
     useMapOverviewStore();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   const {
-    complaints,
     isPopupOpen,
     selectedComplaintStatus,
     setSelectedComplaintStatus,
@@ -49,6 +47,8 @@ const ComplaintDetail: React.FC = () => {
     setSelectedComplaintId,
     updateComplaint,
   } = useComplaintTableStore();
+
+  const { getComplaintById, isLoading, fetchError } = useComplaints();
 
   const statusChangeHandler = createStatusChangeHandler(
     selectedComplaintId,
@@ -72,34 +72,18 @@ const ComplaintDetail: React.FC = () => {
     }
 
     const fetchComplaint = async () => {
-      setLoading(true);
-      setError(null);
-
       try {
-        // First try to find in local store
-        const localComplaint = complaints.find(
-          (c) => c.id === currentComplaintId
-        );
-
-        if (localComplaint) {
-          setSelectedComplaint(localComplaint);
-        } else {
-          // If not found locally, you could fetch from API here
-          // For now, we'll show an error
-          setError('민원 정보를 찾을 수 없습니다.');
-        }
-      } catch (err) {
-        setError('민원 정보를 불러오는 중 오류가 발생했습니다.');
-        console.error('Error fetching complaint:', err);
-      } finally {
-        setLoading(false);
+        const complaint = await getComplaintById(currentComplaintId);
+        setSelectedComplaint(complaint);
+      } catch (error) {
+        console.error('Failed to fetch complaint:', error);
       }
     };
 
     fetchComplaint();
-  }, [currentComplaintId, complaints, setSelectedComplaint]);
+  }, [currentComplaintId, getComplaintById, setSelectedComplaint]);
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center h-32">
@@ -110,14 +94,14 @@ const ComplaintDetail: React.FC = () => {
     );
   }
 
-  if (error) {
-    console.log('Complaint Detail Error: ', error);
+  if (fetchError) {
+    console.log('Complaint Detail Error: ', fetchError);
 
     return (
       <div className="p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center">
-            <div className="text-red-600 text-sm">{error}</div>
+            <div className="text-red-600 text-sm">{fetchError}</div>
           </div>
         </div>
       </div>
@@ -224,7 +208,7 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-2 items-center">
             <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
             <label className="text-lg font-semibold">
-              {selectedComplaint?.status === '완료'
+              {selectedComplaint?.status === true
                 ? '민원 처리 완료'
                 : '민원 처리 중'}
             </label>
