@@ -108,6 +108,39 @@ export class AddressService {
     }
   }
 
+  // Get coordinates from address string
+  static async getCoordinatesFromAddress(
+    address: string
+  ): Promise<{ x: string; y: string } | null> {
+    if (!this.isKakaoSDKLoaded()) {
+      console.error('❌ 카카오맵 SDK가 로드되지 않았습니다.');
+      return null;
+    }
+
+    return new Promise((resolve) => {
+      const geocoder = new window.kakao.maps.services.Geocoder();
+
+      geocoder.addressSearch(
+        address,
+        (result: KakaoAddressResult[], status: any) => {
+          if (
+            status === window.kakao.maps.services.Status.OK &&
+            result.length > 0
+          ) {
+            const firstResult = result[0];
+            resolve({
+              x: firstResult.x,
+              y: firstResult.y,
+            });
+          } else {
+            console.warn('주소 검색 실패:', address, status);
+            resolve(null);
+          }
+        }
+      );
+    });
+  }
+
   // 카카오맵 주소 검색 (Geocoder 사용)
   static async searchAddress(
     query: string,

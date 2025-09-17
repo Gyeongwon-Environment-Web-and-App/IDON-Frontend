@@ -1,4 +1,14 @@
-import React, { forwardRef, useEffect, useId, useRef } from 'react';
+import React, {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+} from 'react';
+
+import type { PinClickEvent, PinData } from '@/types/map';
+import { batchGeocoding } from '@/utils/geocoding';
+import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
 import { type KakaoMap, useKakaoMaps } from '../../hooks/useKakaoMaps';
 
@@ -7,6 +17,8 @@ interface SimpleKakaoMapProps {
   zoom?: number;
   className?: string;
   style?: React.CSSProperties;
+  pins?: PinData[];
+  onPinClick?: (event: PinClickEvent) => void;
 }
 
 const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
@@ -16,13 +28,121 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       zoom = 2,
       className = 'w-full h-full',
       style,
+      pins = [],
+      onPinClick,
     },
     ref
   ) => {
     const mapId = useId();
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const markersRef = useRef<any[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
+
+    const getCategoryKey = (category: string): string => {
+      const categoryMap: Record<string, string> = {
+        재활용: 'recycle',
+        음식물: 'food',
+        일반: 'general',
+        기타: 'others',
+      };
+      return categoryMap[category] || 'general';
+    };
+
+    // Clear existing markers
+    const clearMarkers = useCallback(() => {
+      markersRef.current.forEach((marker) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (marker as any).setMap(null);
+      });
+      markersRef.current = [];
+    }, []);
+
+    // Create marker for a pin
+    const createMarker = useCallback(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (pin: PinData): any => {
+        if (!mapInstanceRef.current || !window.kakao) return null;
+
+        const imageSrc = getPinImageSrc(pin.category, pin.isRepeat);
+        const config =
+          PIN_CONFIGS[getCategoryKey(pin.category)] || PIN_CONFIGS.general;
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const imageSize = new (window.kakao.maps as any).Size(
+          config.size.width,
+          config.size.height
+        );
+        const imageOption = {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          offset: new (window.kakao.maps as any).Point(
+            config.offset.x,
+            config.offset.y
+          ),
+        };
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const markerImage = new (window.kakao.maps as any).MarkerImage(
+          imageSrc,
+          imageSize,
+          imageOption
+        );
+        const markerPosition = new window.kakao.maps.LatLng(pin.lat, pin.lng);
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const marker = new (window.kakao.maps as any).Marker({
+          position: markerPosition,
+          image: markerImage,
+        });
+
+        // Add click event listener
+        if (onPinClick) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window.kakao.maps as any).event.addListener(marker, 'click', () => {
+            onPinClick({
+              pin,
+              marker,
+              map: mapInstanceRef.current,
+            });
+          });
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (marker as any).setMap(mapInstanceRef.current);
+        return marker;
+      },
+      [onPinClick]
+    );
+
+    // Update pins on map
+    const updatePins = useCallback(async () => {
+      if (!mapInstanceRef.current || !isLoaded || pins.length === 0) return;
+
+      clearMarkers();
+
+      // Get unique addresses from pins
+      const uniqueAddresses = [...new Set(pins.map((pin) => pin.address))];
+
+      // Batch geocoding for all unique addresses
+      const coordinatesMap = await batchGeocoding(uniqueAddresses);
+
+      // Create markers for pins with valid coordinates
+      pins.forEach((pin) => {
+        const coordinates = coordinatesMap.get(pin.address);
+        if (coordinates) {
+          const pinWithCoords = {
+            ...pin,
+            lat: coordinates.lat,
+            lng: coordinates.lng,
+          };
+          const marker = createMarker(pinWithCoords);
+          if (marker) {
+            markersRef.current.push(marker);
+          }
+        }
+      });
+    }, [pins, isLoaded, clearMarkers, createMarker]);
 
     // Initialize map when SDK is ready
     useEffect(() => {
@@ -84,6 +204,11 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       }
     }, [center.lat, center.lng, zoom, isLoaded]);
 
+    // Update pins when pins prop changes
+    useEffect(() => {
+      updatePins();
+    }, [updatePins]);
+
     // Load SDK on mount
     useEffect(() => {
       if (!isLoaded && !isLoading) {
@@ -94,12 +219,13 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     // Cleanup on unmount
     useEffect(() => {
       return () => {
+        clearMarkers();
         if (mapInstanceRef.current && containerRef.current) {
           containerRef.current.innerHTML = '';
           mapInstanceRef.current = null;
         }
       };
-    }, []);
+    }, [clearMarkers]);
 
     if (error) {
       return (
