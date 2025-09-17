@@ -33,15 +33,18 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
         <img src={sample} alt="임시 이미지" className="rounded-lg w-40" />
         <div className="py-1">
           <div className="flex gap-1">
+            {/* //! 이부분 complaint.category로 수정해야함 */}
             <img
               src={
-                complaint.category === '재활용'
+                complaint.teams[0].category === '재활용'
                   ? recycle
-                  : complaint.category === '음식물'
+                  : complaint.teams[0].category === '음식물'
                     ? food
-                    : complaint.category === '기타'
+                    : complaint.teams[0].category === '기타'
                       ? other
-                      : general
+                      : complaint.teams[0].category === '기타'
+                        ? general
+                        : ''
               }
               alt="쓰레기 상성 태그"
               className="w-12"

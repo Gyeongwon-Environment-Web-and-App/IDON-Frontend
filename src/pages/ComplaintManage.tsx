@@ -114,6 +114,7 @@ const ComplaintManage = () => {
   const onSubmit = async () => {
     try {
       // 1. 백엔드 API 형식에 맞춘 데이터 준비
+      console.log(formData.categories);
 
       const complaintData = {
         address: formData.address,

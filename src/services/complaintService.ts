@@ -86,8 +86,7 @@ export const complaintService = {
       convertComplaintExtendedToComplaint
     );
 
-    console.log('API Response:', response.data);
-    console.log('Converted Complaints:', complaints);
+    console.log('Complaints:', complaints);
 
     return complaints;
   },
