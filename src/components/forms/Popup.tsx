@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PopupProps {
   message: string | JSX.Element;
@@ -15,6 +16,7 @@ export default function Popup({
   onSecondClick,
   toHome,
 }: PopupProps) {
+  const navigate = useNavigate();
   return (
     <div className="fixed w-full max-w-sm max-h-80 p-6 bg-white rounded-lg shadow-lg text-center left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 flex flex-col justify-center items-center font-bold">
       {/* 메시지 */}
@@ -40,9 +42,12 @@ export default function Popup({
 
       {/* 홈으로 돌아가기 문구 */}
       {toHome && (
-        <div className="mt-4 mb-4 text-sm font-semibold text-gray-500 cursor-pointer">
+        <button
+          className="mt-4 mb-4 text-sm font-semibold text-gray-500 cursor-pointer"
+          onClick={() => navigate('/')}
+        >
           홈으로 돌아가기
-        </div>
+        </button>
       )}
     </div>
   );
