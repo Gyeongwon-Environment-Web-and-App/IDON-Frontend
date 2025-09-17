@@ -16,11 +16,9 @@ const formatDate = (date: Date): string => {
     throw new Error('Invalid date provided');
   }
 
-  // Return full ISO string format with timezone (e.g., "2025-09-12T05:31:22.827Z")
   return dateObj.toISOString();
 };
 
-// Helper function to get date range
 const getDateRangeFromPicker = (dateRange: DateRange | undefined) => {
   const today = new Date();
 

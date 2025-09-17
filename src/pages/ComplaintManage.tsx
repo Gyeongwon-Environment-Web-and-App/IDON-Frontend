@@ -38,7 +38,6 @@ const ComplaintManage = () => {
     setActiveTab,
     setShowConfirm,
     setIsPopupOpen,
-    resetUI,
     checkUnsavedChanges,
   } = useComplaintManageStore();
 
@@ -110,7 +109,7 @@ const ComplaintManage = () => {
       const complaintData = {
         address: formData.address,
         datetime: formData.datetime || new Date().toISOString(),
-        category: formData.category || '',
+        categories: formData.categories || [],
         type: formData.type,
         content: formData.content || '',
         route: formData.route,
@@ -134,7 +133,6 @@ const ComplaintManage = () => {
 
       // 3. 폼 초기화
       resetForm();
-      resetUI();
     } catch (error) {
       console.error('민원 제출 실패:', error);
 
@@ -154,12 +152,13 @@ const ComplaintManage = () => {
           }
           yesNo={false}
           onFirstClick={() => {
-            // ! navigate to map
+            // ! navigate to complaint detail with id
             console.log('first click');
+            window.alert('개발 중입니다.')
           }}
           onSecondClick={() => {
-            navigate('/complaint/table');
-            console.log('second click');
+            navigate('/complaints/table');
+            console.log('navigate to table');
           }}
           toHome={true}
         />
@@ -217,14 +216,8 @@ const ComplaintManage = () => {
                 />
               ) : (
                 <ComplaintConfirm
-                  dateTimeBox={
-                    <DateTimeBox
-                      visible={false}
-                      repeat={formData.source.bad}
-                      onBack={() => setShowConfirm(false)}
-                    />
-                  }
                   onSubmit={onSubmit}
+                  onBack={() => setShowConfirm(false)}
                 />
               ))}
             {activeTab === 'stats' && (

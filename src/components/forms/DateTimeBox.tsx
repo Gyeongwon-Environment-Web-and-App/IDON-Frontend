@@ -12,62 +12,50 @@ import {
 import redo from '../../assets/icons/actions/redo.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
 import { useComplaintFormStore } from '../../stores/complaintFormStore';
-
-function formatDateTime(date: Date) {
-  // 연, 월, 일
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  // 오전/오후, 시, 분
-  let hour = date.getHours();
-  const minute = String(date.getMinutes()).padStart(2, '0');
-  const isAM = hour < 12;
-  const ampm = isAM ? '오전' : '오후';
-  if (!isAM) hour = hour === 12 ? 12 : hour - 12;
-  if (hour === 0) hour = 12;
-
-  return {
-    date: `${year} . ${month}. ${day}`,
-    time: `${ampm} ${hour}:${minute}`,
-  };
-}
+import { formatDateTime } from '../../utils/formatDate';
 
 interface DateTimeBoxProps {
   visible: boolean;
   repeat: boolean;
   onBack?: () => void;
+  readOnly?: boolean;
+  date?: Date;
 }
 
 export default function DateTimeBox({
   visible,
   repeat,
   onBack,
+  readOnly = false,
+  date,
 }: DateTimeBoxProps) {
   const { formData, updateFormData } = useComplaintFormStore();
   const [now] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(() => {
-    // Initialize from store if available, otherwise use current date
+    if (readOnly) {
+      return date || now;
+    }
     return formData.datetime ? new Date(formData.datetime) : now;
   });
   const [open, setOpen] = useState(false);
-  const { date, time } = formatDateTime(selectedDate || now);
 
-  // Update store when selectedDate changes
+  const displayDate = readOnly ? date || now : selectedDate || now;
+  const { date: formattedDate, time } = formatDateTime(displayDate);
+
   useEffect(() => {
-    if (selectedDate) {
+    if (!readOnly && selectedDate) {
       updateFormData({ datetime: selectedDate.toISOString() });
     }
-  }, [selectedDate, updateFormData]);
+  }, [selectedDate, updateFormData, readOnly]);
 
   return (
     <div className="flex items-center md:justify-between justify-start md:gap-2 md:px-6 py-3 md:border-b md:border-light-border w-full">
       <div className="flex justify-between items-center">
         <span className="font-bold xs:text-xl text-md mr-2">
-          {selectedDate ? formatDateTime(selectedDate).date : date}
+          {formattedDate}
         </span>
         <span className="text-gray-400 text-sm">{time}</span>
-        {visible ? (
+        {!readOnly && visible ? (
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button className="border border-darker-green ml-2 px-2 py-1 text-xs rounded-[2.77px] bg-darker-green text-white cursor-pointer">
@@ -103,14 +91,16 @@ export default function DateTimeBox({
             </PopoverContent>
           </Popover>
         ) : (
-          <>
-            <img
-              src={redo}
-              alt="뒤로가기 아이콘"
-              className="ml-2 cursor-pointer bg-efefef rounded xxs:mr-4 md:mr-0"
-              onClick={onBack}
-            />
-          </>
+          !readOnly && (
+            <>
+              <img
+                src={redo}
+                alt="뒤로가기 아이콘"
+                className="ml-2 cursor-pointer bg-efefef rounded xxs:mr-4 md:mr-0"
+                onClick={onBack}
+              />
+            </>
+          )
         )}
       </div>
       {repeat && (

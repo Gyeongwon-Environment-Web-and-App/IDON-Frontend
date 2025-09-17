@@ -26,3 +26,23 @@ export const formatDateTimeToKorean = (dateString: string): string => {
     return dateString;
   }
 }
+
+export function formatDateTime(date: Date) {
+  // 연, 월, 일
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  // 오전/오후, 시, 분
+  let hour = date.getHours();
+  const minute = String(date.getMinutes()).padStart(2, '0');
+  const isAM = hour < 12;
+  const ampm = isAM ? '오전' : '오후';
+  if (!isAM) hour = hour === 12 ? 12 : hour - 12;
+  if (hour === 0) hour = 12;
+
+  return {
+    date: `${year} . ${month}. ${day}`,
+    time: `${ampm} ${hour}:${minute}`,
+  };
+}

@@ -300,7 +300,8 @@ export default function ComplaintForm({
     if (
       !formData.address.trim() ||
       !formData.route.trim() ||
-      !formData.type.trim()
+      !formData.categories ||
+      formData.categories.length === 0
     ) {
       window.alert(
         '필수 입력 정보를 작성해주세요. (민원 발생 주소, 민원 접수 경로, 민원 종류)'
@@ -315,6 +316,10 @@ export default function ComplaintForm({
       return { phone_no: '', bad: false };
     }
     return formData.source;
+  };
+
+  const getCategoryValue = (label: string) => {
+    return label === '일반' ? '생폐' : label;
   };
 
   return (
@@ -604,7 +609,7 @@ export default function ComplaintForm({
                 type="button"
                 className={`
                   flex-1 px-4 font-bold
-                  ${formData.type === label ? 'bg-lighter-green' : ''}
+                  ${formData.categories && formData.categories.includes(getCategoryValue(label)) ? 'bg-lighter-green' : ''}
                   ${idx === 0 ? 'rounded-l' : ''}
                   ${idx === arr.length - 1 ? 'rounded-r' : ''}
                   focus:outline-none
@@ -613,26 +618,37 @@ export default function ComplaintForm({
                   borderRight:
                     idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
                 }}
-                onClick={() => updateFormData({ type: label })}
+                onClick={() => {
+                  const categoryValue = label === '일반' ? '생폐' : label;
+                  updateFormData({ categories: [categoryValue] });
+                }}
               >
                 {label}
               </button>
             ))}
           </div>
-          <input
+          <div className="md:col-span-1 col-span-3"></div>
+          {/* //! 쓰레기 상성 직접 작성 가능할 시 */}
+          {/* <input
             type="text"
             value={
-              !['재활용', '일반', '음식물', '기타'].includes(formData.type)
-                ? formData.type
+              !['재활용', '일반', '음식물', '기타'].includes(
+                formData.categories && formData.categories[0]
+                  ? formData.categories[0]
+                  : ''
+              )
+                ? formData.categories && formData.categories[0]
+                  ? formData.categories[0]
+                  : ''
                 : ''
             }
             placeholder={focus.trashInput ? '' : '직접 입력'}
             className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
             onFocus={() => setFocus({ trashInput: true })}
             onBlur={() => setFocus({ trashInput: false })}
-            onChange={(e) => updateFormData({ type: e.target.value })}
-            onClick={() => updateFormData({ type: '' })}
-          />
+            onChange={(e) => updateFormData({ categories: [e.target.value] })}
+            onClick={() => updateFormData({ categories: [] })}
+          /> */}
 
           {/* 쓰레기 상세 종류 */}
           <label className="md:col-span-1 col-span-3 font-bold text-[1rem] py-5">
@@ -640,55 +656,14 @@ export default function ComplaintForm({
           </label>
           <input
             type="text"
+            value={formData.type || ''}
             placeholder={focus.input3 ? '' : '입력란'}
-            className="w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold"
+            disabled={!formData.categories || formData.categories.length === 0}
+            className={`w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold ${formData.categories && formData.categories.length > 0 ? '' : 'bg-gray-100 cursor-not-allowed'}`}
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter') {
-                e.preventDefault();
-                const input = e.target as HTMLInputElement;
-                const value = input.value.trim();
-                if (
-                  value &&
-                  (!formData.categories || !formData.categories.includes(value))
-                ) {
-                  // Only allow one category, replace if exists
-                  updateFormData({
-                    categories: [value],
-                  });
-                  input.value = '';
-                }
-              }
-            }}
+            onChange={(e) => updateFormData({ type: e.target.value })}
           />
-          {formData.categories && formData.categories.length > 0 && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.categories.map((category, index) => (
-                <span
-                  key={index}
-                  className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-sm flex items-center gap-1"
-                >
-                  {category}
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (formData.categories) {
-                        updateFormData({
-                          categories: formData.categories.filter(
-                            (_, i) => i !== index
-                          ),
-                        });
-                      }
-                    }}
-                    className="text-blue-600 hover:text-blue-800"
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
           <div className="hidden md:block md:col-span-3"></div>
 
           {/* 파일 첨부 */}

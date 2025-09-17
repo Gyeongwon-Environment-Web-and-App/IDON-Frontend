@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
@@ -7,18 +7,19 @@ import recycle from '../../assets/icons/categories/tags/recycle.svg';
 import X from '../../assets/icons/navigation/arrows/X.svg';
 import { useComplaintFormStore } from '../../stores/complaintFormStore';
 import { formatAddressWithDong } from '../../utils/dongMapping';
+import DateTimeBox from '../forms/DateTimeBox';
 import TextForward from '../forms/TextForward';
 
 // import { formatDateToYYMMDD } from "@/utils/formatDateToYYMMDD";
 
 interface ComplaintConfirmProps {
-  dateTimeBox: React.ReactNode;
   onSubmit: () => void;
+  onBack?: () => void;
 }
 
 export default function ComplaintConfirm({
-  dateTimeBox,
   onSubmit,
+  onBack,
 }: ComplaintConfirmProps) {
   // Get form data from Zustand store
   const { formData, updateFormData } = useComplaintFormStore();
@@ -69,15 +70,20 @@ export default function ComplaintConfirm({
   return (
     <div className="overflow-y-auto overflow-x-hidden w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
-        {/* <div className="mt-0 mpx-5">{formatDisplayDateTime(formData.datetime)}</div> */}
-        <div className="mt-0 mpx-5">{dateTimeBox}</div>
+        <DateTimeBox
+          visible={false}
+          repeat={false}
+          readOnly={false}
+          onBack={onBack}
+          date={formData.datetime ? new Date(formData.datetime) : new Date()}
+        />
         <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
           <section className="md:mr-[3rem] md:w-[65%] w-full">
             <p className="text-dark-gray">
               민원 종류 -{' '}
               <span className="text-black my-3 md:my-5">
-                {formData.type}
-                {formData.category && ` (${formData.category})`}
+                {formData.categories[0] === '생폐' ? '일반' : formData.categories[0]}
+                {formData.type && ` (${formData.type})`}
               </span>
             </p>
             <p className="text-dark-gray my-3 md:my-5">
@@ -167,7 +173,7 @@ export default function ComplaintConfirm({
           </section>
 
           <section className="md:w-[25%] w-full md:text-center text-left">
-            <p className="text-dark-gray py-2 md:py-3">
+            <p className="text-dark-gray pb-2 md:pb-3">
               담당 기사님 실시간 정보
             </p>
             <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
@@ -179,13 +185,13 @@ export default function ComplaintConfirm({
               <div className="flex">
                 <img
                   src={
-                    formData.type === '음식물'
+                    formData.categories[0] === '음식물'
                       ? food
-                      : formData.type === '재활용'
+                      : formData.categories[0] === '재활용'
                         ? recycle
-                        : formData.type === '기타'
+                        : formData.categories[0] === '기타'
                           ? other
-                          : formData.type === '일반'
+                          : formData.categories[0] === '생폐'
                             ? general
                             : ''
                   }
