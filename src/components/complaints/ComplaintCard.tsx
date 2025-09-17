@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
-import { formatDateToYYMMDD } from '@/utils/formatDateToYYMMDD';
+import { formatDateToYYMMDD } from '@/utils/formatDate';
 
 import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';

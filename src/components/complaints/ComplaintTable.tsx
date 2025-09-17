@@ -29,7 +29,7 @@ import {
 import { useComplaints } from '@/hooks/useComplaints';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
-import { formatDateToYYMMDD } from '@/utils/formatDateToYYMMDD';
+import { formatDateToYYMMDD } from '@/utils/formatDate';
 
 import deleteIcon from '../../assets/icons/actions/delete.svg';
 import filter from '../../assets/icons/actions/filter.svg';

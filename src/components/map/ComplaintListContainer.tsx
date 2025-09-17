@@ -97,7 +97,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
             <p className="font-semibold text-sm pb-1 mb-5 border-b border-d9d9d9">
               전체 민원 목록
             </p>
-            <div className="h-[60%] space-y-2 overflow-y-auto scrollbar-hide">
+            <div className="h-[58%] space-y-3 overflow-y-auto scrollbar-hide">
               {complaints.map((complaint) => (
                 <ComplaintListCard key={complaint.id} complaint={complaint} />
               ))}

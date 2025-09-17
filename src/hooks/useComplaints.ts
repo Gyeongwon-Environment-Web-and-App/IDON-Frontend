@@ -2,8 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
-import { complaintService } from '@/services/complaintService';
+//! import { complaintService } from '@/services/complaintService';
 import type { Complaint } from '@/types/complaint';
+//! import { complaints } from '../data/complaintData';
 
 export const useComplaints = (dateRange?: DateRange) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -14,8 +15,9 @@ export const useComplaints = (dateRange?: DateRange) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await complaintService.getComplaints(currentDateRange);
-      setComplaints(data);
+      //! const data = await complaintService.getComplaints(currentDateRange);
+      console.log(currentDateRange);
+      setComplaints(complaints);
     } catch (error) {
       setError('민원 불러오기 실패');
       console.log(error);

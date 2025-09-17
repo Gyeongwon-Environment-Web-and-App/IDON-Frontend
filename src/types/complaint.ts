@@ -58,7 +58,7 @@ export interface Complaint {
   region_nm?: string;
   contact?: string;
   driver?: string;
-  status?: '처리중' | '완료';
+  status?: boolean;
   onStatusChange?: (id: string) => void;
   [key: string]: unknown;
 }
