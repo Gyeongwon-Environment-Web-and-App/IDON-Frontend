@@ -1,4 +1,5 @@
 import type { JSX } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 
 interface PopupProps {
@@ -7,6 +8,7 @@ interface PopupProps {
   onFirstClick: () => void;
   onSecondClick: () => void;
   toHome: boolean;
+  onGoHome?: () => void;
 }
 
 export default function Popup({
@@ -15,6 +17,7 @@ export default function Popup({
   onFirstClick,
   onSecondClick,
   toHome,
+  onGoHome,
 }: PopupProps) {
   const navigate = useNavigate();
   return (
@@ -44,7 +47,13 @@ export default function Popup({
       {toHome && (
         <button
           className="mt-4 mb-4 text-sm font-semibold text-gray-500 cursor-pointer"
-          onClick={() => navigate('/')}
+          onClick={() => {
+            // Reset states before navigation
+            if (onGoHome) {
+              onGoHome();
+            }
+            navigate('/');
+          }}
         >
           홈으로 돌아가기
         </button>

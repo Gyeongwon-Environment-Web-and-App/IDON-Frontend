@@ -56,7 +56,16 @@ const ComplaintManage = () => {
 
     const newTab = getDefaultTab();
     setActiveTab(newTab);
-  }, [location.pathname]);
+  }, [location.pathname, setActiveTab]);
+
+  // Reset popup and confirmation states when navigating to different pages
+  useEffect(() => {
+    // If we're not on the complaint pages, reset the states
+    if (!location.pathname.includes('/complaints/')) {
+      setIsPopupOpen(false);
+      setShowConfirm(false);
+    }
+  }, [location.pathname, setIsPopupOpen, setShowConfirm]);
 
   // 폼 데이터 변경 감지
   useEffect(() => {
@@ -154,13 +163,17 @@ const ComplaintManage = () => {
           onFirstClick={() => {
             // ! navigate to complaint detail with id
             console.log('first click');
-            window.alert('개발 중입니다.')
+            window.alert('개발 중입니다.');
           }}
           onSecondClick={() => {
             navigate('/complaints/table');
             console.log('navigate to table');
           }}
           toHome={true}
+          onGoHome={() => {
+            setIsPopupOpen(false);
+            setShowConfirm(false);
+          }}
         />
       )}
       <Header onLogout={logout} />

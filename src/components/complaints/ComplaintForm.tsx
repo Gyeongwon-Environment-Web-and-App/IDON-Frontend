@@ -165,7 +165,7 @@ export default function ComplaintForm({
 
     const newTimeout = setTimeout(async () => {
       try {
-        // First try path parameter (like Swagger)
+        // First try path parameter
         const response = await apiClient.get(
           `/complaint/getFrequencyByAddress/${encodeURIComponent(selectedAddress)}`
         );
@@ -208,7 +208,7 @@ export default function ComplaintForm({
     setTimeout(async () => {
       try {
         const response = await apiClient.get(
-          `/complaint/getFrequencyByAddress/${encodeURIComponent(phone_no)}`
+          `/complaint/getFrequencyByPhone/${encodeURIComponent(phone_no)}`
         );
         setPhoneFrequencyInfo(response.data.numberOfComplaints);
         console.log('전화번호 빈도 정보: ', response.data);
@@ -224,9 +224,9 @@ export default function ComplaintForm({
         ) {
           try {
             const response = await apiClient.get(
-              '/complaint/getFrequencyByAddress',
+              '/complaint/getFrequencyByPhone',
               {
-                params: { address: phone_no },
+                params: { phone: phone_no },
               }
             );
             setPhoneFrequencyInfo(response.data.numberOfComplaints);
