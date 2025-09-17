@@ -1,6 +1,5 @@
 // stores/complaintFormStore.ts
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 import type { ComplaintFormData } from '../types/complaint';
 
@@ -59,11 +58,39 @@ const initialFormData: ComplaintFormData = {
 };
 
 // Step 3: Create the store
-export const useComplaintFormStore = create<ComplaintFormState>()(
-  // Step 4: Add persistence middleware (auto-saves to sessionStorage)
-  persist(
-    (set) => ({
-      // Initial state
+export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
+  // Initial state
+  formData: initialFormData,
+  showAddressSearch: false,
+  addresses: [],
+  loading: false,
+  error: null,
+  tempAddress: '',
+  addressFrequencyInfo: null,
+  phoneFrequencyInfo: null,
+
+  // Actions
+  updateFormData: (updates) =>
+    set((state) => ({
+      formData: { ...state.formData, ...updates },
+    })),
+
+  setShowAddressSearch: (show) => set({ showAddressSearch: show }),
+
+  setAddresses: (addresses) => set({ addresses }),
+
+  setLoading: (loading) => set({ loading }),
+
+  setError: (error) => set({ error }),
+
+  setTempAddress: (address) => set({ tempAddress: address }),
+
+  setAddressFrequencyInfo: (addressInfo) =>
+    set({ addressFrequencyInfo: addressInfo }),
+  setPhoneFrequencyInfo: (phoneInfo) => set({ phoneFrequencyInfo: phoneInfo }),
+
+  resetForm: () =>
+    set({
       formData: initialFormData,
       showAddressSearch: false,
       addresses: [],
@@ -72,58 +99,5 @@ export const useComplaintFormStore = create<ComplaintFormState>()(
       tempAddress: '',
       addressFrequencyInfo: null,
       phoneFrequencyInfo: null,
-
-      // Actions
-      updateFormData: (updates) =>
-        set((state) => ({
-          formData: { ...state.formData, ...updates },
-        })),
-
-      setShowAddressSearch: (show) => set({ showAddressSearch: show }),
-
-      setAddresses: (addresses) => set({ addresses }),
-
-      setLoading: (loading) => set({ loading }),
-
-      setError: (error) => set({ error }),
-
-      setTempAddress: (address) => set({ tempAddress: address }),
-
-      setAddressFrequencyInfo: (addressInfo) =>
-        set({ addressFrequencyInfo: addressInfo }),
-      setPhoneFrequencyInfo: (phoneInfo) =>
-        set({ phoneFrequencyInfo: phoneInfo }),
-
-      resetForm: () =>
-        set({
-          formData: initialFormData,
-          showAddressSearch: false,
-          addresses: [],
-          loading: false,
-          error: null,
-          tempAddress: '',
-          addressFrequencyInfo: null,
-          phoneFrequencyInfo: null,
-        }),
     }),
-    {
-      name: 'complaint-form-storage', // localStorage key
-      // Only persist form data, not UI state
-      partialize: (state) => ({
-        formData: state.formData,
-        tempAddress: state.tempAddress,
-      }),
-      // Migration function to handle old data structure
-      migrate: (persistedState: unknown) => {
-        const state = persistedState as {
-          formData?: { categories?: string[] };
-        };
-        if (state.formData && !state.formData.categories) {
-          state.formData.categories = [];
-        }
-        return state;
-      },
-      version: 1,
-    }
-  )
-);
+}));
