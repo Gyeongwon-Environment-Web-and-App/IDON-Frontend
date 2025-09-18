@@ -5,19 +5,19 @@ import type { MapPinConfig, PinData } from '@/types/map';
 export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   recycle: {
     size: { width: 36, height: 45 },
-    offset: { x: -15, y: 40 },
+    offset: { x: 0, y: 0 },
   },
   food: {
     size: { width: 36, height: 45 },
-    offset: { x: -15, y: 40 },
+    offset: { x: 0, y: 0 },
   },
   general: {
     size: { width: 36, height: 45 },
-    offset: { x: -15, y: 40 },
+    offset: { x: 0, y: 0 },
   },
   others: {
     size: { width: 36, height: 45 },
-    offset: { x: -15, y: 40 },
+    offset: { x: 0, y: 0 },
   },
 };
 

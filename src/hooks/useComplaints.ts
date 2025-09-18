@@ -35,8 +35,8 @@ export const useComplaints = (dateRange?: DateRange) => {
       const data = await complaintService.getComplaintById(id);
       return data;
     } catch (error) {
+      console.error('Error in useComplaints.getComplaintById:', error);
       setFetchError('민원 불러오기 실패');
-      console.log(error);
       throw error;
     } finally {
       setIsLoading(false);

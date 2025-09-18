@@ -140,9 +140,6 @@ const ComplaintManage = () => {
       console.log('민원 제출 성공:', response.data);
 
       setIsPopupOpen(true);
-
-      // 3. 폼 초기화
-      resetForm();
     } catch (error) {
       console.error('민원 제출 실패:', error);
 
@@ -163,15 +160,20 @@ const ComplaintManage = () => {
           yesNo={false}
           onFirstClick={() => {
             // ! navigate to complaint detail with id
+            setIsPopupOpen(false);
+            resetForm();
             console.log('first click');
             window.alert('개발 중입니다.');
           }}
           onSecondClick={() => {
-            navigate('/complaints/table');
+            setIsPopupOpen(false);
+            resetForm();
             console.log('navigate to table');
+            navigate('/complaints/table');
           }}
           toHome={true}
           onGoHome={() => {
+            resetForm();
             setIsPopupOpen(false);
             setShowConfirm(false);
           }}

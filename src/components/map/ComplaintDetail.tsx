@@ -53,7 +53,15 @@ const ComplaintDetail: React.FC = () => {
   const statusChangeHandler = createStatusChangeHandler(
     selectedComplaintId,
     selectedComplaintStatus,
-    updateComplaint,
+    (id: string, updates: Partial<Complaint>) => {
+      // Convert string ID to number for the store
+      const numericId = parseInt(id, 10);
+      if (isNaN(numericId)) {
+        console.error('Invalid complaint ID:', id);
+        return;
+      }
+      updateComplaint(numericId, updates);
+    },
     () => {
       setIsPopupOpen(false);
       setSelectedComplaintId(null);

@@ -4,6 +4,7 @@ import apiClient from '@/lib/api';
 import type {
   Complaint,
   ComplaintApiResponse,
+  ComplaintByIdApiResponse,
   ComplaintExtended,
 } from '@/types/complaint';
 
@@ -43,6 +44,14 @@ const getDateRangeFromPicker = (dateRange: DateRange | undefined) => {
 const convertComplaintExtendedToComplaint = (
   complaintExtended: ComplaintExtended
 ): Complaint => {
+  if (!complaintExtended) {
+    throw new Error('complaintExtended is null or undefined');
+  }
+
+  if (!complaintExtended.address) {
+    throw new Error('complaintExtended.address is null or undefined');
+  }
+
   return {
     id: complaintExtended.id,
     address: complaintExtended.address.address,
@@ -92,10 +101,26 @@ export const complaintService = {
   },
 
   async getComplaintById(id: string): Promise<Complaint> {
-    const response = await apiClient.get<ComplaintExtended>(
-      `/complaint/getById/${id}`
-    );
-    return convertComplaintExtendedToComplaint(response.data);
+    try {
+      const response = await apiClient.get<ComplaintByIdApiResponse>(
+        `/complaint/getById/${id}`
+      );
+
+      if (!response.data) {
+        throw new Error('API response data is null or undefined');
+      }
+
+      if (!response.data.complaint_extended) {
+        throw new Error('API response missing complaint_extended property');
+      }
+
+      return convertComplaintExtendedToComplaint(
+        response.data.complaint_extended
+      );
+    } catch (error) {
+      console.error('Error in getComplaintById:', error);
+      throw error;
+    }
   },
 
   async updateComplaintStatus(id: string, status: string): Promise<Complaint> {

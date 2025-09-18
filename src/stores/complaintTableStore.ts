@@ -20,7 +20,7 @@ interface ComplaintTableState {
   isPopupOpen: boolean;
   selectedComplaintId: string | null;
   selectedComplaintStatus: '처리중' | '완료' | null;
-  selectedRows: Set<string>;
+  selectedRows: Set<number>;
 
   // Actions
   setDateRange: (range: DateRange | undefined) => void;
@@ -31,15 +31,15 @@ interface ComplaintTableState {
   setIsPopupOpen: (isOpen: boolean) => void;
   setSelectedComplaintId: (id: string | null) => void;
   setSelectedComplaintStatus: (status: '처리중' | '완료' | null) => void;
-  setSelectedRows: (rows: Set<string>) => void;
+  setSelectedRows: (rows: Set<number>) => void;
 
   // Helper actions
   addComplaint: (complaint: Complaint) => void;
-  updateComplaint: (id: string, updates: Partial<Complaint>) => void;
-  deleteComplaint: (id: string) => void;
+  updateComplaint: (id: number, updates: Partial<Complaint>) => void;
+  deleteComplaint: (id: number) => void;
   selectAllRows: () => void;
   clearSelection: () => void;
-  toggleRowSelection: (id: string) => void;
+  toggleRowSelection: (id: number) => void;
   resetTable: () => void;
 }
 
@@ -164,13 +164,15 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
             parsed.state?.selectedRows &&
             Array.isArray(parsed.state.selectedRows)
           ) {
-            parsed.state.selectedRows = new Set(parsed.state.selectedRows);
+            parsed.state.selectedRows = new Set(
+              parsed.state.selectedRows.map(Number)
+            );
           }
           return parsed;
         },
         setItem: (name, value) => {
           const toStore = { ...value } as {
-            state?: { selectedRows?: Set<string> | string[] };
+            state?: { selectedRows?: Set<number> | number[] };
           };
           if (
             toStore.state?.selectedRows &&

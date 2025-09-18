@@ -48,6 +48,11 @@ export interface ComplaintApiResponse {
   complaints_extended: ComplaintExtended[];
 }
 
+export interface ComplaintByIdApiResponse {
+  message: string;
+  complaint_extended: ComplaintExtended;
+}
+
 // Form Data Interface (for creating new complaints)
 export interface ComplaintFormData {
   address: string;

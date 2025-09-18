@@ -14,10 +14,10 @@ import Popup from '../forms/Popup';
 
 interface ComplaintCardProps {
   complaint: Complaint;
-  onStatusChange?: (complaintId: string) => void;
+  onStatusChange?: (complaintId: number) => void;
   isSelected?: boolean;
-  onSelectChange?: (complaintId: string, selected: boolean) => void;
-  onCardClick?: (id: string) => void;
+  onSelectChange?: (complaintId: number, selected: boolean) => void;
+  onCardClick?: (id: number) => void;
 }
 
 const ComplaintCard: React.FC<ComplaintCardProps> = ({
@@ -44,7 +44,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
   };
 
   const getPopupMessage = () => {
-    if (complaint.status === '처리중') {
+    if (!complaint.status) {
       return (
         <>
           <p className="pb-2">
@@ -53,7 +53,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           <p>수정하시겠습니까?</p>
         </>
       );
-    } else if (complaint.status === '완료') {
+    } else if (complaint.status) {
       return (
         <>
           <p className="pb-2">
@@ -109,13 +109,15 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
         <div className="flex font-bold text-lg">
           <img
             src={
-              complaint.type === '재활용'
+              complaint.teams[0].category === '재활용'
                 ? recycle
-                : complaint.type === '일반'
-                  ? general
-                  : complaint.type === '음식물'
-                    ? food
-                    : other
+                : complaint.teams[0].category === '음식물'
+                  ? food
+                  : complaint.teams[0].category === '기타'
+                    ? other
+                    : complaint.teams[0].category === '기타'
+                      ? general
+                      : ''
             }
             alt="쓰레기 상성 태그"
             className="mr-2"
@@ -125,11 +127,11 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
       </div>
       <div
         className={`flex items-center font-semibold justify-center text-center text-white cursor-pointer w-16 text-base rounded-r ${
-          complaint.status === '완료' ? 'bg-light-green' : 'bg-[#B1B1B1]'
+          complaint.status ? 'bg-light-green' : 'bg-[#B1B1B1]'
         }`}
         onClick={handleStatusClick}
       >
-        {complaint.status}
+        {complaint.status ? '완료' : '처리중'}
       </div>
 
       {isPopupOpen && (

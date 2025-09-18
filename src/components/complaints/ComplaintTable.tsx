@@ -39,6 +39,11 @@ import DateRangePicker from '../common/DateRangePicker';
 import Popup from '../forms/Popup';
 import ComplaintCard from './ComplaintCard';
 
+// Extended complaint type with callback
+interface ComplaintWithCallback extends Complaint {
+  onStatusChange?: (id: number) => void;
+}
+
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -47,7 +52,7 @@ const ComplaintTable: React.FC = () => {
     dateRange,
     searchTerm,
     sortOrder,
-    complaints,
+    complaints: storeComplaints,
     filteredComplaints,
     selectedRows,
     selectedComplaintStatus,
@@ -69,7 +74,7 @@ const ComplaintTable: React.FC = () => {
   const {
     complaints: apiComplaints,
     isLoading,
-    error,
+    fetchError,
   } = useComplaints(dateRange);
 
   // Update store with API data when it changes
@@ -99,7 +104,7 @@ const ComplaintTable: React.FC = () => {
   };
 
   // 개별 행 선택 핸들러
-  const handleRowSelect = (complaintId: string, isSelected: boolean) => {
+  const handleRowSelect = (complaintId: number, isSelected: boolean) => {
     const newSelected = new Set(selectedRows);
     if (isSelected) {
       newSelected.add(complaintId);
@@ -110,12 +115,12 @@ const ComplaintTable: React.FC = () => {
   };
 
   // 행 클릭 핸들러 - 지도로 네비게이션
-  const handleRowClick = (complaintId: string) => {
+  const handleRowClick = (complaintId: number) => {
     navigate(`/map/overview/${complaintId}`);
   };
 
   // 컬럼 정의
-  const columns: ColumnDef<Complaint>[] = [
+  const columns: ColumnDef<ComplaintWithCallback>[] = [
     {
       id: 'select',
       header: () => (
@@ -231,22 +236,20 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'status',
       header: '처리결과',
       cell: ({ row }) => {
-        const status = row.original.status;
-        const statusText = status ? '완료' : '처리중';
         return (
           <div
             className={`text-center cursor-pointer py-1 rounded ${
-              status ? 'text-green-600 font-medium' : 'text-gray-500'
+              row.original.status ? 'text-green-600 font-medium' : 'text-gray-500'
             }`}
             onClick={() => {
               // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
               const onStatusChange = row.original.onStatusChange;
               if (onStatusChange) {
-                onStatusChange(row.original.id.toString());
+                onStatusChange(row.original.id);
               }
             }}
           >
-            {statusText}
+            {row.original.status ? '완료' : '처리중'}
           </div>
         );
       },
@@ -292,11 +295,11 @@ const ComplaintTable: React.FC = () => {
   // 필터링 함수
   const handleFilterChange = (filterType: string) => {
     if (filterType === '전체 민원') {
-      setFilteredComplaints(complaints);
+      setFilteredComplaints(storeComplaints);
       return;
     }
 
-    const filtered = complaints.filter((complaint) => {
+    const filtered = storeComplaints.filter((complaint) => {
       return complaint.type === filterType;
     });
 
@@ -308,11 +311,11 @@ const ComplaintTable: React.FC = () => {
     setSearchTerm(searchValue);
 
     if (!searchValue.trim()) {
-      setFilteredComplaints(complaints);
+      setFilteredComplaints(storeComplaints);
       return;
     }
 
-    const filtered = complaints.filter((complaint) => {
+    const filtered = storeComplaints.filter((complaint) => {
       const searchLower = searchValue.toLowerCase();
       return (
         complaint.id.toString().includes(searchLower) ||
@@ -344,11 +347,11 @@ const ComplaintTable: React.FC = () => {
   };
 
   // 상태 변경 핸들러
-  const handleStatusChange = (complaintId: string) => {
+  const handleStatusChange = (complaintId: number) => {
     const complaint = filteredComplaints.find((c) => c.id === complaintId);
     if (complaint) {
-      setSelectedComplaintId(complaintId);
-      setSelectedComplaintStatus(complaint.status);
+      setSelectedComplaintId(complaintId.toString());
+      setSelectedComplaintStatus(complaint.status ? '완료' : '처리중');
       setIsPopupOpen(true);
     }
   };
@@ -357,7 +360,9 @@ const ComplaintTable: React.FC = () => {
   const statusChangeHandler = createStatusChangeHandler(
     selectedComplaintId,
     selectedComplaintStatus,
-    updateComplaint,
+    (id: string, updates: Partial<Complaint>) => {
+      updateComplaint(parseInt(id), updates);
+    },
     () => {
       setIsPopupOpen(false);
       setSelectedComplaintId(null);
@@ -535,9 +540,9 @@ const ComplaintTable: React.FC = () => {
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
           </div>
-        ) : error ? (
+        ) : fetchError ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-red-500">{error}</div>
+            <div className="text-red-500">{fetchError}</div>
           </div>
         ) : complaintsWithCallbacks.length === 0 ? (
           <div className="flex items-center justify-center py-8">
@@ -569,9 +574,9 @@ const ComplaintTable: React.FC = () => {
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
           </div>
-        ) : error ? (
+        ) : fetchError ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-red-500">{error}</div>
+            <div className="text-red-500">{fetchError}</div>
           </div>
         ) : filteredComplaints.length === 0 ? (
           <div className="flex items-center justify-center py-8">
