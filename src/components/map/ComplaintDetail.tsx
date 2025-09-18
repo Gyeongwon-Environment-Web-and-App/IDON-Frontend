@@ -8,7 +8,7 @@ import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
 
-import sample from '../../assets/background/sample.png';
+import sample from '../../assets/background/sample.jpg';
 // import general from "../../assets/icons/categories/tags/general.svg";
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
 import fix from '../../assets/icons/common/fix.svg';

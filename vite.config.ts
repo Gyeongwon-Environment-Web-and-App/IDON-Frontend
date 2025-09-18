@@ -28,20 +28,12 @@ export default defineConfig({
         },
       },
     },
-    // Enable tree shaking
-    treeshake: true,
-    // Optimize for production
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true,
-        drop_debugger: true,
-      },
-    },
-    // Enable source maps for debugging (optional)
+    minify: 'esbuild',
     sourcemap: false,
-    // Copy service worker to dist
     copyPublicDir: true,
+    // Enable compression for better performance
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 1000,
   },
   optimizeDeps: {
     include: [
@@ -54,6 +46,25 @@ export default defineConfig({
       'date-fns',
       'lucide-react',
     ],
+    // Force optimization for better performance
+    force: true,
+  },
+  // Add CSS optimization
+  css: {
+    devSourcemap: false,
+  },
+  // Performance optimizations
+  esbuild: {
+    // Enable tree shaking
+    treeShaking: true,
+    // Optimize for production
+    target: 'es2020',
+    // Minify identifiers
+    minifyIdentifiers: true,
+    // Minify syntax
+    minifySyntax: true,
+    // Minify whitespace
+    minifyWhitespace: true,
   },
   server: {
     proxy: {

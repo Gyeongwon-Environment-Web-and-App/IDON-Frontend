@@ -9,6 +9,21 @@
       content="경원환경개발 민원관리 시스템 - 실시간 민원 등록, 지도 기반 조회, 통계 분석을 통한 효율적인 환경 관리 솔루션"
     />
     <title>경원환경개발</title>
+
+    <!-- Preconnect to external domains for faster loading -->
+    <link rel="preconnect" href="https://dapi.kakao.com" crossorigin />
+    <link rel="preconnect" href="https://maps.apigw.ntruss.com" crossorigin />
+    <link rel="preconnect" href="https://openapi.naver.com" crossorigin />
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="/src/main.tsx" as="script" />
+    <link rel="preload" href="/logo.svg" as="image" />
+
+    <!-- DNS prefetch for additional performance -->
+    <link rel="dns-prefetch" href="//dapi.kakao.com" />
+    <link rel="dns-prefetch" href="//maps.apigw.ntruss.com" />
+    <link rel="dns-prefetch" href="//openapi.naver.com" />
+
     <script
       type="text/javascript"
       src="//dapi.kakao.com/v2/maps/sdk.js?appkey=%VITE_KAKAO_JAVASCRIPT_KEY%&libraries=services"

@@ -1,6 +1,7 @@
 export interface ChartDataItem {
   name: string;
   value: number;
+  [key: string]: string | number; // Add index signature for Recharts compatibility
 }
 
 export interface BarChartItem {

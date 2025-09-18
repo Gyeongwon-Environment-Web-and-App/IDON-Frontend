@@ -15,10 +15,9 @@ const STATIC_ASSETS = [
   '/robot.txt',
 ];
 
-// External resources that should be cached aggressively
-const EXTERNAL_RESOURCES = [
-  '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js',
-];
+// External resources - removed due to CORS issues
+// These will be handled by the browser's default caching
+const EXTERNAL_RESOURCES = [];
 
 // Cache strategies
 const CACHE_STRATEGIES = {
@@ -41,21 +40,10 @@ self.addEventListener('install', (event) => {
         console.log('Service Worker: Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       }),
-      // Cache external resources
-      caches.open(EXTERNAL_CACHE).then((cache) => {
-        console.log('Service Worker: Caching external resources');
-        return Promise.all(
-          EXTERNAL_RESOURCES.map((url) =>
-            fetch(url)
-              .then((response) => {
-                if (response.ok) {
-                  cache.put(url, response);
-                }
-              })
-              .catch((err) => {
-                console.log('Failed to cache external resource:', url, err);
-              })
-          )
+      // Skip external resource caching due to CORS issues
+      Promise.resolve().then(() => {
+        console.log(
+          'Service Worker: Skipping external resource caching (CORS issues)'
         );
       }),
     ]).then(() => {
@@ -115,7 +103,8 @@ self.addEventListener('fetch', (event) => {
   if (isStaticAsset(request)) {
     event.respondWith(cacheFirst(request));
   } else if (isExternalResource(request)) {
-    event.respondWith(staleWhileRevalidate(request));
+    // For external resources, just pass through to network (no caching due to CORS)
+    event.respondWith(fetch(request));
   } else if (isApiRequest(request)) {
     event.respondWith(networkFirst(request));
   } else {
@@ -216,6 +205,14 @@ self.addEventListener('sync', (event) => {
 // Update caches in background
 async function updateCaches() {
   try {
+    // Skip external resource updates due to CORS issues
+    if (EXTERNAL_RESOURCES.length === 0) {
+      console.log(
+        'Service Worker: No external resources to update (CORS issues)'
+      );
+      return;
+    }
+
     const cache = await caches.open(EXTERNAL_CACHE);
 
     // Update external resources
