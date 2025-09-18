@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 
 import { formatDateTimeToKorean } from '@/utils/formatDate';
 
-import sample from '../../assets/background/sample.png';
+import sample from '../../assets/background/sample.jpg';
 import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
