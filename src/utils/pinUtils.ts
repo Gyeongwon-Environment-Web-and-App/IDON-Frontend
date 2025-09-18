@@ -1,23 +1,37 @@
 import type { Complaint } from '@/types/complaint';
 import type { MapPinConfig, PinData } from '@/types/map';
 
+// Helper function to validate coordinates
+const isValidCoordinate = (lat: number, lng: number): boolean => {
+  return (
+    lat !== 0 &&
+    lng !== 0 &&
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+};
+
 // Pin configuration for different categories
 export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   recycle: {
     size: { width: 36, height: 45 },
-    offset: { x: 0, y: 0 },
+    offset: { x: 18, y: 45 },
   },
   food: {
     size: { width: 36, height: 45 },
-    offset: { x: 0, y: 0 },
+    offset: { x: 18, y: 45 },
   },
   general: {
     size: { width: 36, height: 45 },
-    offset: { x: 0, y: 0 },
+    offset: { x: 18, y: 45 },
   },
   others: {
     size: { width: 36, height: 45 },
-    offset: { x: 0, y: 0 },
+    offset: { x: 18, y: 45 },
   },
 };
 
@@ -39,10 +53,16 @@ export const getPinImageSrc = (category: string, isRepeat: boolean): string => {
 
 // Complaint -> Pin
 export const complaintToPinData = (complaint: Complaint): PinData => {
+  const lat = complaint.coordinates?.latitude || 0;
+  const lng = complaint.coordinates?.longitude || 0;
+
+  // Validate coordinates - if invalid, they will be geocoded later in SimpleKakaoMap
+  const hasValidCoordinates = isValidCoordinate(lat, lng);
+
   return {
     id: `pin-${complaint.id}`,
-    lat: 0,
-    lng: 0,
+    lat: hasValidCoordinates ? lat : 0,
+    lng: hasValidCoordinates ? lng : 0,
     category: complaint.teams[0]?.category || '기타',
     isRepeat: complaint.source.bad,
     address: complaint.address,

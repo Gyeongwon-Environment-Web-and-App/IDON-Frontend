@@ -4,6 +4,7 @@ import React, {
   useEffect,
   useId,
   useRef,
+  useState,
 } from 'react';
 
 import type { PinClickEvent, PinData } from '@/types/map';
@@ -39,6 +40,8 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const markersRef = useRef<any[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
+    const [isGeocoding, setIsGeocoding] = useState(false);
+    const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
 
     const getCategoryKey = (category: string): string => {
       const categoryMap: Record<string, string> = {
@@ -117,32 +120,48 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
     // Update pins on map
     const updatePins = useCallback(async () => {
-      if (!mapInstanceRef.current || !isLoaded || pins.length === 0) return;
+      if (!mapInstanceRef.current || !isLoaded || pins.length === 0) {
+        setIsGeocoding(false);
+        return;
+      }
 
+      // Clear existing markers and set geocoding state
       clearMarkers();
+      setIsGeocoding(true);
 
       // Get unique addresses from pins
       const uniqueAddresses = [...new Set(pins.map((pin) => pin.address))];
 
-      // Batch geocoding for all unique addresses
-      const coordinatesMap = await batchGeocoding(uniqueAddresses);
+      try {
+        // Batch geocoding for all unique addresses
+        const coordinatesMap = await batchGeocoding(uniqueAddresses);
 
-      // Create markers for pins with valid coordinates
-      pins.forEach((pin) => {
-        const coordinates = coordinatesMap.get(pin.address);
-        if (coordinates) {
-          const pinWithCoords = {
-            ...pin,
-            lat: coordinates.lat,
-            lng: coordinates.lng,
-          };
-          const marker = createMarker(pinWithCoords);
-          if (marker) {
-            markersRef.current.push(marker);
+        // Store geocoded pins (don't create markers yet)
+        const validPins: PinData[] = [];
+        pins.forEach((pin) => {
+          const coordinates = coordinatesMap.get(pin.address);
+
+          if (coordinates) {
+            const pinWithCoords = {
+              ...pin,
+              lat: coordinates.lat,
+              lng: coordinates.lng,
+            };
+            validPins.push(pinWithCoords);
+          } else {
+            console.warn('⚠️ No coordinates found for address:', pin.address);
           }
-        }
-      });
-    }, [pins, isLoaded, clearMarkers, createMarker]);
+        });
+
+        // Store the geocoded pins for marker creation
+        setGeocodedPins(validPins);
+      } catch (error) {
+        console.error('❌ Geocoding failed:', error);
+      } finally {
+        // Always set geocoding to false when done
+        setIsGeocoding(false);
+      }
+    }, [pins, isLoaded, clearMarkers]);
 
     // Initialize map when SDK is ready
     useEffect(() => {
@@ -209,6 +228,26 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       updatePins();
     }, [updatePins]);
 
+    // Create markers from geocoded pins (separate from geocoding process)
+    const createMarkersFromGeocodedPins = useCallback(() => {
+      if (!mapInstanceRef.current || !isLoaded || geocodedPins.length === 0)
+        return;
+
+      clearMarkers();
+
+      geocodedPins.forEach((pin) => {
+        const marker = createMarker(pin);
+        if (marker) {
+          markersRef.current.push(marker);
+        }
+      });
+    }, [geocodedPins, isLoaded, clearMarkers, createMarker]);
+
+    // Update markers when geocoded pins change
+    useEffect(() => {
+      createMarkersFromGeocodedPins();
+    }, [createMarkersFromGeocodedPins]);
+
     // Load SDK on mount
     useEffect(() => {
       if (!isLoaded && !isLoading) {
@@ -255,26 +294,43 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
     return (
       <div
-        id={`simple-map-${mapId}`}
-        ref={(node) => {
-          containerRef.current = node;
-          if (
-            ref &&
-            typeof ref === 'object' &&
-            ref.current !== undefined &&
-            node
-          ) {
-            (ref as React.RefObject<HTMLDivElement>).current = node;
-          }
-        }}
-        className={className}
-        style={{
-          ...style,
-          pointerEvents: 'auto',
-          touchAction: 'none',
-          userSelect: 'none',
-        }}
-      />
+        className="relative"
+        style={{ height: style?.height || '100%', minHeight: '400px' }}
+      >
+        <div
+          id={`simple-map-${mapId}`}
+          ref={(node) => {
+            containerRef.current = node;
+            if (
+              ref &&
+              typeof ref === 'object' &&
+              ref.current !== undefined &&
+              node
+            ) {
+              (ref as React.RefObject<HTMLDivElement>).current = node;
+            }
+          }}
+          className={className}
+          style={{
+            ...style,
+            height: style?.height || '100%',
+            minHeight: '100vh',
+            pointerEvents: 'auto',
+            touchAction: 'none',
+            userSelect: 'none',
+          }}
+        />
+
+        {/* Geocoding loading overlay */}
+        {isGeocoding && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">핀 위치 확인 중...</p>
+            </div>
+          </div>
+        )}
+      </div>
     );
   }
 );
