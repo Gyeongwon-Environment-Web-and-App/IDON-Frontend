@@ -13,7 +13,10 @@
     "cap:open:ios": "npx cap open ios",
     "cap:open:android": "npx cap open android",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "lighthouse": "lighthouse http://localhost:5173 --config-path ./lighthouse.config.js --output html --output-path ./lighthouse-report.html --chrome-flags=\"--headless\"",
+    "lighthouse:mobile": "lighthouse http://localhost:5173 --config-path ./lighthouse.config.js --output html --output-path ./lighthouse-mobile-report.html --chrome-flags=\"--headless\" --form-factor=mobile --throttling-method=devtools",
+    "perf:test": "npm run build && npm run preview & sleep 5 && npm run lighthouse && npm run lighthouse:mobile && pkill -f \"vite preview\""
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",
@@ -54,6 +57,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.2.0",
+    "lighthouse": "^12.8.2",
     "postcss": "^8.5.6",
     "prettier": "^3.6.2",
     "prettier-plugin-tailwindcss": "^0.6.13",

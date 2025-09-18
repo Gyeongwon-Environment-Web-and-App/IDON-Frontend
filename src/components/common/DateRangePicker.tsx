@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 
-import { ko } from 'date-fns/locale';
 import type { DateRange } from 'react-day-picker';
 
 import { Button } from '@/components/ui/button';
@@ -10,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { ko } from '@/lib/locales';
 
 import calendar from '../../assets/icons/categories/map_categories/calendar.svg';
 

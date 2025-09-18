@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { Menu, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -11,6 +10,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { Menu, X } from '@/lib/icons';
 
 import logo from '../../assets/icons/brand/logo.svg';
 import long_logo from '../../assets/icons/brand/long_logo.svg';

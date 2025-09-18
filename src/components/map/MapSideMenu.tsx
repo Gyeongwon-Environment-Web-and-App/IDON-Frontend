@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 
-import { Search } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 import { useNavigate, useParams } from 'react-router-dom';
+
+import { Search } from '@/lib/icons';
 
 import logo from '../../assets/icons/brand/logo.svg';
 import chartIcon from '../../assets/icons/common/chart.svg';
@@ -69,7 +70,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       onSidebarChange(true);
 
       if (type === 'complaint') {
-          navigate('/map/overview/complaints');
+        navigate('/map/overview/complaints');
       }
     }
   };

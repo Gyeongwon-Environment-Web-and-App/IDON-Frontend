@@ -26,7 +26,15 @@ interface ComplaintData {
   };
   createdAt: string;
   status: '처리중' | '완료';
-  [key: string]: any;
+  [key: string]:
+    | string
+    | number
+    | boolean
+    | string[]
+    | File[]
+    | Array<{ name: string; size: number; type: string; url: string }>
+    | { latitude: number; longitude: number }
+    | undefined;
 }
 
 // Define area data interface
@@ -55,7 +63,7 @@ interface ComplaintDataState {
   areas: AreaData[];
 
   // Cache state
-  addressCache: Map<string, CacheEntry<any>>;
+  addressCache: Map<string, CacheEntry<unknown>>;
   areaCache: Map<string, CacheEntry<AreaData[]>>;
 
   // Loading states
@@ -80,8 +88,8 @@ interface ComplaintDataState {
   deleteComplaint: (id: string) => void;
 
   // Cache management actions
-  setAddressCache: (key: string, data: any, ttl?: number) => void;
-  getAddressCache: (key: string) => any | null;
+  setAddressCache: (key: string, data: unknown, ttl?: number) => void;
+  getAddressCache: (key: string) => unknown | null;
   setAreaCache: (key: string, data: AreaData[], ttl?: number) => void;
   getAreaCache: (key: string) => AreaData[] | null;
   clearCache: () => void;
@@ -89,7 +97,7 @@ interface ComplaintDataState {
   // API actions
   fetchComplaints: () => Promise<void>;
   fetchAreas: () => Promise<void>;
-  submitComplaint: (complaintData: any) => Promise<boolean>;
+  submitComplaint: (complaintData: Partial<ComplaintData>) => Promise<boolean>;
   getAddressFrequency: (address: string) => Promise<number>;
 
   // Helper actions
@@ -151,7 +159,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         })),
 
       // Cache management actions
-      setAddressCache: (key, data, ttl = DEFAULT_TTL.ADDRESS) => {
+      setAddressCache: (key, data: unknown, ttl = DEFAULT_TTL.ADDRESS) => {
         const { addressCache } = get();
         const newCache = new Map(addressCache);
         newCache.set(key, {
@@ -162,7 +170,7 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         set({ addressCache: newCache });
       },
 
-      getAddressCache: (key) => {
+      getAddressCache: (key): unknown | null => {
         const { addressCache } = get();
         const entry = addressCache.get(key);
         if (!entry) return null;
@@ -352,8 +360,13 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         setItem: (name, value) => {
           const toStore = { ...value };
           if (toStore.state) {
-            toStore.state.addressCache = {};
-            toStore.state.areaCache = {};
+            // Clear cache properties if they exist
+            if ('addressCache' in toStore.state) {
+              (toStore.state as Record<string, unknown>).addressCache = {};
+            }
+            if ('areaCache' in toStore.state) {
+              (toStore.state as Record<string, unknown>).areaCache = {};
+            }
           }
           localStorage.setItem(name, JSON.stringify(toStore));
         },

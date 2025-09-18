@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 
-import { ko } from 'date-fns/locale';
-
 import { Calendar } from '@/components/ui/calendar';
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { ko } from '@/lib/locales';
 
 import redo from '../../assets/icons/actions/redo.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';

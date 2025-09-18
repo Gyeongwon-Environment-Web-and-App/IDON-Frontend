@@ -1,14 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
 import { type ColumnDef } from '@tanstack/react-table';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Download,
-  Search,
-} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
@@ -27,6 +19,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useComplaints } from '@/hooks/useComplaints';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Download,
+  Search,
+} from '@/lib/icons';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
@@ -239,7 +239,9 @@ const ComplaintTable: React.FC = () => {
         return (
           <div
             className={`text-center cursor-pointer py-1 rounded ${
-              row.original.status ? 'text-green-600 font-medium' : 'text-gray-500'
+              row.original.status
+                ? 'text-green-600 font-medium'
+                : 'text-gray-500'
             }`}
             onClick={() => {
               // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경

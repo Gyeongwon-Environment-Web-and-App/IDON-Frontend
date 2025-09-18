@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import React, { lazy, Suspense, useState } from 'react';
 
 import type { BarChartProps } from '@/types/stats';
+
+// Dynamic imports for Recharts components to enable tree shaking
+const Bar = lazy(() =>
+  import('recharts').then((module) => ({ default: module.Bar }))
+);
+const BarChart = lazy(() =>
+  import('recharts').then((module) => ({ default: module.BarChart }))
+);
+const CartesianGrid = lazy(() =>
+  import('recharts').then((module) => ({ default: module.CartesianGrid }))
+);
+const ResponsiveContainer = lazy(() =>
+  import('recharts').then((module) => ({ default: module.ResponsiveContainer }))
+);
+const XAxis = lazy(() =>
+  import('recharts').then((module) => ({ default: module.XAxis }))
+);
+const YAxis = lazy(() =>
+  import('recharts').then((module) => ({ default: module.YAxis }))
+);
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -113,49 +124,57 @@ export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   return (
     <div className="h-96 w-full md:w-[600px] flex flex-col justify-center md:flex-row xxxs:-mt-7 xxs:-mt-5 xs:mt-0 md:ml-3">
       <div className="flex-1 flex items-center min-w-[450px] scale-95 xs:mb-3">
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          className="xxxs:scale-[71%] xxs:scale-[78%] xs:scale-90 md:scale-100 min-h-80"
+        <Suspense
+          fallback={
+            <div className="w-full h-80 flex items-center justify-center">
+              차트 로딩 중...
+            </div>
+          }
         >
-          <BarChart
-            width={1200}
-            height={300}
-            data={transformedData}
-            margin={{
-              top: 0,
-              right: 10,
-              left: -35,
-              bottom: -30,
-            }}
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            className="xxxs:scale-[71%] xxs:scale-[78%] xs:scale-90 md:scale-100 min-h-80"
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis
-              dataKey="timeIndex"
-              tickFormatter={(value) => timeSlot[Math.floor(value)]}
-              type="number"
-              domain={[0, timeSlot.length - 1]}
-              ticks={timeSlot.map((_, index) => index)}
-              height={60}
-            />
-            <YAxis />
-            {categories.map((category, index) => (
-              <Bar
-                key={category}
-                dataKey={category}
-                stackId="a"
-                radius={[0, 0, 0, 0]}
-                fill={colors[index % colors.length]}
-                onMouseEnter={(event) => {
-                  const dataIndex = event.payload?.timeIndex
-                    ? Math.floor(event.payload.timeIndex - 0.5)
-                    : 0;
-                  setHoveredIndex(dataIndex);
-                }}
+            <BarChart
+              width={1200}
+              height={300}
+              data={transformedData}
+              margin={{
+                top: 0,
+                right: 10,
+                left: -35,
+                bottom: -30,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis
+                dataKey="timeIndex"
+                tickFormatter={(value) => timeSlot[Math.floor(value)]}
+                type="number"
+                domain={[0, timeSlot.length - 1]}
+                ticks={timeSlot.map((_, index) => index)}
+                height={60}
               />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+              <YAxis />
+              {categories.map((category, index) => (
+                <Bar
+                  key={category}
+                  dataKey={category}
+                  stackId="a"
+                  radius={[0, 0, 0, 0]}
+                  fill={colors[index % colors.length]}
+                  onMouseEnter={(event) => {
+                    const dataIndex = event.payload?.timeIndex
+                      ? Math.floor(event.payload.timeIndex - 0.5)
+                      : 0;
+                    setHoveredIndex(dataIndex);
+                  }}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </Suspense>
       </div>
 
       {/* 고정 툴팁 */}

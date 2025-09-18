@@ -9,6 +9,52 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Separate vendor chunks for better caching
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+          'chart-vendor': ['recharts'],
+          'ui-vendor': [
+            '@radix-ui/react-dialog',
+            '@radix-ui/react-dropdown-menu',
+            '@radix-ui/react-popover',
+            '@radix-ui/react-tooltip',
+          ],
+          'table-vendor': ['@tanstack/react-table'],
+          'date-vendor': ['react-day-picker', 'date-fns'],
+          'icon-vendor': ['lucide-react'],
+        },
+      },
+    },
+    // Enable tree shaking
+    treeshake: true,
+    // Optimize for production
+    minify: 'terser',
+    terserOptions: {
+      compress: {
+        drop_console: true,
+        drop_debugger: true,
+      },
+    },
+    // Enable source maps for debugging (optional)
+    sourcemap: false,
+    // Copy service worker to dist
+    copyPublicDir: true,
+  },
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      'react-router-dom',
+      'recharts',
+      '@tanstack/react-table',
+      'react-day-picker',
+      'date-fns',
+      'lucide-react',
+    ],
+  },
   server: {
     proxy: {
       '/api/geocode': {
@@ -16,8 +62,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) =>
           path.replace(/^\/api\/geocode/, '/map-geocode/v2/geocode'),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             // API 키를 헤더에 추가
             if (req.headers['x-api-key-id'] && req.headers['x-api-key']) {
               proxyReq.setHeader(
@@ -37,8 +83,8 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) =>
           path.replace(/^\/api\/local/, '/v1/search/local.json'),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             // 네이버 검색 API는 다른 헤더를 사용
             if (req.headers['x-client-id'] && req.headers['x-client-secret']) {
               proxyReq.setHeader(
@@ -61,8 +107,8 @@ export default defineConfig({
             /^\/api\/kakao\/search/,
             '/v2/local/search/keyword.json'
           ),
-        configure: (proxy, options) => {
-          proxy.on('proxyReq', (proxyReq, req, res) => {
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq, req) => {
             // 카카오맵 API는 Authorization 헤더 사용
             if (req.headers['authorization']) {
               proxyReq.setHeader('Authorization', req.headers['authorization']);

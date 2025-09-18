@@ -35,6 +35,28 @@ interface KakaoPlaceResult {
   place_url?: string;
 }
 
+// Kakao Maps API Status interface
+export interface KakaoStatus {
+  OK: string;
+  ZERO_RESULT: string;
+  ERROR: string;
+}
+
+// Kakao Places API response structure
+export interface KakaoPlacesResponse {
+  places: {
+    x: string;
+    y: string;
+    place_name?: string;
+    address_name?: string;
+    road_address_name?: string;
+    distance?: string;
+    category_name?: string;
+    phone?: string;
+    place_url?: string;
+  }[];
+}
+
 interface KakaoCoord2AddressResult {
   address: {
     address_name: string;
@@ -122,7 +144,7 @@ export class AddressService {
 
       geocoder.addressSearch(
         address,
-        (result: KakaoAddressResult[], status: any) => {
+        (result: KakaoAddressResult[], status: string) => {
           if (
             status === window.kakao.maps.services.Status.OK &&
             result.length > 0
@@ -268,30 +290,34 @@ export class AddressService {
 
           places.keywordSearch(
             query,
-            (data: KakaoPlaceResult[], status: string) => {
+            (result: KakaoPlacesResponse, status: string) => {
               console.log('🔍 Places API 응답 수신:', {
                 status,
-                dataLength: data?.length || 0,
+                dataLength: result?.places?.length || 0,
                 timestamp: new Date().toISOString(),
                 statusOK: status === window.kakao.maps.services.Status.OK,
                 statusZeroResult:
                   status === window.kakao.maps.services.Status.ZERO_RESULT,
-                dataType: Array.isArray(data) ? 'array' : typeof data,
-                sampleData: data?.[0] ? Object.keys(data[0]) : [],
+                dataType: Array.isArray(result?.places)
+                  ? 'array'
+                  : typeof result?.places,
+                sampleData: result?.places?.[0]
+                  ? Object.keys(result.places[0])
+                  : [],
               });
 
               if (status === window.kakao.maps.services.Status.OK) {
                 console.log('✅ Places 검색 성공:', {
-                  resultCount: data?.length || 0,
+                  resultCount: result?.places?.length || 0,
                 });
-                resolve(data); // data는 직접 배열입니다 (공식 문서 구조)
+                resolve(result.places as KakaoPlaceResult[]); // places 배열을 반환
               } else if (
                 status === window.kakao.maps.services.Status.ZERO_RESULT
               ) {
                 console.log('⚠️ Places 검색 결과 없음');
                 resolve([]);
               } else {
-                console.error('❌ Places 검색 실패:', { status, data });
+                console.error('❌ Places 검색 실패:', { status, result });
                 reject(new Error(`카카오맵 장소명 검색 실패: ${status}`));
               }
             }

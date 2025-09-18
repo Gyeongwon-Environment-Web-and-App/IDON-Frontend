@@ -19,7 +19,7 @@ export const createStatusChangeHandler = (
   const handleConfirm = () => {
     if (complaintId && currentStatus) {
       const newStatus = currentStatus === '처리중' ? '완료' : '처리중';
-      onUpdate(complaintId, { status: newStatus });
+      onUpdate(complaintId, { status: newStatus === '완료' });
     }
     onClose();
   };

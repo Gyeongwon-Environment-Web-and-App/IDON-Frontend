@@ -1,15 +1,26 @@
-import React, { useState } from 'react';
-
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import React, { lazy, Suspense, useState } from 'react';
 
 import type { BarChartProps } from '@/types/stats';
+
+// Dynamic imports for Recharts components to enable tree shaking
+const Bar = lazy(() =>
+  import('recharts').then((module) => ({ default: module.Bar }))
+);
+const BarChart = lazy(() =>
+  import('recharts').then((module) => ({ default: module.BarChart }))
+);
+const CartesianGrid = lazy(() =>
+  import('recharts').then((module) => ({ default: module.CartesianGrid }))
+);
+const ResponsiveContainer = lazy(() =>
+  import('recharts').then((module) => ({ default: module.ResponsiveContainer }))
+);
+const XAxis = lazy(() =>
+  import('recharts').then((module) => ({ default: module.XAxis }))
+);
+const YAxis = lazy(() =>
+  import('recharts').then((module) => ({ default: module.YAxis }))
+);
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -92,43 +103,51 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
   return (
     <div className="h-96 w-full md:w-[600px] flex flex-col items-center justify-center md:flex-row mt-1 md:mt-16">
       <div className="flex-1 flex items-center min-w-[450px] scale-90 md:-mr-3">
-        <ResponsiveContainer
-          width="100%"
-          height="100%"
-          className="xxxs:scale-[75%] xxs:scale-[82%] xs:scale-[85%] md:scale-100 md:ml-0 min-h-80"
+        <Suspense
+          fallback={
+            <div className="w-full h-80 flex items-center justify-center">
+              차트 로딩 중...
+            </div>
+          }
         >
-          <BarChart
-            width={1200}
-            height={300}
-            data={data}
-            margin={{
-              top: 0,
-              right: 10,
-              left: -35,
-              bottom: 5,
-            }}
+          <ResponsiveContainer
+            width="100%"
+            height="100%"
+            className="xxxs:scale-[75%] xxs:scale-[82%] xs:scale-[85%] md:scale-100 md:ml-0 min-h-80"
           >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="time" type="category" />
-            <YAxis />
-            {categories.map((category, index) => (
-              <Bar
-                key={category}
-                dataKey={category}
-                stackId="a"
-                barSize={40}
-                radius={[0, 0, 0, 0]}
-                fill={colors[index % colors.length]}
-                onMouseEnter={(event) => {
-                  const dataIndex = data.findIndex(
-                    (item) => item.time === event.payload?.time
-                  );
-                  setHoveredIndex(dataIndex >= 0 ? dataIndex : 0);
-                }}
-              />
-            ))}
-          </BarChart>
-        </ResponsiveContainer>
+            <BarChart
+              width={1200}
+              height={300}
+              data={data}
+              margin={{
+                top: 0,
+                right: 10,
+                left: -35,
+                bottom: 5,
+              }}
+            >
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="time" type="category" />
+              <YAxis />
+              {categories.map((category, index) => (
+                <Bar
+                  key={category}
+                  dataKey={category}
+                  stackId="a"
+                  barSize={40}
+                  radius={[0, 0, 0, 0]}
+                  fill={colors[index % colors.length]}
+                  onMouseEnter={(event) => {
+                    const dataIndex = data.findIndex(
+                      (item) => item.time === event.payload?.time
+                    );
+                    setHoveredIndex(dataIndex >= 0 ? dataIndex : 0);
+                  }}
+                />
+              ))}
+            </BarChart>
+          </ResponsiveContainer>
+        </Suspense>
       </div>
 
       {/* 고정 툴팁 */}

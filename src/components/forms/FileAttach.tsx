@@ -9,7 +9,7 @@ interface FileAttachProps {
 
 const FileAttach = ({ formData, setFormData }: FileAttachProps) => {
   const [uploading, setUploading] = useState(false);
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [, setUploadedFileName] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [fileUploadFail, setFileUploadFail] = useState(false);
 

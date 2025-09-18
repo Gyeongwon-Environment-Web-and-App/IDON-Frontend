@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { Download, Printer } from 'lucide-react';
 import type { DateRange } from 'react-day-picker';
 
 import { AreaDropdown } from '@/components/ui/AreaDropdown';
@@ -11,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 
 import triangle from '../../assets/icons/actions/triangle.svg';

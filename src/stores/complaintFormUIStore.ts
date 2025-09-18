@@ -41,7 +41,7 @@ interface ComplaintFormUIState {
 
 // Create the complaint form UI store
 export const useComplaintFormUIStore = create<ComplaintFormUIState>()(
-  (set, get) => ({
+  (set) => ({
     // Initial state
     focus: {
       routeInput: false,
