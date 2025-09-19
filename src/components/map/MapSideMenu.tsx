@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 
 import { Search } from '@/lib/icons';
 
@@ -32,8 +32,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedTrash, setSelectedTrash] = useState<string>('');
-  const navigate = useNavigate();
+  
   const { complaintId } = useParams<{ complaintId?: string }>();
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const onSidebarChangeRef = React.useRef(onSidebarChange);
 
   // Update ref when callback changes
@@ -41,9 +44,13 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     onSidebarChangeRef.current = onSidebarChange;
   }, [onSidebarChange]);
 
-  // Get state from store
-  const { activeSidebar, setActiveSidebar, sidebarOpen } =
-    useMapOverviewStore();
+  const { 
+    activeSidebar, 
+    setActiveSidebar, 
+    sidebarOpen,
+    preserveCurrentPath,
+    restoreComplaintPath 
+  } = useMapOverviewStore();
 
   // 토글 함수
   const toggleSidebar = () => {
@@ -53,6 +60,12 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     } else {
       setActiveSidebar(lastOpenedSidebar || 'complaint');
       onSidebarChange(true);
+
+      if ((lastOpenedSidebar || 'complaint') === 'complaint') {
+        const targetPath = restoreComplaintPath();
+        if (targetPath) navigate(targetPath);
+        else console.log('MapSideMenu - targetPath X exist?:', targetPath)
+      }
     }
   };
 
@@ -70,15 +83,24 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       onSidebarChange(true);
 
       if (type === 'complaint') {
-        navigate('/map/overview/complaints');
+        const targetPath = restoreComplaintPath();
+        if (targetPath) navigate(targetPath);
+        else console.log('MapSideMenu - targetPath X exist?:', targetPath)
       }
     }
   };
 
   // Sync sidebar state with parent component
-  React.useEffect(() => {
+  useEffect(() => {
     onSidebarChangeRef.current(sidebarOpen);
   }, [sidebarOpen]);
+
+  // 현재 경로 저장
+  useEffect(() => {
+    if (location.pathname.includes('/map/overview/complaints/')) {
+      preserveCurrentPath();
+    }
+  }, [location.pathname, preserveCurrentPath]);
 
   // 각 사이드바에 들어갈 content 컴포넌트
   const sidebarContents = {

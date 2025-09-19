@@ -14,10 +14,6 @@ interface MapOverviewState {
   sidebarOpen: boolean;
   activeSidebar: 'complaint' | 'vehicle' | 'stats' | null;
 
-  // Navigation state
-  currentView: 'list' | 'detail' | null;
-  lastComplaintListPath: string | null;
-
   // Map state
   mapCenter: { lat: number; lng: number };
   mapZoom: number;
@@ -30,21 +26,33 @@ interface MapOverviewState {
   setMapCenter: (center: { lat: number; lng: number }) => void;
   setMapZoom: (zoom: number) => void;
 
-  // Navigation actions
-  setCurrentView: (view: 'list' | 'detail' | null) => void;
-  setLastComplaintListPath: (path: string | null) => void;
-
   // Helper actions
   clearSelectedComplaint: () => void;
   openComplaintDetail: (complaintId: string) => void;
   openComplaintList: () => void;
   resetMapOverview: () => void;
+
+  // Navigation state
+  currentView: 'list' | 'detail' | null;
+
+  // Navigation actions
+  setCurrentView: (view: 'list' | 'detail' | null) => void;
+  setLastComplaintListPath: (path: string | null) => void;
+
+  // URL state management
+  currentComplaintPath: string | null;
+  lastComplaintListPath: string | null;
+  
+  // New actions
+  setCurrentComplaintPath: (path: string | null) => void;
+  preserveCurrentPath: () => void;
+  restoreComplaintPath: () => string | null;
 }
 
 // Create the map overview store
 export const useMapOverviewStore = create<MapOverviewState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       // Initial state
       selectedComplaintId: null,
       selectedComplaint: null,
@@ -52,6 +60,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       activeSidebar: null,
       currentView: null,
       lastComplaintListPath: null,
+      currentComplaintPath: null,
       mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
       mapZoom: 2,
 
@@ -78,6 +87,21 @@ export const useMapOverviewStore = create<MapOverviewState>()(
 
       setLastComplaintListPath: (path) => set({ lastComplaintListPath: path }),
 
+      // New URL management actions
+      setCurrentComplaintPath: (path) => set({ currentComplaintPath: path }),
+
+      preserveCurrentPath: () => {
+        const currentPath = window.location.pathname;
+        if (currentPath.includes('/map/overview/complaints/')) {
+          set({ currentComplaintPath: currentPath });
+        }
+      },
+
+      restoreComplaintPath: () => {
+        const state = get();
+        return state.currentComplaintPath || '/map/overview/complaints';
+      },
+
       // Helper actions
       clearSelectedComplaint: () =>
         set({
@@ -94,14 +118,20 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           currentView: 'detail',
         }),
 
-      openComplaintList: () =>
+      openComplaintList: () => {
+        const state = get();
+        const targetPath = state.currentComplaintPath || '/map/overview/complaints';
+        
         set({
           selectedComplaintId: null,
           selectedComplaint: null,
           activeSidebar: 'complaint',
           sidebarOpen: true,
           currentView: 'list',
-        }),
+        });
+        
+        return targetPath;
+      },
 
       resetMapOverview: () =>
         set({
@@ -126,5 +156,4 @@ export const useMapOverviewStore = create<MapOverviewState>()(
   )
 );
 
-// Export types for use in components
 export type { MapOverviewState };

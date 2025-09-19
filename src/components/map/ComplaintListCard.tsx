@@ -2,6 +2,7 @@ import React from 'react';
 
 import { useNavigate } from 'react-router-dom';
 
+import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import { formatDateTimeToKorean } from '@/utils/formatDate';
 
 import sample from '../../assets/background/sample.jpg';
@@ -23,14 +24,21 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
   const navigate = useNavigate();
 
   const handleCardClick = () => {
-    // Navigate to complaint detail view using the complaint ID
+    // 페이지 이동 전 현재 경로 저장
+    const { preserveCurrentPath } = useMapOverviewStore.getState();
+    preserveCurrentPath();
+
     navigate(`/map/overview/complaints/${complaint.id}`);
   };
 
   return (
     <div className="cursor-pointer" onClick={handleCardClick}>
       <div className="flex items-center md:items-start gap-3 ">
-        <img src={sample} alt="임시 이미지" className="rounded-lg w-28 xsm:w-32 md:w-40" />
+        <img
+          src={sample}
+          alt="임시 이미지"
+          className="rounded-lg w-28 xsm:w-32 md:w-40"
+        />
         <div className="py-1">
           <div className="flex gap-1">
             <img
@@ -53,7 +61,9 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
             ) : (
               ''
             )}
-            <p className="font-semibold text-sm md:text-base truncate">{complaint.content}</p>
+            <p className="font-semibold text-sm md:text-base truncate">
+              {complaint.content}
+            </p>
           </div>
           <p className="text-xs md:text-sm font-semibold text-[#7C7C7C] mt-1">
             {formatDateTimeToKorean(complaint.datetime)}
