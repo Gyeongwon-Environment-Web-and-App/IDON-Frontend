@@ -68,6 +68,7 @@ const ComplaintTable: React.FC = () => {
     setIsPopupOpen,
     setSelectedComplaintId,
     updateComplaint,
+    deleteSelectedComplaints,
   } = useComplaintTableStore();
 
   // Use the enhanced useComplaints hook with dateRange
@@ -343,11 +344,12 @@ const ComplaintTable: React.FC = () => {
 
     const filtered = storeComplaints.filter((complaint) => {
       const searchLower = searchValue.toLowerCase();
-      
+
       // Check if search term matches "담당자 없음" for complaints with no drivers
-      const hasNoDrivers = complaint.teams.length === 0 || 
-        complaint.teams.every(team => team.drivers.length === 0);
-      
+      const hasNoDrivers =
+        complaint.teams.length === 0 ||
+        complaint.teams.every((team) => team.drivers.length === 0);
+
       return (
         complaint.id.toString().includes(searchLower) ||
         complaint.datetime.toLowerCase().includes(searchLower) ||
@@ -364,7 +366,9 @@ const ComplaintTable: React.FC = () => {
             )
         ) ||
         (hasNoDrivers && '담당자 없음'.toLowerCase().includes(searchLower)) ||
-        (complaint.status ? '완료' : '처리중').toLowerCase().includes(searchLower)
+        (complaint.status ? '완료' : '처리중')
+          .toLowerCase()
+          .includes(searchLower)
       );
     });
 
@@ -390,6 +394,25 @@ const ComplaintTable: React.FC = () => {
       setSelectedComplaintId(complaintId.toString());
       setSelectedComplaintStatus(complaint.status);
       setIsPopupOpen(true);
+    }
+  };
+
+  // 삭제 핸들러
+  const handleDelete = async () => {
+    if (selectedRows.size === 0) {
+      alert('삭제할 민원을 선택해주세요.');
+      return;
+    }
+
+    const confirmMessage = `선택된 ${selectedRows.size}개의 민원을 삭제하시겠습니까?`;
+    if (window.confirm(confirmMessage)) {
+      try {
+        await deleteSelectedComplaints();
+        alert('민원이 성공적으로 삭제되었습니다.');
+      } catch (error) {
+        console.error('Delete failed:', error);
+        alert('민원 삭제 중 오류가 발생했습니다.');
+      }
     }
   };
 
@@ -562,6 +585,7 @@ const ComplaintTable: React.FC = () => {
                 variant="outline"
                 size="sm"
                 className="flex px-2 md:px-4 items-center shadow-none bg-[#646464] text-white border-none outline-none hover:bg-under hover:text-white text-sm"
+                onClick={handleDelete}
               >
                 <img src={deleteIcon} alt="삭제 아이콘" />
                 <span className="hidden md:block text-sm">삭제</span>

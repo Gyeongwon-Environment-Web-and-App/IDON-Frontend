@@ -136,4 +136,10 @@ export const complaintService = {
     const response = await apiClient.patch(`/complaint/edit/${id}`, updates);
     return response.data;
   },
+
+  async deleteComplaints(ids: number[]): Promise<void> {
+    await apiClient.delete('/complaint/deleteOneOrMany', {
+      data: { ids },
+    });
+  },
 };

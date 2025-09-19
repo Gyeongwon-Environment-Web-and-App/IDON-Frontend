@@ -3,6 +3,7 @@ import type { DateRange } from 'react-day-picker';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+import { complaintService } from '../services/complaintService';
 import type { Complaint } from '../types/complaint';
 
 // Define complaint table state interface
@@ -37,6 +38,7 @@ interface ComplaintTableState {
   addComplaint: (complaint: Complaint) => void;
   updateComplaint: (id: number, updates: Partial<Complaint>) => void;
   deleteComplaint: (id: number) => void;
+  deleteSelectedComplaints: () => Promise<void>;
   selectAllRows: () => void;
   clearSelection: () => void;
   toggleRowSelection: (id: number) => void;
@@ -108,6 +110,36 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
             [...state.selectedRows].filter((rowId) => rowId !== id)
           ),
         })),
+
+      deleteSelectedComplaints: async () => {
+        const { selectedRows } = get();
+
+        if (selectedRows.size === 0) {
+          console.warn('No complaints selected for deletion');
+          return;
+        }
+
+        try {
+          const idsToDelete = Array.from(selectedRows);
+          await complaintService.deleteComplaints(idsToDelete);
+
+          // Remove deleted complaints from both arrays
+          set((state) => ({
+            complaints: state.complaints.filter(
+              (complaint) => !selectedRows.has(complaint.id)
+            ),
+            filteredComplaints: state.filteredComplaints.filter(
+              (complaint) => !selectedRows.has(complaint.id)
+            ),
+            selectedRows: new Set(), // Clear selection after deletion
+          }));
+
+          console.log(`Successfully deleted ${idsToDelete.length} complaints`);
+        } catch (error) {
+          console.error('Failed to delete complaints:', error);
+          throw error; // Re-throw to allow component to handle the error
+        }
+      },
 
       selectAllRows: () => {
         const { filteredComplaints } = get();
