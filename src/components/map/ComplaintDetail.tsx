@@ -4,21 +4,18 @@ import { useNavigate, useParams } from 'react-router-dom';
 
 import { useComplaints } from '@/hooks/useComplaints';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
+import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
 
 import sample from '../../assets/background/sample.jpg';
-// import general from "../../assets/icons/categories/tags/general.svg";
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
 import fix from '../../assets/icons/common/fix.svg';
+import greenCircle from '../../assets/icons/map_card/green_circle.svg';
 import pin from '../../assets/icons/map_card/location_pin.svg';
 import phone from '../../assets/icons/map_card/phone.svg';
 import truck from '../../assets/icons/map_card/truck.svg';
-// import other from "../../assets/icons/categories/tags/other.svg";
-// import food from "../../assets/icons/categories/tags/food.svg";
-//! ---------------------------------------------------------------------
-// import greenCircle from "../../assets/icons/map_card/green_circle.svg"
 import yellowCircle from '../../assets/icons/map_card/yellow_circle.svg';
 import leftArrow from '../../assets/icons/navigation/arrows/gray_arrow_left.svg';
 import rightArrow from '../../assets/icons/navigation/arrows/gray_arrow_right.svg';
@@ -65,6 +62,27 @@ const ComplaintDetail: React.FC = () => {
       setIsPopupOpen(false);
       setSelectedComplaintId(null);
       setSelectedComplaintStatus(null);
+    },
+    async (id: number, status: boolean) => {
+      if (selectedComplaint) {
+        try {
+          await complaintService.updateComplaint(id, {
+            phone_no: selectedComplaint.source?.phone_no || '',
+            content: selectedComplaint.content,
+            type: selectedComplaint.type,
+            route: selectedComplaint.route,
+            status: status,
+          });
+
+          // Force refresh the complaint data immediately after successful update
+          const updatedComplaint = await getComplaintById(id.toString());
+          setSelectedComplaint(updatedComplaint);
+          console.log('상태 업데이트 완료:', updatedComplaint.status);
+        } catch (error) {
+          console.error(`${id}번 민원 업데이트 실패:`, error);
+          throw error;
+        }
+      }
     }
   );
 
@@ -89,6 +107,22 @@ const ComplaintDetail: React.FC = () => {
 
     fetchComplaint();
   }, [currentComplaintId, getComplaintById, setSelectedComplaint]);
+
+  useEffect(() => {
+    if (!isPopupOpen && currentComplaintId) {
+      console.log('팝업이 닫혔습니다. 민원 데이터를 새로고침합니다.');
+      const refreshComplaint = async () => {
+        try {
+          const updatedComplaint = await getComplaintById(currentComplaintId);
+          setSelectedComplaint(updatedComplaint);
+          console.log('민원 상태 업데이트&새로고침:', updatedComplaint.status);
+        } catch (error) {
+          console.error('민원 상태 업데이트&새로고침 실패:', error);
+        }
+      };
+      refreshComplaint();
+    }
+  }, [isPopupOpen, currentComplaintId, getComplaintById, setSelectedComplaint]);
 
   if (isLoading) {
     return (
@@ -134,7 +168,6 @@ const ComplaintDetail: React.FC = () => {
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
           onClick={(e) => {
-            console.log('clicked!');
             if (e.target === e.currentTarget) {
               setIsPopupOpen(false);
             }
@@ -213,7 +246,11 @@ const ComplaintDetail: React.FC = () => {
           </div>
 
           <div className="flex gap-2 items-center">
-            <img src={yellowCircle} alt="상태" className="w-4 h-4 mx-0.5" />
+            <img
+              src={selectedComplaint?.status ? greenCircle : yellowCircle}
+              alt="상태"
+              className="w-4 h-4 mx-0.5"
+            />
             <label className="text-lg font-semibold">
               {selectedComplaint?.status === true
                 ? '민원 처리 완료'

@@ -123,8 +123,17 @@ export const complaintService = {
     }
   },
 
-  async updateComplaintStatus(id: string, status: string): Promise<Complaint> {
-    const response = await apiClient.patch(`/complaints/${id}`, { status });
+  async updateComplaint(
+    id: number,
+    updates: {
+      phone_no?: string;
+      content?: string;
+      type?: string;
+      route?: string;
+      status?: boolean | null;
+    }
+  ): Promise<Complaint> {
+    const response = await apiClient.patch(`/complaint/edit/${id}`, updates);
     return response.data;
   },
 };

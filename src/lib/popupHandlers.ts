@@ -14,12 +14,23 @@ export const createStatusChangeHandler = (
   complaintId: string | null,
   currentStatus: boolean | null,
   onUpdate: (id: string, updates: Partial<Complaint>) => void,
-  onClose: () => void
+  onClose: () => void,
+  updateService?: (id: number, status: boolean) => Promise<void>
 ): StatusChangeHandler => {
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (complaintId && currentStatus !== null) {
       const newStatus = !currentStatus;
-      onUpdate(complaintId, { status: newStatus });
+      if (updateService) {
+        try {
+          await updateService(parseInt(complaintId), newStatus);
+          onUpdate(complaintId, { status: newStatus });
+        } catch (error) {
+          console.error('민원 상태 업데이트 실패:', error);
+        }
+      } else {
+        // onUpdate(complaintId, { status: newStatus });
+        window.alert('민원 상태 업데이트에 실패했습니다.')
+      }
     }
     onClose();
   };
