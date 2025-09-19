@@ -343,17 +343,28 @@ const ComplaintTable: React.FC = () => {
 
     const filtered = storeComplaints.filter((complaint) => {
       const searchLower = searchValue.toLowerCase();
+      
+      // Check if search term matches "담당자 없음" for complaints with no drivers
+      const hasNoDrivers = complaint.teams.length === 0 || 
+        complaint.teams.every(team => team.drivers.length === 0);
+      
       return (
         complaint.id.toString().includes(searchLower) ||
         complaint.datetime.toLowerCase().includes(searchLower) ||
         complaint.type.toLowerCase().includes(searchLower) ||
         complaint.content.toLowerCase().includes(searchLower) ||
-        complaint.teams[0]?.team_nm.toLowerCase().includes(searchLower) ||
         complaint.address.toLowerCase().includes(searchLower) ||
-        complaint.user.phone_no.toLowerCase().includes(searchLower) ||
-        (complaint.status ? '완료' : '처리중')
-          .toLowerCase()
-          .includes(searchLower)
+        complaint.source.phone_no.toLowerCase().includes(searchLower) ||
+        complaint.route.toLowerCase().includes(searchLower) ||
+        complaint.teams.some(
+          (team) =>
+            team.team_nm.toLowerCase().includes(searchLower) ||
+            team.drivers.some((driver) =>
+              driver.name.toLowerCase().includes(searchLower)
+            )
+        ) ||
+        (hasNoDrivers && '담당자 없음'.toLowerCase().includes(searchLower)) ||
+        (complaint.status ? '완료' : '처리중').toLowerCase().includes(searchLower)
       );
     });
 
