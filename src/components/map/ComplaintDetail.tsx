@@ -54,7 +54,6 @@ const ComplaintDetail: React.FC = () => {
     selectedComplaintId,
     selectedComplaintStatus,
     (id: string, updates: Partial<Complaint>) => {
-      // Convert string ID to number for the store
       const numericId = parseInt(id, 10);
       if (isNaN(numericId)) {
         console.error('Invalid complaint ID:', id);
@@ -223,7 +222,11 @@ const ComplaintDetail: React.FC = () => {
             <button
               className="text-[#0009FF] p-0 ml-1"
               onClick={() => {
-                setIsPopupOpen(true);
+                if (selectedComplaint) {
+                  setSelectedComplaintId(selectedComplaint.id.toString());
+                  setSelectedComplaintStatus(selectedComplaint.status);
+                  setIsPopupOpen(true);
+                }
               }}
             >
               상태수정

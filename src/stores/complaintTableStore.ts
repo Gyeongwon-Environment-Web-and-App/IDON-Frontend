@@ -19,7 +19,7 @@ interface ComplaintTableState {
   // UI state
   isPopupOpen: boolean;
   selectedComplaintId: string | null;
-  selectedComplaintStatus: '처리중' | '완료' | null;
+  selectedComplaintStatus: boolean | null;
   selectedRows: Set<number>;
 
   // Actions
@@ -30,7 +30,7 @@ interface ComplaintTableState {
   setFilteredComplaints: (complaints: Complaint[]) => void;
   setIsPopupOpen: (isOpen: boolean) => void;
   setSelectedComplaintId: (id: string | null) => void;
-  setSelectedComplaintStatus: (status: '처리중' | '완료' | null) => void;
+  setSelectedComplaintStatus: (status: boolean | null) => void;
   setSelectedRows: (rows: Set<number>) => void;
 
   // Helper actions

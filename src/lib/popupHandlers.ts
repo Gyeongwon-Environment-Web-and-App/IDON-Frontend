@@ -12,14 +12,14 @@ export interface StatusChangeHandler {
 // Create reusable status change handler
 export const createStatusChangeHandler = (
   complaintId: string | null,
-  currentStatus: '처리중' | '완료' | null,
+  currentStatus: boolean | null,
   onUpdate: (id: string, updates: Partial<Complaint>) => void,
   onClose: () => void
 ): StatusChangeHandler => {
   const handleConfirm = () => {
-    if (complaintId && currentStatus) {
-      const newStatus = currentStatus === '처리중' ? '완료' : '처리중';
-      onUpdate(complaintId, { status: newStatus === '완료' });
+    if (complaintId && currentStatus !== null) {
+      const newStatus = !currentStatus;
+      onUpdate(complaintId, { status: newStatus });
     }
     onClose();
   };
@@ -29,7 +29,7 @@ export const createStatusChangeHandler = (
   };
 
   const getMessage = () => {
-    if (currentStatus === '처리중') {
+    if (currentStatus === false) {
       return React.createElement(
         React.Fragment,
         null,
@@ -46,7 +46,7 @@ export const createStatusChangeHandler = (
         ),
         React.createElement('p', null, '수정하시겠습니까?')
       );
-    } else if (currentStatus === '완료') {
+    } else if (currentStatus === true) {
       return React.createElement(
         React.Fragment,
         null,
