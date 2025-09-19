@@ -139,25 +139,34 @@ const ComplaintDetail: React.FC = () => {
     console.log('Complaint Detail Error: ', fetchError);
 
     return (
-      <div className="p-6">
+      <div className="">
+        <header className="w-full flex items-center">
+          <button
+            className="flex text-xl font-semibold text-gray-900 px-2 gap-1"
+            onClick={() => navigate('/map/overview/complaints')}
+          >
+            <img src={leftArrow} alt="왼쪽 화살표" />
+            민원 목록
+          </button>
+        </header>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <div className="flex items-center">
             <div className="text-red-600 text-sm">{fetchError}</div>
           </div>
         </div>
+        <footer className="absolute bottom-2 right-1 w-full flex justify-end items-center">
+          <button
+            className="flex text-lg font-semibold text-gray-900 px-2 gap-1"
+            onClick={() => navigate('/complaints/table')}
+          >
+            민원 내역 / 관리로 돌아가기
+            <img src={rightArrow} alt="오른쪽 화살표" />
+          </button>
+        </footer>
       </div>
     );
   }
 
-  // if (!selectedComplaint) {
-  //   return (
-  //     <div className="p-6">
-  //       <div className="text-center text-gray-500">
-  //         <p className="text-sm">선택된 민원이 없습니다.</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
   if (!selectedComplaint) {
     console.log('no selected complaint');
   }

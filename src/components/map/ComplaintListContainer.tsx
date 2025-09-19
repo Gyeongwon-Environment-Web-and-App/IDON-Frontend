@@ -16,6 +16,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   dateRange,
 }) => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+  const [selectedTrash, setSelectedTrash] = useState<string>('');
 
   // Use the useComplaints hook with the dateRange from context
   const { complaints, isLoading, fetchError } = useComplaints(dateRange);
@@ -56,6 +57,30 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
 
   return (
     <div className="w-full h-full flex flex-col">
+      <div
+        className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
+      >
+        {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
+          <button
+            key={label}
+            type="button"
+            className={`
+              flex-1 px-4 font-bold
+              ${selectedTrash === label ? 'bg-lighter-green' : ''}
+              ${idx === 0 ? 'rounded-l' : ''}
+              ${idx === arr.length - 1 ? 'rounded-r' : ''}
+              focus:outline-none
+            `}
+            style={{
+              borderRight:
+                idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+            }}
+            onClick={() => setSelectedTrash(label)}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
       {isLoading && (
         <div className="text-center text-gray-500 py-5">
           <p className="text-sm">민원 목록을 불러오는 중...</p>

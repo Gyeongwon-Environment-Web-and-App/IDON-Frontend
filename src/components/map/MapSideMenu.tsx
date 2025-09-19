@@ -87,8 +87,36 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     ) : (
       <ComplaintListContainer dateRange={dateRange} />
     ),
-    vehicle: <div className="p-6">차량 정보 컴포넌트</div>,
-    stats: <div className="p-6">구역별 통계 컴포넌트</div>,
+    vehicle: (
+      <div className="">
+        <div
+          className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
+        >
+          {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
+            <button
+              key={label}
+              type="button"
+              className={`
+              flex-1 px-4 font-bold
+              ${selectedTrash === label ? 'bg-lighter-green' : ''}
+              ${idx === 0 ? 'rounded-l' : ''}
+              ${idx === arr.length - 1 ? 'rounded-r' : ''}
+              focus:outline-none
+            `}
+              style={{
+                borderRight:
+                  idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+              }}
+              onClick={() => setSelectedTrash(label)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        차량 정보 컴포넌트
+      </div>
+    ),
+    stats: <div className="">구역별 통계 컴포넌트</div>,
   };
 
   return (
@@ -177,30 +205,6 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
             />
-          </div>
-          <div
-            className={`flex w-full text-[0.73rem] md:text-sm border border-light-border rounded mb-3`}
-          >
-            {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
-              <button
-                key={label}
-                type="button"
-                className={`
-                  flex-1 px-4 font-bold
-                  ${selectedTrash === label ? 'bg-lighter-green' : ''}
-                  ${idx === 0 ? 'rounded-l' : ''}
-                  ${idx === arr.length - 1 ? 'rounded-r' : ''}
-                  focus:outline-none
-                `}
-                style={{
-                  borderRight:
-                    idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
-                }}
-                onClick={() => setSelectedTrash(label)}
-              >
-                {label}
-              </button>
-            ))}
           </div>
           <div className="flex-1">{sidebarContents[activeSidebar]}</div>
         </div>
