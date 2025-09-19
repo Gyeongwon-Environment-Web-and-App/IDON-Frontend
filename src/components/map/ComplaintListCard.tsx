@@ -28,7 +28,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
   };
 
   return (
-    <div className="" onClick={handleCardClick}>
+    <div className="cursor-pointer" onClick={handleCardClick}>
       <div className="flex items-center md:items-start gap-3 ">
         <img src={sample} alt="임시 이미지" className="rounded-lg w-28 xsm:w-32 md:w-40" />
         <div className="py-1">
