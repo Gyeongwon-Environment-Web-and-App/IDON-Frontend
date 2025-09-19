@@ -307,17 +307,6 @@ const ComplaintDetail: React.FC = () => {
           </div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer className="absolute bottom-2 right-1 w-full flex justify-end items-center">
-        <button
-          className="flex text-lg font-semibold text-gray-900 px-2 gap-1"
-          onClick={() => navigate('/complaints/table')}
-        >
-          민원 내역 / 관리로 돌아가기
-          <img src={rightArrow} alt="오른쪽 화살표" />
-        </button>
-      </footer>
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -25,6 +25,7 @@ const ComplaintManage = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [createdComplaintId, setCreatedComplaintId] = useState<number>();
 
   // Get form data from Zustand store
   const { formData, resetForm } = useComplaintFormStore();
@@ -138,6 +139,7 @@ const ComplaintManage = () => {
       const response = await apiClient.post('/complaint/create', complaintData);
 
       console.log('민원 제출 성공:', response.data);
+      setCreatedComplaintId(response.data.id);
 
       setIsPopupOpen(true);
     } catch (error) {
@@ -159,16 +161,15 @@ const ComplaintManage = () => {
           }
           yesNo={false}
           onFirstClick={() => {
-            // ! navigate to complaint detail with id
             setIsPopupOpen(false);
             resetForm();
-            console.log('first click');
-            window.alert('개발 중입니다.');
+            setShowConfirm(false);
+            navigate(`/map/overview/complaints/${createdComplaintId}`);
           }}
           onSecondClick={() => {
             setIsPopupOpen(false);
             resetForm();
-            console.log('navigate to table');
+            setShowConfirm(false);
             navigate('/complaints/table');
           }}
           toHome={true}

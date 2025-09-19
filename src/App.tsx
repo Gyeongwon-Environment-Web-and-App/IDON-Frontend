@@ -48,11 +48,11 @@ const AppContent: React.FC = () => {
             <Route path="/complaints/form" element={<ComplaintManage />} />
             <Route path="/complaints/stats" element={<ComplaintManage />} />
             <Route path="/map/overview" element={<MapOverview />} />
-            <Route path="/map/overview/complaints" element={<MapOverview />} />
             <Route
               path="/map/overview/complaints/:complaintId"
               element={<MapOverview />}
             />
+            <Route path="/map/overview/complaints" element={<MapOverview />} />
             <Route path="/dev/cache" element={<CacheManager />} />
           </>
         ) : (

@@ -100,11 +100,9 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
           {formatDateToYYMMDD(complaint.datetime)}
           <Separator orientation="vertical" className="h-4" />
           {complaint.user.name}
-          <img
-            src={bad ? attentionRed : ''}
-            alt="악성민원 태그"
-            className="w-5"
-          />
+          {bad && (
+            <img src={attentionRed} alt="악성민원 태그" className="w-5" />
+          )}
         </div>
         <div className="flex font-bold text-lg">
           <img

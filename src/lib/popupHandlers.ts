@@ -29,7 +29,7 @@ export const createStatusChangeHandler = (
         }
       } else {
         // onUpdate(complaintId, { status: newStatus });
-        window.alert('민원 상태 업데이트에 실패했습니다.')
+        window.alert('민원 상태 업데이트에 실패했습니다.');
       }
     }
     onClose();

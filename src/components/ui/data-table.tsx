@@ -98,7 +98,7 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
-                  className={onRowClick ? 'hover:bg-gray-50' : ''}
+                  className={`cursor-pointer ${onRowClick ? 'hover:bg-gray-50' : ''}`}
                 >
                   {row.getVisibleCells().map((cell, index) => {
                     const isLastCell =
@@ -106,7 +106,7 @@ export function DataTable<TData, TValue>({
                     return (
                       <TableCell
                         key={cell.id}
-                        className={`text-base text-black ${
+                        className={`text-[14.5px] text-black ${
                           !isLastCell ? 'border-r border-d9d9d9' : ''
                         }`}
                         onClick={(e) => {

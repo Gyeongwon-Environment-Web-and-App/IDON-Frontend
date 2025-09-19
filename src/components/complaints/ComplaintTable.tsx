@@ -116,7 +116,7 @@ const ComplaintTable: React.FC = () => {
 
   // 행 클릭 핸들러 - 지도로 네비게이션
   const handleRowClick = (complaintId: number) => {
-    navigate(`/map/overview/${complaintId}`);
+    navigate(`/map/overview/complaints/${complaintId}`);
   };
 
   // 컬럼 정의
@@ -167,14 +167,18 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'type',
       header: '종류',
       cell: ({ row }) => (
-        <div className="text-center">{row.getValue('type')}</div>
+        <div className="text-center truncate">{row.getValue('type')}</div>
       ),
     },
     {
       accessorKey: 'category',
       header: '카테고리',
       cell: ({ row }) => (
-        <div className="text-center">{row.original.category}</div>
+        <div className="text-center">
+          {row.original.teams?.length > 0
+            ? row.original.teams.map((team) => team.category).join(', ')
+            : '카테고리 없음'}
+        </div>
       ),
     },
     {
@@ -204,15 +208,38 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'content',
       header: '민원 내용',
       cell: ({ row }) => (
-        <div className="text-left">{row.getValue('content')}</div>
+        <div className="text-left truncate">{row.getValue('content')}</div>
       ),
     },
     {
       accessorKey: 'user.phone_no',
       header: '연락처',
-      cell: ({ row }) => (
-        <div className="text-center">{row.original.user.phone_no}</div>
-      ),
+      cell: ({ row }) => {
+        const phoneNum: string = row.original.source.phone_no;
+        const shortPhoneNum: string = `${phoneNum.slice(3)}...`;
+        const shouldShowTooltip = phoneNum.length > 6;
+
+        if (shouldShowTooltip) {
+          return (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className="text-center cursor-pointer">
+                    {shortPhoneNum}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-md break-words text-base text-black">
+                    {phoneNum}
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        }
+
+        return <div className="text-center">{phoneNum}</div>;
+      },
     },
     {
       accessorKey: 'teams',
@@ -224,12 +251,10 @@ const ComplaintTable: React.FC = () => {
       ),
     },
     {
-      accessorKey: 'teams',
-      header: '구청/대행',
+      accessorKey: 'route',
+      header: '접수처',
       cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.teams[0]?.team_nm || '담당팀 없음'}
-        </div>
+        <div className="text-center">{row.original.route}</div>
       ),
     },
     {
@@ -244,7 +269,6 @@ const ComplaintTable: React.FC = () => {
                 : 'text-gray-500'
             }`}
             onClick={() => {
-              // 처리중일 때는 완료로, 완료일 때는 처리중으로 변경
               const onStatusChange = row.original.onStatusChange;
               if (onStatusChange) {
                 onStatusChange(row.original.id);
@@ -353,7 +377,7 @@ const ComplaintTable: React.FC = () => {
     const complaint = filteredComplaints.find((c) => c.id === complaintId);
     if (complaint) {
       setSelectedComplaintId(complaintId.toString());
-      setSelectedComplaintStatus(complaint.status ? '완료' : '처리중');
+      setSelectedComplaintStatus(complaint.status);
       setIsPopupOpen(true);
     }
   };

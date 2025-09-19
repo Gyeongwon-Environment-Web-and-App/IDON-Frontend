@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
-import { useNavigate, useParams, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { Search } from '@/lib/icons';
 
@@ -32,7 +32,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [selectedTrash, setSelectedTrash] = useState<string>('');
-  
+
   const { complaintId } = useParams<{ complaintId?: string }>();
   const navigate = useNavigate();
   const location = useLocation();
@@ -44,12 +44,12 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     onSidebarChangeRef.current = onSidebarChange;
   }, [onSidebarChange]);
 
-  const { 
-    activeSidebar, 
-    setActiveSidebar, 
+  const {
+    activeSidebar,
+    setActiveSidebar,
     sidebarOpen,
     preserveCurrentPath,
-    restoreComplaintPath 
+    restoreComplaintPath,
   } = useMapOverviewStore();
 
   // 토글 함수
@@ -64,7 +64,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       if ((lastOpenedSidebar || 'complaint') === 'complaint') {
         const targetPath = restoreComplaintPath();
         if (targetPath) navigate(targetPath);
-        else console.log('MapSideMenu - targetPath X exist?:', targetPath)
+        else console.log('MapSideMenu - targetPath X exist?:', targetPath);
       }
     }
   };
@@ -85,7 +85,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       if (type === 'complaint') {
         const targetPath = restoreComplaintPath();
         if (targetPath) navigate(targetPath);
-        else console.log('MapSideMenu - targetPath X exist?:', targetPath)
+        else console.log('MapSideMenu - targetPath X exist?:', targetPath);
       }
     }
   };
@@ -229,6 +229,17 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
             />
           </div>
           <div className="flex-1">{sidebarContents[activeSidebar]}</div>
+          {activeSidebar === 'complaint' && (
+            <footer className="absolute bottom-2 right-1 w-full flex justify-end items-center">
+              <button
+                className="flex text-lg font-semibold text-gray-900 px-2 gap-1"
+                onClick={() => navigate('/complaints/table')}
+              >
+                민원 내역 / 관리로 돌아가기
+                <img src={grayRightArrow} alt="오른쪽 화살표" />
+              </button>
+            </footer>
+          )}
         </div>
       )}
     </div>

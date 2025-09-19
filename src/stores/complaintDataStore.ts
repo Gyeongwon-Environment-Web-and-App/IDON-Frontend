@@ -25,7 +25,7 @@ interface ComplaintData {
     longitude: number;
   };
   createdAt: string;
-  status: '처리중' | '완료';
+  status: boolean;
   [key: string]:
     | string
     | number
