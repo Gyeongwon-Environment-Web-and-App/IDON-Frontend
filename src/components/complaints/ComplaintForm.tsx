@@ -14,11 +14,13 @@ import AdvancedKakaoMap from '../map/AdvancedKakaoMap';
 interface ComplaintFormProps {
   dateTimeBox: React.ReactNode;
   onSubmit: () => void;
+  isEditMode?: boolean;
 }
 
 export default function ComplaintForm({
   dateTimeBox,
   onSubmit,
+  isEditMode = false,
 }: ComplaintFormProps) {
   // Get state and actions from Zustand store
   const {
@@ -724,7 +726,7 @@ export default function ComplaintForm({
           className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded"
           onClick={handleSubmit}
         >
-          검토 및 전송
+          {isEditMode ? '수정 완료' : '검토 및 전송'}
         </button>
       </div>
     </div>

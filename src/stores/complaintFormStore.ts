@@ -37,6 +37,9 @@ interface ComplaintFormState {
   setAddressFrequencyInfo: (addressInfo: number | null) => void;
   setPhoneFrequencyInfo: (phoneInfo: number | null) => void;
   resetForm: () => void;
+
+  // Edit mode actions
+  populateFormForEdit: (complaintData: any) => void;
 }
 
 // Step 2: Initial form data
@@ -99,5 +102,32 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
       tempAddress: '',
       addressFrequencyInfo: null,
       phoneFrequencyInfo: null,
+    }),
+
+  // Edit mode actions
+  populateFormForEdit: (complaintData) =>
+    set(() => {
+      const formData = {
+        address: complaintData.address || '',
+        datetime: complaintData.datetime || new Date().toISOString(),
+        categories: complaintData.categories || [],
+        type: complaintData.type || '',
+        content: complaintData.content || '',
+        route: complaintData.route || '',
+        source: {
+          phone_no: complaintData.source?.phone_no || '',
+          bad: complaintData.source?.bad || false,
+        },
+        notify: {
+          usernames: complaintData.notify?.usernames || [],
+        },
+        uploadedFiles: complaintData.uploadedFiles || [],
+        coordinates: complaintData.coordinates || null,
+      };
+
+      return {
+        formData,
+        tempAddress: formData.address,
+      };
     }),
 }));

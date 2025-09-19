@@ -173,6 +173,7 @@ const ComplaintDetail: React.FC = () => {
 
   return (
     <div className="w-full">
+      {/* Status Change Popup */}
       {isPopupOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center"
@@ -217,7 +218,9 @@ const ComplaintDetail: React.FC = () => {
             <button
               className="flex p-0 w-[3.2rem]"
               onClick={() => {
-                console.log('수정버튼 클릭');
+                if (selectedComplaint) {
+                  navigate(`/complaints/edit/${selectedComplaint.id}`);
+                }
               }}
             >
               <img src={fix} alt="수정버튼" />
@@ -298,7 +301,9 @@ const ComplaintDetail: React.FC = () => {
           </div>
 
           <div className="pt-2 md:pt-5">
-            <label className="text-base md:text-lg font-semibold">민원 내용</label>
+            <label className="text-base md:text-lg font-semibold">
+              민원 내용
+            </label>
             <div className="mt-2 p-3 rounded-lg bg-ebebeb h-32 xs:h-48 md:h-40">
               <p className="text-sm whitespace-pre-wrap">
                 {selectedComplaint?.content || '민원 내용이 없습니다.'}
