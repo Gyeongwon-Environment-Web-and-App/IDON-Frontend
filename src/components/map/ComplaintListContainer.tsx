@@ -73,12 +73,12 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
       )}
       {!isLoading && !fetchError && complaints.length > 0 && (
         <div className="flex flex-col h-full">
-          <div className="flex items-center justify-between px-2 py-5">
-            <div className="rounded-lg">
-              <p className="font-semibold text-base text-[#8D8D8D] mb-1">
+          <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
+            <div className="rounded-lg mr-2 md:mr-0">
+              <p className="font-semibold text-sm md:text-base text-[#8D8D8D] mb-1">
                 현재 조회 중인 지역은
               </p>
-              <h3 className="text-xl font-bold">
+              <h3 className="text-base xsm:text-lg md:text-xl font-bold">
                 서울특별시 도봉구 {getSelectedAreaDisplay(selectedAreas)}
               </h3>
             </div>
@@ -86,7 +86,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
               onSelectionChange={handleAreaSelectionChange}
               buttonText="구역 선택"
               buttonClassName="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
-              contentClassName="w-28 !p-0"
+              contentClassName="w-20 md:w-28 !p-0"
               childItemClassName="pl-10 bg-f0f0f0 rounded-none bg-[#E9FFD4] hover:bg-[#E2F7CF]"
               triangleIcon={triangle}
             />
@@ -95,7 +95,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
             <p className="font-semibold text-sm pb-1 mb-5 border-b border-d9d9d9">
               전체 민원 목록
             </p>
-            <div className="h-[71vh] border border-black space-y-3 overflow-y-auto scrollbar-hide">
+            <div className="xxxs:h-[63vh] xxs:h-[60vh] xs:h-[71vh] xsm:h-[71vh] space-y-3 overflow-y-auto scrollbar-hide">
               {complaints.map((complaint) => (
                 <ComplaintListCard key={complaint.id} complaint={complaint} />
               ))}

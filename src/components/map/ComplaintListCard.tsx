@@ -29,8 +29,8 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
 
   return (
     <div className="" onClick={handleCardClick}>
-      <div className="flex items-start gap-3">
-        <img src={sample} alt="임시 이미지" className="rounded-lg w-40" />
+      <div className="flex items-center md:items-start gap-3 ">
+        <img src={sample} alt="임시 이미지" className="rounded-lg w-28 xsm:w-32 md:w-40" />
         <div className="py-1">
           <div className="flex gap-1">
             <img
@@ -46,21 +46,21 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
                         : ''
               }
               alt="쓰레기 상성 태그"
-              className="w-12"
+              className="w-10 md:w-12"
             />
             {complaint.source.bad ? (
-              <img src={bad} alt="반복민원 태그" className="w-14" />
+              <img src={bad} alt="반복민원 태그" className="w-12 md:w-14" />
             ) : (
               ''
             )}
-            <p className="font-semibold text-base">{complaint.content}</p>
+            <p className="font-semibold text-sm md:text-base truncate">{complaint.content}</p>
           </div>
-          <p className="text-sm font-semibold text-[#7C7C7C] mt-1">
+          <p className="text-xs md:text-sm font-semibold text-[#7C7C7C] mt-1">
             {formatDateTimeToKorean(complaint.datetime)}
           </p>
           <div className="flex items-center pb-1">
             <img src={pin} alt="핀 아이콘" className="mt-1 mr-0.5" />
-            <p className="text-sm text-black font-semibold mt-1">
+            <p className="text-xs md:text-sm text-black font-semibold mt-1">
               {complaint.address.slice(6)}
             </p>
           </div>
@@ -70,7 +70,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               alt="처리중 원"
               className="ml-0.5 mr-1"
             />
-            <p className="text-sm text-black font-semibold">
+            <p className="text-xs md:text-sm text-black font-semibold">
               {complaint.status ? '완료' : '처리중'}
             </p>
           </div>
