@@ -196,7 +196,7 @@ const ComplaintDetail: React.FC = () => {
       {/* Header */}
       <header className="w-full flex items-center">
         <button
-          className="flex text-xl font-semibold text-gray-900 px-2 gap-1"
+          className="flex text-xl font-semibold text-gray-900 px-0 md:px-2 gap-1"
           onClick={() => navigate('/map/overview/complaints')}
         >
           <img src={leftArrow} alt="왼쪽 화살표" />
@@ -205,10 +205,10 @@ const ComplaintDetail: React.FC = () => {
       </header>
 
       {/* Complaint Details */}
-      <div className="p-4 py-2">
-        <img src={sample} alt="샘플사진" className="rounded-sm mb-6" />
+      <div className="p-2 py-0 md:p-4 md:py-2">
+        <img src={sample} alt="샘플사진" className="rounded-sm mb-3 md:mb-6" />
 
-        <div className="space-y-2">
+        <div className="space-y-1 md:space-y-2">
           <div className="flex gap-2 items-center">
             <img src={recycle} alt={`${selectedComplaint?.type || '재활용'}`} />
             <p className="text-xl font-semibold">
@@ -223,7 +223,7 @@ const ComplaintDetail: React.FC = () => {
               <img src={fix} alt="수정버튼" />
             </button>
           </div>
-          <p className="text-base text-[#7C7C7C] font-semibold">
+          <p className="text-sm md:text-base text-[#7C7C7C] font-semibold">
             {selectedComplaint?.datetime
               ? new Date(selectedComplaint.datetime).toLocaleString('ko-KR', {
                   year: 'numeric',
@@ -236,16 +236,16 @@ const ComplaintDetail: React.FC = () => {
               : '날짜 정보 없음'}
           </p>
 
-          <div className="flex gap-2 items-center">
-            <img src={pin} alt="주소 핀" className="w-5 h-5" />
-            <label className="text-lg font-semibold">
+          <div className="flex gap-1 md:gap-2 items-center">
+            <img src={pin} alt="주소 핀" className="w-4 md:w-5 h-4 md:h-5" />
+            <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.address || '주소 정보 없음'}
             </label>
           </div>
 
-          <div className="flex gap-2 items-center">
-            <img src={phone} alt="전화" className="w-5 h-5" />
-            <label className="text-lg font-semibold">
+          <div className="flex gap-1 md:gap-2 items-center">
+            <img src={phone} alt="전화" className="w-4 md:w-5 h-4 md:h-5" />
+            <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.teams[0]?.team_nm || '담당부서'} (
               {selectedComplaint?.user.phone_no ||
                 getPhoneNumber(selectedComplaint) ||
@@ -254,19 +254,19 @@ const ComplaintDetail: React.FC = () => {
             </label>
           </div>
 
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-1 md:gap-2 items-center">
             <img
               src={selectedComplaint?.status ? greenCircle : yellowCircle}
               alt="상태"
-              className="w-4 h-4 mx-0.5"
+              className="w-3 h-3 md:w-4 md:h-4 mx-0.5"
             />
-            <label className="text-lg font-semibold">
+            <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.status === true
                 ? '민원 처리 완료'
                 : '민원 처리 중'}
             </label>
             <button
-              className="text-[#0009FF] p-0 ml-1"
+              className="text-[#0009FF] p-0 ml-1 text-sm md:text-base"
               onClick={() => {
                 if (selectedComplaint) {
                   setSelectedComplaintId(selectedComplaint.id.toString());
@@ -279,22 +279,27 @@ const ComplaintDetail: React.FC = () => {
             </button>
           </div>
 
-          <div className="flex gap-2 items-center">
-            <img src={truck} alt="차량" className="w-5 h-5" />
-            <label className="text-lg font-semibold">
+          <div className="flex gap-1 md:gap-2 items-center">
+            <img src={truck} alt="차량" className="w-4 md:w-5 h-4 md:h-5" />
+            <label className="text-base md:text-lg font-semibold">
               {selectedComplaint?.teams[0]?.drivers[0]?.name ||
                 getFirstUsername(selectedComplaint) ||
                 '담당자 정보 없음'}
             </label>
-            <p className="text-base font-semibold text-[#7C7C7C]">
-              {selectedComplaint?.status ? '수거 완료' : '차량이 수거 중이에요'}
+            <p className="text-sm md:text-base font-semibold text-[#7C7C7C]">
+              {selectedComplaint?.status ? '수거 완료' : '차량 수거 중'}
             </p>
-            <button className="text-[#0009FF] p-0">동선 조회</button>
+            <button
+              className="text-[#0009FF] p-0 text-sm md:text-base"
+              onClick={() => window.alert('아직 개발 중입니다!')}
+            >
+              동선 조회
+            </button>
           </div>
 
-          <div className="pt-5">
-            <label className="text-lg font-semibold">민원 내용</label>
-            <div className="mt-2 p-3 rounded-lg bg-ebebeb h-40">
+          <div className="pt-2 md:pt-5">
+            <label className="text-base md:text-lg font-semibold">민원 내용</label>
+            <div className="mt-2 p-3 rounded-lg bg-ebebeb h-32 xs:h-48 md:h-40">
               <p className="text-sm whitespace-pre-wrap">
                 {selectedComplaint?.content || '민원 내용이 없습니다.'}
               </p>

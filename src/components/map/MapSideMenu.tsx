@@ -189,10 +189,10 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
       {activeSidebar && (
         <div
           className={`w-[calc(100%-3.5rem)] md:w-[30rem] max-w-full fixed inset-y-0 left-14 md:left-20 h-full bg-white border-r z-40 
-          ${activeSidebar ? 'animate-slideIn' : 'animate-slideOut'} flex flex-col p-3`}
+          ${activeSidebar ? 'animate-slideIn' : 'animate-slideOut'} flex flex-col py-5 md:py-3 px-3`}
           aria-label="사이드바 메뉴"
         >
-          <div className="relative w-full flex h-9 mb-3">
+          <div className="relative w-full flex h-9 mb-1 md:mb-3">
             <Search
               className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
                 isSearchFocused ? 'text-light-green' : 'text-[#575757]'
