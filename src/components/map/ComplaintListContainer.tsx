@@ -122,7 +122,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
             </p>
             <div className="xxxs:h-[63vh] xxs:h-[60vh] xs:h-[71vh] xsm:h-[71vh] space-y-3 overflow-y-auto scrollbar-hide">
               {complaints
-                .sort((a, b) => a.id - b.id)
+                .sort((a, b) => b.id - a.id)
                 .map((complaint) => (
                   <ComplaintListCard key={complaint.id} complaint={complaint} />
                 ))}

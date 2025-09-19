@@ -365,7 +365,7 @@ export default function ComplaintForm({
                 // 포커스를 잃을 때도 임시 주소를 실제 주소로 업데이트
                 updateFormData({ address: tempAddress });
               }}
-              placeholder="주소 또는 장소명을 입력하세요 (예: 시루봉로 285, 서울오봉초등학교)"
+              placeholder="주소 또는 장소명을 입력하세요"
             />
 
             {/* 주소 검색 드롭다운 */}
@@ -547,7 +547,7 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.routeInput ? '' : '직접 입력'}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 mb-3 md:mb-0 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
             value={
               !['경원환경', '다산콜(120)', '구청', '주민센터'].includes(
                 formData.route
@@ -560,7 +560,6 @@ export default function ComplaintForm({
             onBlur={() => setFocus({ routeInput: false })}
             onClick={() => updateFormData({ route: '' })}
           />
-          <div className="h-5 md:hidden"></div>
 
           {/* 직접 전화번호 입력 - 데스크톱에서만 표시 */}
           {formData.route === '경원환경' && (
@@ -570,8 +569,8 @@ export default function ComplaintForm({
                 id="경원환경 직접 전화번호 입력"
                 type="text"
                 value={formData.source.phone_no}
-                className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 py-2 mt-2 mb-5 rounded focus:outline-none"
-                placeholder="직접 전화번호 입력"
+                className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 md:py-2 md:mt-2 md:mb-5 rounded focus:outline-none"
+                placeholder="전화번호 입력 (숫자만)"
                 onChange={(e) =>
                   updateFormData({
                     source: { ...formData.source, phone_no: e.target.value },
@@ -651,7 +650,7 @@ export default function ComplaintForm({
           /> */}
 
           {/* 쓰레기 상세 종류 */}
-          <label className="md:col-span-1 col-span-3 font-bold text-[1rem] py-5">
+          <label className="md:col-span-1 col-span-3 font-bold text-[1rem] md:py-5">
             쓰레기 상세 종류
           </label>
           <input
@@ -659,7 +658,7 @@ export default function ComplaintForm({
             value={formData.type || ''}
             placeholder={focus.input3 ? '' : '입력란'}
             disabled={!formData.categories || formData.categories.length === 0}
-            className={`w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold ${formData.categories && formData.categories.length > 0 ? '' : 'bg-gray-100 cursor-not-allowed'}`}
+            className={`col-span-3 md:col-span-1 w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold ${formData.categories && formData.categories.length > 0 ? '' : 'bg-gray-100 cursor-not-allowed'}`}
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
             onChange={(e) => updateFormData({ type: e.target.value })}
