@@ -166,19 +166,19 @@ const ComplaintTable: React.FC = () => {
     },
     {
       accessorKey: 'type',
-      header: '종류',
+      header: '상세',
       cell: ({ row }) => (
         <div className="text-center truncate">{row.getValue('type')}</div>
       ),
     },
     {
       accessorKey: 'category',
-      header: '카테고리',
+      header: '상성',
       cell: ({ row }) => (
         <div className="text-center">
           {row.original.teams?.length > 0
             ? row.original.teams.map((team) => team.category).join(', ')
-            : '카테고리 없음'}
+            : '상성 없음'}
         </div>
       ),
     },
@@ -461,10 +461,10 @@ const ComplaintTable: React.FC = () => {
       </header>
 
       {/* 검색 및 필터 */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] mb-3">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] mb-3">
         {/* 검색 영역 */}
-        <div className="flex gap-2 items-center justify-start mb-3 md:mb-0">
-          <div className="relative flex flex-1 md:flex-auto md:max-w-80">
+        <div className="flex gap-2 items-center justify-start mb-3 lg:mb-0">
+          <div className="relative flex flex-1 lg:flex-auto lg:max-w-80">
             <Search
               className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
                 isSearchFocused ? 'text-light-green' : 'text-[#575757]'
@@ -492,7 +492,7 @@ const ComplaintTable: React.FC = () => {
         </div>
 
         {/* 버튼들 영역 */}
-        <div className="flex gap-2 flex-wrap md:flex-nowrap items-center justify-between md:justify-normal">
+        <div className="flex gap-2 flex-wrap lg:flex-nowrap items-center justify-between md:justify-normal">
           <div
             className="visible md:hidden shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2 py-1 cursor-pointer flex items-center gap-2 rounded-md h-8 font-medium"
             onClick={handleSelectAll}
@@ -596,7 +596,7 @@ const ComplaintTable: React.FC = () => {
       </div>
 
       {/* 테이블 */}
-      <div className="hidden md:block border border-gray-200 rounded-lg overflow-x-auto">
+      <div className="hidden lg:block border border-gray-200 rounded-lg overflow-x-auto">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
@@ -630,7 +630,7 @@ const ComplaintTable: React.FC = () => {
       </div>
 
       {/* 모바일 카드 뷰 */}
-      <div className="md:hidden space-y-4 mt-4">
+      <div className="lg:hidden space-y-4 mt-4">
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
             <div className="text-gray-500">민원 데이터를 불러오는 중...</div>
@@ -658,7 +658,7 @@ const ComplaintTable: React.FC = () => {
       </div>
 
       {/* 페이지네이션 */}
-      <div className="hidden md:flex items-center justify-center mt-8">
+      <div className="hidden lg:flex items-center justify-center mt-8">
         <div className="flex items-center space-x-2">
           <Button
             variant="outline"

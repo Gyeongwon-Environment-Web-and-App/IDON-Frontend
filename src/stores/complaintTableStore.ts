@@ -115,7 +115,7 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
         const { selectedRows } = get();
 
         if (selectedRows.size === 0) {
-          console.warn('No complaints selected for deletion');
+          console.warn('삭제할 민원 선택되지 않음');
           return;
         }
 
