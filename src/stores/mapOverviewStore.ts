@@ -62,7 +62,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       lastComplaintListPath: null,
       currentComplaintPath: null,
       mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
-      mapZoom: 2,
+      mapZoom: 6,
 
       // Actions
       setSelectedComplaintId: (id) => set({ selectedComplaintId: id }),
@@ -142,7 +142,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           currentView: null,
           lastComplaintListPath: null,
           mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
-          mapZoom: 2,
+          mapZoom: 6,
         }),
     }),
     {

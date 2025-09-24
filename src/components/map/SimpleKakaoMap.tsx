@@ -7,7 +7,17 @@ import React, {
   useState,
 } from 'react';
 
-import type { PinClickEvent, PinData } from '@/types/map';
+import {
+  fetchPolygonsByCategory,
+  getAvailableCategories,
+} from '@/services/polygonService';
+import type {
+  PinClickEvent,
+  PinData,
+  PolygonClickEvent,
+  PolygonFeature,
+  RegionData,
+} from '@/types/map';
 import { batchGeocoding } from '@/utils/geocoding';
 import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
@@ -20,17 +30,21 @@ interface SimpleKakaoMapProps {
   style?: React.CSSProperties;
   pins?: PinData[];
   onPinClick?: (event: PinClickEvent) => void;
+  onPolygonClick?: (event: PolygonClickEvent) => void;
+  showPolygonControls?: boolean;
 }
 
 const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
   (
     {
       center = { lat: 37.6714001064975, lng: 127.041485813197 },
-      zoom = 2,
+      zoom = 6,
       className = 'w-full h-full',
       style,
       pins = [],
       onPinClick,
+      onPolygonClick,
+      showPolygonControls = true,
     },
     ref
   ) => {
@@ -39,9 +53,18 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const containerRef = useRef<HTMLDivElement>(null);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const markersRef = useRef<any[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const polygonsRef = useRef<any[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
+
+    // Polygon state
+    const [selectedCategory, setSelectedCategory] = useState<string>('음식물');
+    const [polygonData, setPolygonData] = useState<RegionData | null>(null);
+    const [isLoadingPolygons, setIsLoadingPolygons] = useState(false);
+    const [polygonError, setPolygonError] = useState<string | null>(null);
+    const [showPolygons, setShowPolygons] = useState(false);
 
     const getCategoryKey = (category: string): string => {
       const categoryMap: Record<string, string> = {
@@ -60,6 +83,15 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         (marker as any).setMap(null);
       });
       markersRef.current = [];
+    }, []);
+
+    // Clear existing polygons
+    const clearPolygons = useCallback(() => {
+      polygonsRef.current.forEach((polygon) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (polygon as any).setMap(null);
+      });
+      polygonsRef.current = [];
     }, []);
 
     // Create marker for a pin
@@ -117,6 +149,186 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       },
       [onPinClick]
     );
+
+    // Create polygon from feature data
+    const createPolygon = useCallback(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (feature: PolygonFeature): any => {
+        if (!mapInstanceRef.current || !window.kakao) return null;
+
+        try {
+          console.log('Creating polygon for feature:', feature);
+
+          // Convert GeoJSON MultiPolygon coordinates to Kakao Maps format
+          // MultiPolygon structure: coordinates[0] = first polygon, coordinates[0][0] = first ring
+          const coordinates = feature.geometry.coordinates[0][0];
+
+          if (!coordinates || coordinates.length < 3) {
+            console.error('Invalid polygon coordinates:', coordinates);
+            return null;
+          }
+
+          console.log('Polygon coordinates:', coordinates);
+
+          // Convert coordinates: GeoJSON is [lng, lat], Kakao Maps is [lat, lng]
+          const path = coordinates
+            .map((coord) => {
+              if (!Array.isArray(coord) || coord.length < 2) {
+                console.error('Invalid coordinate:', coord);
+                return null;
+              }
+              return new window.kakao.maps.LatLng(coord[1], coord[0]);
+            })
+            .filter(Boolean); // Remove any null coordinates
+
+          if (path.length < 3) {
+            console.error(
+              'Not enough valid coordinates for polygon:',
+              path.length
+            );
+            return null;
+          }
+
+          console.log('Converted path:', path);
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const polygon = new (window.kakao.maps as any).Polygon({
+            map: mapInstanceRef.current,
+            path: path,
+            strokeWeight: 2,
+            strokeColor: '#004c80',
+            strokeOpacity: 0.8,
+            fillColor: '#fff',
+            fillOpacity: 0.7,
+          });
+
+          console.log('Polygon created successfully:', polygon);
+
+          // Add click event listener
+          if (onPolygonClick) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (window.kakao.maps as any).event.addListener(
+              polygon,
+              'click',
+              () => {
+                onPolygonClick({
+                  polygon: feature,
+                  map: mapInstanceRef.current,
+                });
+              }
+            );
+          }
+
+          // Add hover effects
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window.kakao.maps as any).event.addListener(
+            polygon,
+            'mouseover',
+            function () {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (polygon as any).setOptions({ fillColor: '#09f' });
+            }
+          );
+
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (window.kakao.maps as any).event.addListener(
+            polygon,
+            'mouseout',
+            function () {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (polygon as any).setOptions({ fillColor: '#fff' });
+            }
+          );
+
+          return polygon;
+        } catch (error) {
+          console.error('Failed to create polygon:', error);
+          console.error('Feature data:', feature);
+          return null;
+        }
+      },
+      [onPolygonClick]
+    );
+
+    // Fetch polygons from API
+    const fetchPolygons = useCallback(async (category: string) => {
+      if (!category) return;
+
+      console.log('Fetching polygons for category:', category);
+      setIsLoadingPolygons(true);
+      setPolygonError(null);
+
+      try {
+        const data = await fetchPolygonsByCategory(category);
+        console.log('Polygon data received:', data);
+
+        if (!data || !data.region_areas || !data.region_areas.features) {
+          throw new Error('Invalid polygon data received from API');
+        }
+
+        if (data.region_areas.features.length === 0) {
+          console.warn('No polygon features found for category:', category);
+          setPolygonError(`No polygons found for ${category}`);
+        } else {
+          setPolygonData(data);
+          console.log('Polygon data set successfully');
+        }
+      } catch (error) {
+        console.error('Failed to fetch polygons:', error);
+        setPolygonError(
+          error instanceof Error ? error.message : 'Failed to load polygons'
+        );
+        setPolygonData(null);
+      } finally {
+        setIsLoadingPolygons(false);
+      }
+    }, []);
+
+    // Render polygons on map
+    const renderPolygons = useCallback(() => {
+      if (
+        !mapInstanceRef.current ||
+        !isLoaded ||
+        !polygonData ||
+        !showPolygons
+      ) {
+        console.log('Skipping polygon render:', {
+          hasMap: !!mapInstanceRef.current,
+          isLoaded,
+          hasPolygonData: !!polygonData,
+          showPolygons,
+        });
+        return;
+      }
+
+      console.log(
+        'Rendering polygons:',
+        polygonData.region_areas.features.length
+      );
+      clearPolygons();
+
+      let successCount = 0;
+      polygonData.region_areas.features.forEach((feature, index) => {
+        console.log(
+          `Creating polygon ${index + 1}/${polygonData.region_areas.features.length}`
+        );
+        const polygon = createPolygon(feature);
+        if (polygon) {
+          polygonsRef.current.push(polygon);
+          successCount++;
+        }
+      });
+
+      console.log(
+        `Successfully created ${successCount}/${polygonData.region_areas.features.length} polygons`
+      );
+
+      if (successCount === 0) {
+        setPolygonError(
+          'Failed to render any polygons. Check console for details.'
+        );
+      }
+    }, [polygonData, showPolygons, isLoaded, clearPolygons, createPolygon]);
 
     // Update pins on map
     const updatePins = useCallback(async () => {
@@ -248,6 +460,40 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       createMarkersFromGeocodedPins();
     }, [createMarkersFromGeocodedPins]);
 
+    // Handle polygon toggle
+    const handlePolygonToggle = useCallback(() => {
+      console.log('Polygon toggle clicked. Current state:', showPolygons);
+      if (!showPolygons) {
+        // Show polygons - fetch data first
+        setShowPolygons(true);
+        if (selectedCategory) {
+          fetchPolygons(selectedCategory);
+        }
+      } else {
+        // Hide polygons
+        setShowPolygons(false);
+        clearPolygons();
+        setPolygonData(null);
+        setPolygonError(null);
+      }
+    }, [showPolygons, selectedCategory, fetchPolygons, clearPolygons]);
+
+    // Fetch polygons when category changes (only if polygons are shown)
+    useEffect(() => {
+      if (showPolygons && selectedCategory) {
+        console.log(
+          'Category changed, fetching polygons for:',
+          selectedCategory
+        );
+        fetchPolygons(selectedCategory);
+      }
+    }, [selectedCategory, showPolygons, fetchPolygons]);
+
+    // Render polygons when data changes
+    useEffect(() => {
+      renderPolygons();
+    }, [renderPolygons]);
+
     // Load SDK on mount
     useEffect(() => {
       if (!isLoaded && !isLoading) {
@@ -259,12 +505,13 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     useEffect(() => {
       return () => {
         clearMarkers();
+        clearPolygons();
         if (mapInstanceRef.current && containerRef.current) {
           containerRef.current.innerHTML = '';
           mapInstanceRef.current = null;
         }
       };
-    }, [clearMarkers]);
+    }, [clearMarkers, clearPolygons]);
 
     if (error) {
       return (
@@ -320,6 +567,56 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             userSelect: 'none',
           }}
         />
+
+        {/* Polygon Controls */}
+        {showPolygonControls && (
+          <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 z-20">
+            <div className="flex flex-col gap-2">
+              {/* Category Selector */}
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                className="px-3 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoadingPolygons}
+              >
+                {getAvailableCategories().map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              {/* Toggle Button */}
+              <button
+                onClick={handlePolygonToggle}
+                disabled={isLoadingPolygons}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  showPolygons
+                    ? 'bg-red-500 text-white hover:bg-red-600'
+                    : 'bg-blue-500 text-white hover:bg-blue-600'
+                } disabled:opacity-50 disabled:cursor-not-allowed`}
+              >
+                {isLoadingPolygons ? (
+                  <div className="flex items-center gap-1">
+                    <div className="animate-spin rounded-full h-3 w-3 border-b border-white"></div>
+                    로딩...
+                  </div>
+                ) : showPolygons ? (
+                  '폴리곤 숨기기'
+                ) : (
+                  '폴리곤 표시'
+                )}
+              </button>
+
+              {/* Error Message */}
+              {polygonError && (
+                <div className="text-xs text-red-600 bg-red-50 p-2 rounded">
+                  {polygonError}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Geocoding loading overlay */}
         {isGeocoding && (

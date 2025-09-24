@@ -28,3 +28,31 @@ export interface PinClickEvent {
   marker: unknown; // Kakao Maps marker instance
   map: unknown; // Kakao Maps instance
 }
+
+// Polygon-related types
+export interface PolygonCoordinates {
+  type: 'MultiPolygon';
+  coordinates: number[][][][];
+}
+
+export interface PolygonFeature {
+  type: 'Feature';
+  properties: {
+    team_id: number;
+    truck_id: number;
+  };
+  geometry: PolygonCoordinates;
+}
+
+export interface RegionData {
+  message: string;
+  region_areas: {
+    type: 'FeatureCollection';
+    features: PolygonFeature[];
+  };
+}
+
+export interface PolygonClickEvent {
+  polygon: PolygonFeature;
+  map: unknown; // Kakao Maps instance
+}
