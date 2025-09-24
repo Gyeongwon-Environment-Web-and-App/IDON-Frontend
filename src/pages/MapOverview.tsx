@@ -51,22 +51,17 @@ export default function MapOverview() {
       isRepeat: true,
       address: '서울특별시 도봉구 도봉로150다길 3',
       complaintId: 9999,
-      content:
-        '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
+      content: '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
       datetime: '2024-01-15T10:30:00',
       status: true,
     };
 
     const pinData: PinData[] = [dummyPin];
-    console.log('🗺️ Added dummy pin for testing');
 
     // Add real complaints if available
     if (complaints && complaints.length > 0) {
-      console.log('🗺️ Processing complaints for pins:', complaints.length);
-
       // 동일한 주소 그룹으로 묶기
       const groupedComplaints = groupComplaintsByAddress(complaints);
-      console.log('🗺️ Grouped complaints by address:', groupedComplaints.size);
 
       // 그룹 -> 핀
       groupedComplaints.forEach((complaintsAtAddress, address) => {
@@ -78,8 +73,6 @@ export default function MapOverview() {
           `🗺️ Created pin for address: ${address}, category: ${pin.category}, repeat: ${pin.isRepeat}`
         );
       });
-    } else {
-      console.log('🗺️ No complaints data available, showing dummy pin only');
     }
 
     console.log('🗺️ Total pins created:', pinData.length);

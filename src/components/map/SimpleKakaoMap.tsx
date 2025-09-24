@@ -92,8 +92,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         if (!mapInstanceRef.current || !window.kakao) return null;
 
         try {
-          console.log('Creating polygon for feature:', feature);
-
           // Convert GeoJSON MultiPolygon coordinates to Kakao Maps format
           // MultiPolygon structure: coordinates[0] = first polygon, coordinates[0][0] = first ring
           const coordinates = feature.geometry.coordinates[0][0];
@@ -102,8 +100,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             console.error('Invalid polygon coordinates:', coordinates);
             return null;
           }
-
-          console.log('Polygon coordinates:', coordinates);
 
           // Convert coordinates: GeoJSON is [lng, lat], Kakao Maps is [lat, lng]
           const path = coordinates
@@ -124,8 +120,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             return null;
           }
 
-          console.log('Converted path:', path);
-
           const polygon = new (
             window.kakao.maps as unknown as {
               Polygon: new (options: Record<string, unknown>) => unknown;
@@ -139,8 +133,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             fillColor: '#fff',
             fillOpacity: 0.7,
           });
-
-          console.log('Polygon created successfully:', polygon);
 
           // Add click event listener
           if (onPolygonClick) {
@@ -209,24 +201,20 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const fetchPolygons = useCallback(async (category: string) => {
       if (!category) return;
 
-      console.log('Fetching polygons for category:', category);
       setIsLoadingPolygons(true);
       setPolygonError(null);
 
       try {
         const data = await fetchPolygonsByCategory(category);
-        console.log('Polygon data received:', data);
 
         if (!data || !data.region_areas || !data.region_areas.features) {
           throw new Error('Invalid polygon data received from API');
         }
 
         if (data.region_areas.features.length === 0) {
-          console.warn('No polygon features found for category:', category);
           setPolygonError(`No polygons found for ${category}`);
         } else {
           setPolygonData(data);
-          console.log('Polygon data set successfully');
         }
       } catch (error) {
         console.error('Failed to fetch polygons:', error);
@@ -247,19 +235,9 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         !polygonData ||
         !showPolygons
       ) {
-        console.log('Skipping polygon render:', {
-          hasMap: !!mapInstanceRef.current,
-          isLoaded,
-          hasPolygonData: !!polygonData,
-          showPolygons,
-        });
         return;
       }
 
-      console.log(
-        'Rendering polygons:',
-        polygonData.region_areas.features.length
-      );
       clearPolygons();
 
       let successCount = 0;
@@ -354,7 +332,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
     // Handle polygon toggle
     const handlePolygonToggle = useCallback(() => {
-      console.log('Polygon toggle clicked. Current state:', showPolygons);
       if (!showPolygons) {
         // Show polygons - fetch data first
         setShowPolygons(true);
@@ -373,10 +350,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     // Fetch polygons when category changes (only if polygons are shown)
     useEffect(() => {
       if (showPolygons && selectedCategory) {
-        console.log(
-          'Category changed, fetching polygons for:',
-          selectedCategory
-        );
         fetchPolygons(selectedCategory);
       }
     }, [selectedCategory, showPolygons, fetchPolygons]);
