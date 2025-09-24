@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react';
 
+import { usePinManager } from '@/hooks/usePinManager';
 import {
   fetchPolygonsByCategory,
   getAvailableCategories,
@@ -18,9 +19,6 @@ import type {
   PolygonFeature,
   RegionData,
 } from '@/types/map';
-import { formatDateTimeToKorean } from '@/utils/formatDate';
-import { batchGeocoding } from '@/utils/geocoding';
-import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
 import { type KakaoMap, useKakaoMaps } from '../../hooks/useKakaoMaps';
 
@@ -52,11 +50,8 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const mapId = useId();
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    const markersRef = useRef<unknown[]>([]);
     const polygonsRef = useRef<unknown[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
-    const [isGeocoding, setIsGeocoding] = useState(false);
-    const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
 
     // Polygon state
     const [selectedCategory, setSelectedCategory] = useState<string>('음식물');
@@ -64,28 +59,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const [isLoadingPolygons, setIsLoadingPolygons] = useState(false);
     const [polygonError, setPolygonError] = useState<string | null>(null);
     const [showPolygons, setShowPolygons] = useState(false);
-
-    const getCategoryKey = (category: string): string => {
-      const categoryMap: Record<string, string> = {
-        재활용: 'recycle',
-        음식물: 'food',
-        일반: 'general',
-        기타: 'others',
-      };
-      return categoryMap[category] || 'general';
-    };
-
-    // Type guards for Kakao Maps objects
-    const isKakaoMarker = (
-      obj: unknown
-    ): obj is { setMap: (map: unknown) => void } => {
-      return (
-        obj !== null &&
-        typeof obj === 'object' &&
-        'setMap' in obj &&
-        typeof (obj as { setMap: unknown }).setMap === 'function'
-      );
-    };
 
     const isKakaoPolygon = (
       obj: unknown
@@ -103,16 +76,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       );
     };
 
-    // Clear existing markers
-    const clearMarkers = useCallback(() => {
-      markersRef.current.forEach((marker) => {
-        if (isKakaoMarker(marker)) {
-          marker.setMap(null);
-        }
-      });
-      markersRef.current = [];
-    }, []);
-
     // Clear existing polygons
     const clearPolygons = useCallback(() => {
       polygonsRef.current.forEach((polygon) => {
@@ -122,184 +85,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       });
       polygonsRef.current = [];
     }, []);
-
-    const getCategoryIcon = (category: string): string => {
-      const iconMap: Record<string, string> = {
-        재활용: '/src/assets/icons/categories/tags/recycle.svg',
-        음식물: '/src/assets/icons/categories/tags/food.svg',
-        일반: '/src/assets/icons/categories/tags/general.svg',
-        기타: '/src/assets/icons/categories/tags/other.svg',
-      };
-      return iconMap[category] || iconMap['기타'];
-    };
-
-    const getRepeatIcon = (): string => {
-      return '/src/assets/icons/categories/tags/repeat.svg';
-    };
-
-    const getPinIcon = (): string => {
-      return '/src/assets/icons/map_card/location_pin.svg';
-    };
-
-    const getGreenCircleIcon = (): string => {
-      return '/src/assets/icons/map_card/green_circle.svg';
-    };
-
-    const getYellowCircleIcon = (): string => {
-      return '/src/assets/icons/map_card/yellow_circle.svg';
-    };
-
-    // Create marker for a pin
-    const createMarker = useCallback(
-      (pin: PinData): unknown => {
-        if (!mapInstanceRef.current || !window.kakao) return null;
-
-        const imageSrc = getPinImageSrc(pin.category, pin.isRepeat);
-        const config =
-          PIN_CONFIGS[getCategoryKey(pin.category)] || PIN_CONFIGS.general;
-
-        const imageSize = new (
-          window.kakao.maps as unknown as {
-            Size: new (width: number, height: number) => unknown;
-          }
-        ).Size(config.size.width, config.size.height);
-        const imageOption = {
-          offset: new (
-            window.kakao.maps as unknown as {
-              Point: new (x: number, y: number) => unknown;
-            }
-          ).Point(config.offset.x, config.offset.y),
-        };
-
-        const markerImage = new (
-          window.kakao.maps as unknown as {
-            MarkerImage: new (
-              src: string,
-              size: unknown,
-              options: { offset: unknown }
-            ) => unknown;
-          }
-        ).MarkerImage(imageSrc, imageSize, imageOption);
-        const markerPosition = new window.kakao.maps.LatLng(pin.lat, pin.lng);
-
-        const marker = new (
-          window.kakao.maps as unknown as {
-            Marker: new (options: {
-              position: unknown;
-              image: unknown;
-            }) => unknown;
-          }
-        ).Marker({
-          position: markerPosition,
-          image: markerImage,
-        });
-
-        // Add click event listener
-        if (onPinClick) {
-          (
-            window.kakao.maps as unknown as {
-              event: {
-                addListener: (
-                  target: unknown,
-                  event: string,
-                  handler: () => void
-                ) => void;
-              };
-            }
-          ).event.addListener(marker, 'click', () => {
-            onPinClick({
-              pin,
-              marker,
-              map: mapInstanceRef.current,
-            });
-          });
-        }
-
-        if (isKakaoMarker(marker)) {
-          marker.setMap(mapInstanceRef.current);
-        }
-
-        const iwContent =
-          '<div style="display: flex; flex-direction: column; padding: 12px; max-width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
-          '<div style="display: flex; gap: 8px; align-items: center; height: 30px">' +
-          '<img src="' +
-          getCategoryIcon(pin.category) +
-          '" alt="카테고리" style="width: 60px; flex-shrink: 0;" />' +
-          (pin.isRepeat
-            ? '<img src="' +
-              getRepeatIcon() +
-              '" alt="반복민원" style="width: 70px; flex-shrink: 0;" />'
-            : '') +
-          '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
-          pin.content +
-          '</p>' +
-          '</div>' +
-          '<p style="font-size: 16px; font-weight: 600; color: #7C7C7C; margin: 4px 0;">' +
-          formatDateTimeToKorean(pin.datetime) +
-          '</p>' +
-          '<div style="display: flex; align-items: center; margin: 4px 0;">' +
-          '<img src="' +
-          getPinIcon() +
-          '" alt="위치" style="width: 14px; height: 14px; margin-right: 4px;" />' +
-          '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
-          pin.address.slice(6) +
-          '</p>' +
-          '</div>' +
-          '<div style="display: flex; align-items: center;">' +
-          '<img src="' +
-          (pin.status ? getGreenCircleIcon() : getYellowCircleIcon()) +
-          '" alt="상태" style="width: 14px; height: 14px; margin-right: 4px;" />' +
-          '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
-          (pin.status ? '완료' : '처리중') +
-          '</p>' +
-          '</div>' +
-          '</div>';
-
-        const infowindow = new window.kakao.maps.InfoWindow({
-          content: iwContent,
-        });
-
-        // Add mouse events
-        (
-          window.kakao.maps as unknown as {
-            event: {
-              addListener: (
-                target: unknown,
-                event: string,
-                handler: () => void
-              ) => void;
-            };
-          }
-        ).event.addListener(marker, 'mouseover', function () {
-          if (mapInstanceRef.current) {
-            infowindow.open(
-              mapInstanceRef.current,
-              marker as unknown as {
-                getPosition: () => { lat: () => number; lng: () => number };
-                setPosition: (position: unknown) => void;
-              }
-            );
-          }
-        });
-
-        (
-          window.kakao.maps as unknown as {
-            event: {
-              addListener: (
-                target: unknown,
-                event: string,
-                handler: () => void
-              ) => void;
-            };
-          }
-        ).event.addListener(marker, 'mouseout', function () {
-          infowindow.close();
-        });
-
-        return marker;
-      },
-      [onPinClick]
-    );
 
     // Create polygon from feature data
     const createPolygon = useCallback(
@@ -500,51 +285,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       }
     }, [polygonData, showPolygons, isLoaded, clearPolygons, createPolygon]);
 
-    // Update pins on map
-    const updatePins = useCallback(async () => {
-      if (!mapInstanceRef.current || !isLoaded || pins.length === 0) {
-        setIsGeocoding(false);
-        return;
-      }
-
-      // Clear existing markers and set geocoding state
-      clearMarkers();
-      setIsGeocoding(true);
-
-      // Get unique addresses from pins
-      const uniqueAddresses = [...new Set(pins.map((pin) => pin.address))];
-
-      try {
-        // Batch geocoding for all unique addresses
-        const coordinatesMap = await batchGeocoding(uniqueAddresses);
-
-        // Store geocoded pins (don't create markers yet)
-        const validPins: PinData[] = [];
-        pins.forEach((pin) => {
-          const coordinates = coordinatesMap.get(pin.address);
-
-          if (coordinates) {
-            const pinWithCoords = {
-              ...pin,
-              lat: coordinates.lat,
-              lng: coordinates.lng,
-            };
-            validPins.push(pinWithCoords);
-          } else {
-            console.warn('⚠️ No coordinates found for address:', pin.address);
-          }
-        });
-
-        // Store the geocoded pins for marker creation
-        setGeocodedPins(validPins);
-      } catch (error) {
-        console.error('❌ Geocoding failed:', error);
-      } finally {
-        // Always set geocoding to false when done
-        setIsGeocoding(false);
-      }
-    }, [pins, isLoaded, clearMarkers]);
-
     // Initialize map when SDK is ready
     useEffect(() => {
       if (!isLoaded || !containerRef.current) return;
@@ -605,30 +345,12 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       }
     }, [center.lat, center.lng, zoom, isLoaded]);
 
-    // Update pins when pins prop changes
-    useEffect(() => {
-      updatePins();
-    }, [updatePins]);
-
-    // Create markers from geocoded pins (separate from geocoding process)
-    const createMarkersFromGeocodedPins = useCallback(() => {
-      if (!mapInstanceRef.current || !isLoaded || geocodedPins.length === 0)
-        return;
-
-      clearMarkers();
-
-      geocodedPins.forEach((pin) => {
-        const marker = createMarker(pin);
-        if (marker) {
-          markersRef.current.push(marker);
-        }
-      });
-    }, [geocodedPins, isLoaded, clearMarkers, createMarker]);
-
-    // Update markers when geocoded pins change
-    useEffect(() => {
-      createMarkersFromGeocodedPins();
-    }, [createMarkersFromGeocodedPins]);
+    const { isGeocoding, clearMarkers } = usePinManager({
+      mapInstance: mapInstanceRef.current,
+      pins,
+      onPinClick,
+      isLoaded,
+    });
 
     // Handle polygon toggle
     const handlePolygonToggle = useCallback(() => {
@@ -738,6 +460,16 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           }}
         />
 
+        {/* Geocoding loading overlay */}
+        {isGeocoding && (
+          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+              <p className="text-sm text-gray-600">핀 위치 확인 중...</p>
+            </div>
+          </div>
+        )}
+
         {/* Polygon Controls */}
         {showPolygonControls && (
           <div className="absolute top-4 right-4 bg-white rounded-lg shadow-lg p-3 z-20">
@@ -784,16 +516,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
                   {polygonError}
                 </div>
               )}
-            </div>
-          </div>
-        )}
-
-        {/* Geocoding loading overlay */}
-        {isGeocoding && (
-          <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center z-10">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
-              <p className="text-sm text-gray-600">핀 위치 확인 중...</p>
             </div>
           </div>
         )}
