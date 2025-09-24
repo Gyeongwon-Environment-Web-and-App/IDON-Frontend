@@ -77,140 +77,142 @@ export default function ComplaintConfirm({
           onBack={onBack}
           date={formData.datetime ? new Date(formData.datetime) : new Date()}
         />
-        <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
-          <section className="md:mr-[3rem] md:w-[65%] w-full">
-            <p className="text-dark-gray">
-              민원 종류 -{' '}
-              <span className="text-black my-3 md:my-5">
-                {formData.categories[0] === '생폐' ? '일반' : formData.categories[0]}
-                {formData.type && ` (${formData.type})`}
-              </span>
-            </p>
-            <p className="text-dark-gray my-3 md:my-5">
-              민원 접수 종류 -{' '}
-              <span className="text-black">
-                {formData.route}{' '}
-                {formData.source.phone_no
-                  ? `(${formData.source.phone_no})`
-                  : ''}
-              </span>
-            </p>
-            <p className="text-dark-gray my-3 md:my-5">
-              민원 발생 주소 -{' '}
-              <span className="text-black">
-                {isLoadingAddress ? (
-                  <span className="text-gray-500">주소 정보 로딩 중...</span>
-                ) : (
-                  formattedAddress
-                )}
-              </span>
-            </p>
-            <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
-              민원 내용
-              <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
-                {formData.content}{' '}
-              </span>
-            </p>
+        {formData.categories.map((category, idx) => (
+          <div className="flex flex-col lg:flex-row md:justify-between items-center md:px-10 mt-2 md:mt-10 mb-5 text-[1rem] md:font-bold font-semibold">
+            <section className="md:mr-[3rem] md:w-[65%] w-full">
+              <p className="text-dark-gray">
+                민원 종류 -{' '}
+                <span className="text-black my-3 md:my-5" key={idx}>
+                  {category}
+                  {formData.type && ` (${formData.type})`}
+                </span>
+              </p>
+              <p className="text-dark-gray my-3 md:my-5">
+                민원 접수 종류 -{' '}
+                <span className="text-black">
+                  {formData.route}{' '}
+                  {formData.source.phone_no
+                    ? `(${formData.source.phone_no})`
+                    : ''}
+                </span>
+              </p>
+              <p className="text-dark-gray my-3 md:my-5">
+                민원 발생 주소 -{' '}
+                <span className="text-black">
+                  {isLoadingAddress ? (
+                    <span className="text-gray-500">주소 정보 로딩 중...</span>
+                  ) : (
+                    formattedAddress
+                  )}
+                </span>
+              </p>
+              <p className="text-dark-gray my-3 md:my-5 flex flex-col w-full">
+                민원 내용
+                <span className="text-black md:mt-5 mt-3 md:p-5 bg-efefef rounded h-[7rem]">
+                  {formData.content}{' '}
+                </span>
+              </p>
 
-            {/* 업로드된 파일 미리보기 */}
-            {formData.uploadedFiles.length > 0 && (
-              <div className="mt-5 border border-light-border w-full rounded overflow-hidden text-gray-text">
-                <div className="font-normal text-sm flex justify-between bg-[#FAFAFB] px-2 py-1">
-                  <div className="flex">
-                    <img src={X} alt="닫기 아이콘" className="mr-2" />
-                    파일명
+              {/* 업로드된 파일 미리보기 */}
+              {formData.uploadedFiles.length > 0 && (
+                <div className="mt-5 border border-light-border w-full rounded overflow-hidden text-gray-text">
+                  <div className="font-normal text-sm flex justify-between bg-[#FAFAFB] px-2 py-1">
+                    <div className="flex">
+                      <img src={X} alt="닫기 아이콘" className="mr-2" />
+                      파일명
+                    </div>
+                    <p>용량</p>
                   </div>
-                  <p>용량</p>
-                </div>
-                <div className="flex flex-col gap-3 px-2 py-2">
-                  {formData.uploadedFiles.map((file, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between w-full"
-                    >
-                      <div className="relative flex items-center">
-                        <img
-                          src={X}
-                          alt="닫기 아이콘"
-                          className="mr-[6px] pt-[0.5px] pl-[0.5px] cursor-pointer"
-                          onClick={() => {
-                            updateFormData({
-                              uploadedFiles: formData.uploadedFiles.filter(
-                                (_, i) => i !== index
-                              ),
-                            });
-                          }}
-                        />
-                        {file.type.startsWith('image/') ? (
-                          <div className="w-8 h-8 rounded overflow-hidden relative group mr-2">
-                            <img
-                              src={file.url}
-                              alt={file.name}
-                              className="w-8 h-8 object-cover"
-                              onError={(e) => {
-                                e.currentTarget.src =
-                                  'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OCA1NkM1Mi40MTgzIDU2IDU2IDUyLjQxODMgNT2gNDhDNTYgNTYuNDE4MyA1Mi40MTgzIDYwIDQ4IDYwQzQzLjU4MTcgNjAgNDAgNTYuNDE4MyA0MCA1MkM0MCA0Ny41ODE3IDQzLjU4MTcgNDQgNDggNDRaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik02NCA2NEgzMkMyOS43OTQ5IDY0IDI4IDYyLjIwNTEgMjggNjBWMzJDMjggMjkuNzk0OSAyOS43OTQ5IDI4IDMyIDI4SDY0QzY2LjIwNTEgMjggNjggMjkuNzk0OSA2OCAzMlY2MEM2OCA2Mi4yMDUxIDY2LjIwNTEgNjQgNjQgNjRaIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
-                              }}
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-7 h-7 text-[1.7rem] flex items-center justify-center mr-2">
-                            📄
-                          </div>
-                        )}
-                        <p className="text-xs text-center font-medium pl-1">
-                          {file.name}
+                  <div className="flex flex-col gap-3 px-2 py-2">
+                    {formData.uploadedFiles.map((file, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between w-full"
+                      >
+                        <div className="relative flex items-center">
+                          <img
+                            src={X}
+                            alt="닫기 아이콘"
+                            className="mr-[6px] pt-[0.5px] pl-[0.5px] cursor-pointer"
+                            onClick={() => {
+                              updateFormData({
+                                uploadedFiles: formData.uploadedFiles.filter(
+                                  (_, i) => i !== index
+                                ),
+                              });
+                            }}
+                          />
+                          {file.type.startsWith('image/') ? (
+                            <div className="w-8 h-8 rounded overflow-hidden relative group mr-2">
+                              <img
+                                src={file.url}
+                                alt={file.name}
+                                className="w-8 h-8 object-cover"
+                                onError={(e) => {
+                                  e.currentTarget.src =
+                                    'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iOTYiIGhlaWdodD0iOTYiIHZpZXdCb3g9IjAgMCA5NiA5NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9Ijk2IiBoZWlnaHQ9Ijk2IiBmaWxsPSIjRkZGRkZGIi8+CjxwYXRoIGQ9Ik00OCA1NkM1Mi40MTgzIDU2IDU2IDUyLjQxODMgNT2gNDhDNTYgNTYuNDE4MyA1Mi40MTgzIDYwIDQ4IDYwQzQzLjU4MTcgNjAgNDAgNTYuNDE4MyA0MCA1MkM0MCA0Ny41ODE3IDQzLjU4MTcgNDQgNDggNDRaIiBmaWxsPSIjQ0NDQ0NDIi8+CjxwYXRoIGQ9Ik02NCA2NEgzMkMyOS43OTQ5IDY0IDI4IDYyLjIwNTEgMjggNjBWMzJDMjggMjkuNzk0OSAyOS43OTQ5IDI4IDMyIDI4SDY0QzY2LjIwNTEgMjggNjggMjkuNzk0OSA2OCAzMlY2MEM2OCA2Mi4yMDUxIDY2LjIwNTEgNjQgNjQgNjRaIiBzdHJva2U9IiNDQ0NDQ0MiIHN0cm9rZS13aWR0aD0iMiIvPgo8L3N2Zz4K';
+                                }}
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-7 h-7 text-[1.7rem] flex items-center justify-center mr-2">
+                              📄
+                            </div>
+                          )}
+                          <p className="text-xs text-center font-medium pl-1">
+                            {file.name}
+                          </p>
+                        </div>
+                        <p className="text-xs ml-2 font-medium">
+                          {formatFileSize(file.size)}
                         </p>
                       </div>
-                      <p className="text-xs ml-2 font-medium">
-                        {formatFileSize(file.size)}
-                      </p>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
-          </section>
+              )}
+            </section>
 
-          <section className="md:w-[25%] w-full md:text-center text-left">
-            <p className="text-dark-gray pb-2 md:pb-3">
-              담당 기사님 실시간 정보
-            </p>
-            <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
-              {/* 실시간 지도 */}
-            </div>
-            <div className="flex md:justify-between justify-start pt-3 pb-2">
-              {/* 재활용 등 쓰레기 태그 */}
-              {/* 기사님 정보 가져오기 */}
-              <div className="flex">
-                <img
-                  src={
-                    formData.categories[0] === '음식물'
-                      ? food
-                      : formData.categories[0] === '재활용'
-                        ? recycle
-                        : formData.categories[0] === '기타'
-                          ? other
-                          : formData.categories[0] === '생폐'
-                            ? general
-                            : ''
-                  }
-                  className="w-1/3 mr-2"
-                  alt="쓰레기 종류 태그"
-                />
-                <p className="text-black 3xl:text-base text-sm">
-                  김승대 기사님
-                </p>
+            <section className="md:w-[25%] w-full md:text-center text-left">
+              <p className="text-dark-gray pb-2 md:pb-3">
+                담당 기사님 실시간 정보
+              </p>
+              <div className="bg-efefef rounded w-full h-[7rem] my-2 mx-auto">
+                {/* 실시간 지도 */}
               </div>
-              <p className="text-light-green 3xl:text-base text-sm">운행중</p>
-            </div>
-            <div className="text-sm text-left text-dark-gary font-normal">
-              <p className="md:py-1">010-1234-5678</p>
-              <p className="md:py-1">방학1동 - 재활용 1조</p>
-              <p className="md:py-1">843거 4296</p>
-            </div>
-          </section>
-        </div>
+              <div className="flex md:justify-between justify-start pt-3 pb-2">
+                {/* 재활용 등 쓰레기 태그 */}
+                {/* 기사님 정보 가져오기 */}
+                <div className="flex">
+                  <img
+                    src={
+                      formData.categories[0] === '음식물'
+                        ? food
+                        : formData.categories[0] === '재활용'
+                          ? recycle
+                          : formData.categories[0] === '기타'
+                            ? other
+                            : formData.categories[0] === '일반'
+                              ? general
+                              : ''
+                    }
+                    className="w-1/3 mr-2"
+                    alt="쓰레기 종류 태그"
+                  />
+                  <p className="text-black 3xl:text-base text-sm">
+                    김승대 기사님
+                  </p>
+                </div>
+                <p className="text-light-green 3xl:text-base text-sm">운행중</p>
+              </div>
+              <div className="text-sm text-left text-dark-gary font-normal">
+                <p className="md:py-1">010-1234-5678</p>
+                <p className="md:py-1">방학1동 - 재활용 1조</p>
+                <p className="md:py-1">843거 4296</p>
+              </div>
+            </section>
+          </div>
+        ))}
         <div className="flex items-center justify-center my-8">
           <TextForward
             options={[
@@ -223,7 +225,7 @@ export default function ComplaintConfirm({
             selectedValues={getNotifyData()}
             onChange={(updatedList) =>
               updateFormData({
-                notify: { ...getNotifyData(), usernames: updatedList },
+                notify: { usernames: updatedList },
               })
             }
           />

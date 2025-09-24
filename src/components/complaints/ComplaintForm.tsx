@@ -320,10 +320,6 @@ export default function ComplaintForm({
     return formData.source;
   };
 
-  const getCategoryValue = (label: string) => {
-    return label === '일반' ? '생폐' : label;
-  };
-
   return (
     <div className="overflow-y-auto overflow-x-hidden max-w-screen w-full">
       <form className="md:border md:border-light-border rounded-[15px]">
@@ -341,10 +337,11 @@ export default function ComplaintForm({
 
           <div className="col-span-2 md:col-span-3 relative">
             <input
+              tabIndex={1}
               type="text"
               id="address"
               autoComplete="off"
-              className={`border px-3 py-2 rounded w-full outline-none ${
+              className={`border px-3 py-2 rounded w-full ${
                 error ? 'border-red-500' : 'border-light-border'
               }`}
               value={tempAddress}
@@ -447,8 +444,9 @@ export default function ComplaintForm({
           </div>
           <button
             type="button"
-            className="col-span-1 border border-light-border px-4 py-2 rounded w-full font-bold"
+            className="col-span-1 border border-light-border px-4 py-2 rounded w-full font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             onClick={searchAddresses}
+            tabIndex={2}
           >
             주소 찾기
           </button>
@@ -461,9 +459,10 @@ export default function ComplaintForm({
           >
             <button
               type="button"
-              className={`w-full text-left font-bold ${showMap ? 'bg-white border-light-border rounded-t border-b-0' : 'bg-lighter-green border-light-green rounded'} border px-4 -mt-1 md:mt-2 focus:outline-none flex`}
+              className={`w-full text-left font-bold ${showMap ? 'bg-white border-light-border rounded-t border-b-0' : 'bg-lighter-green border-light-green rounded'} border px-4 -mt-1 md:mt-2 flex`}
               onClick={toggleMap}
               disabled={loading}
+              tabIndex={3}
             >
               {loading
                 ? '위치 확인 중...'
@@ -527,14 +526,14 @@ export default function ComplaintForm({
           >
             {['경원환경', '120', '구청', '주민센터'].map((label, idx, arr) => (
               <button
+                tabIndex={idx + 4}
                 key={label}
                 type="button"
                 className={`
-                  flex-1 px-4 font-bold
+                  flex-1 px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
                   ${formData.route === label ? 'bg-lighter-green' : ''}
                   ${idx === 0 ? 'rounded-l' : ''}
                   ${idx === arr.length - 1 ? 'rounded-r' : ''}
-                  focus:outline-none
                 `}
                 style={{
                   borderRight:
@@ -549,7 +548,7 @@ export default function ComplaintForm({
           <input
             type="text"
             placeholder={focus.routeInput ? '' : '직접 입력'}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 mb-3 md:mb-0 md:mt-5 rounded w-full md:text-center text-left outline-none font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 mb-3 md:mb-0 md:mt-5 rounded w-full md:text-center text-left font-bold ${formData.route !== '경원환경' ? 'md:mb-5' : ''}`}
             value={
               !['경원환경', '다산콜(120)', '구청', '주민센터'].includes(
                 formData.route
@@ -568,10 +567,11 @@ export default function ComplaintForm({
             <>
               <div className="hidden md:block md:col-span-1"></div>
               <input
+                tabIndex={8}
                 id="경원환경 직접 전화번호 입력"
                 type="text"
                 value={formData.source.phone_no}
-                className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 md:py-2 md:mt-2 md:mb-5 rounded focus:outline-none"
+                className="hidden md:block md:col-span-4 w-full text-left font-bold border border-light-border px-4 md:py-2 md:mt-2 md:mb-5 rounded"
                 placeholder="전화번호 입력 (숫자만)"
                 onChange={(e) =>
                   updateFormData({
@@ -606,22 +606,25 @@ export default function ComplaintForm({
           >
             {['재활용', '일반', '음식물', '기타'].map((label, idx, arr) => (
               <button
+                tabIndex={idx + 9}
                 key={label}
                 type="button"
                 className={`
-                  flex-1 px-4 font-bold
-                  ${formData.categories && formData.categories.includes(getCategoryValue(label)) ? 'bg-lighter-green' : ''}
+                  flex-1 px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                  ${formData.categories && formData.categories.includes(label) ? 'bg-lighter-green' : ''}
                   ${idx === 0 ? 'rounded-l' : ''}
                   ${idx === arr.length - 1 ? 'rounded-r' : ''}
-                  focus:outline-none
                 `}
                 style={{
                   borderRight:
                     idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
                 }}
                 onClick={() => {
-                  const categoryValue = label === '일반' ? '생폐' : label;
-                  updateFormData({ categories: [categoryValue] });
+                  const currentCategories = formData.categories || [];
+                  const newCategories = currentCategories.includes(label)
+                    ? currentCategories.filter((cat) => cat !== label)
+                    : [...currentCategories, label];
+                  updateFormData({ categories: newCategories });
                 }}
               >
                 {label}
@@ -644,7 +647,7 @@ export default function ComplaintForm({
                 : ''
             }
             placeholder={focus.trashInput ? '' : '직접 입력'}
-            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left outline-none font-bold`}
+            className={`md:col-span-1 col-span-3 border border-light-border px-3 py-2 md:my-5 rounded w-full md:text-center text-left font-bold`}
             onFocus={() => setFocus({ trashInput: true })}
             onBlur={() => setFocus({ trashInput: false })}
             onChange={(e) => updateFormData({ categories: [e.target.value] })}
@@ -656,11 +659,12 @@ export default function ComplaintForm({
             쓰레기 상세 종류
           </label>
           <input
+            tabIndex={13}
             type="text"
             value={formData.type || ''}
             placeholder={focus.input3 ? '' : '입력란'}
             disabled={!formData.categories || formData.categories.length === 0}
-            className={`col-span-3 md:col-span-1 w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left outline-none font-bold ${formData.categories && formData.categories.length > 0 ? '' : 'bg-gray-100 cursor-not-allowed'}`}
+            className={`col-span-3 md:col-span-1 w-full md:w-[200px] border border-light-border px-3 py-2 rounded md:text-center text-left font-bold ${formData.categories && formData.categories.length > 0 ? '' : 'bg-gray-100 cursor-not-allowed'}`}
             onFocus={() => setFocus({ input3: true })}
             onBlur={() => setFocus({ input3: false })}
             onChange={(e) => updateFormData({ type: e.target.value })}
@@ -684,9 +688,10 @@ export default function ComplaintForm({
             민원 내용
           </label>
           <textarea
+            tabIndex={14}
             id="content"
             value={formData.content}
-            className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none outline-none"
+            className="md:col-span-4 col-span-3 border border-light-border px-3 md:py-2 md:mt-5 rounded w-full h-40 resize-none"
             onChange={(e) => updateFormData({ content: e.target.value })}
           />
 
@@ -694,6 +699,7 @@ export default function ComplaintForm({
           <div className="hidden md:block md:col-span-1"></div>
           <div className="md:col-span-1 col-span-2 flex items-center gap-2 row-span-1 md:mt-5">
             <input
+              tabIndex={15}
               type="checkbox"
               id="malicious"
               className="w-5 h-5 accent-red"
@@ -722,8 +728,8 @@ export default function ComplaintForm({
       {/* 제출 버튼 */}
       <div className="text-center mt-5">
         <button
-          type="submit"
-          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded"
+          tabIndex={16}
+          className="bg-light-green hover:bg-green-600 text-white font-semibold px-20 py-2 rounded outline-1"
           onClick={handleSubmit}
         >
           {isEditMode ? '수정 완료' : '검토 및 전송'}

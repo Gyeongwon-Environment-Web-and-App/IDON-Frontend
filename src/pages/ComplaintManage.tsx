@@ -232,11 +232,12 @@ const ComplaintManage = () => {
                   onSubmit={() => setShowConfirm(true)}
                 />
               ) : (
-                <ComplaintConfirm
-                  onSubmit={onSubmit}
-                  onBack={() => setShowConfirm(false)}
-                />
-              ))}
+                  <ComplaintConfirm
+                    onSubmit={onSubmit}
+                    onBack={() => setShowConfirm(false)}
+                  />
+                )
+              )}
             {activeTab === 'stats' && (
               <>
                 <ComplaintStats />
