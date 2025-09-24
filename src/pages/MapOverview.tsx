@@ -42,29 +42,45 @@ export default function MapOverview() {
 
   // Convert complaints to pin data with clustering
   const pins = useMemo((): PinData[] => {
-    if (!complaints || complaints.length === 0) {
-      console.log('🗺️ No complaints data available for pins');
-      return [];
+    // Always create dummy pin first
+    const dummyPin: PinData = {
+      id: 'pin-dummy-test',
+      lat: 37.668875236,
+      lng: 127.044191742,
+      category: '음식물',
+      isRepeat: true,
+      address: '서울특별시 도봉구 도봉로150다길 3',
+      complaintId: 9999,
+      content:
+        '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
+      datetime: '2024-01-15T10:30:00',
+      status: true,
+    };
+
+    const pinData: PinData[] = [dummyPin];
+    console.log('🗺️ Added dummy pin for testing');
+
+    // Add real complaints if available
+    if (complaints && complaints.length > 0) {
+      console.log('🗺️ Processing complaints for pins:', complaints.length);
+
+      // 동일한 주소 그룹으로 묶기
+      const groupedComplaints = groupComplaintsByAddress(complaints);
+      console.log('🗺️ Grouped complaints by address:', groupedComplaints.size);
+
+      // 그룹 -> 핀
+      groupedComplaints.forEach((complaintsAtAddress, address) => {
+        const representativeComplaint =
+          getRepresentativeComplaint(complaintsAtAddress);
+        const pin = complaintToPinData(representativeComplaint);
+        pinData.push(pin);
+        console.log(
+          `🗺️ Created pin for address: ${address}, category: ${pin.category}, repeat: ${pin.isRepeat}`
+        );
+      });
+    } else {
+      console.log('🗺️ No complaints data available, showing dummy pin only');
     }
-
-    console.log('🗺️ Processing complaints for pins:', complaints.length);
-
-    // 동일한 주소 그룹으로 묶기
-    const groupedComplaints = groupComplaintsByAddress(complaints);
-    console.log('🗺️ Grouped complaints by address:', groupedComplaints.size);
-
-    // 그룹 -> 핀
-    const pinData: PinData[] = [];
-
-    groupedComplaints.forEach((complaintsAtAddress, address) => {
-      const representativeComplaint =
-        getRepresentativeComplaint(complaintsAtAddress);
-      const pin = complaintToPinData(representativeComplaint);
-      pinData.push(pin);
-      console.log(
-        `🗺️ Created pin for address: ${address}, category: ${pin.category}, repeat: ${pin.isRepeat}`
-      );
-    });
 
     console.log('🗺️ Total pins created:', pinData.length);
     return pinData;

@@ -18,6 +18,7 @@ import type {
   PolygonFeature,
   RegionData,
 } from '@/types/map';
+import { formatDateTimeToKorean } from '@/utils/formatDate';
 import { batchGeocoding } from '@/utils/geocoding';
 import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
@@ -51,10 +52,8 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     const mapId = useId();
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const markersRef = useRef<any[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const polygonsRef = useRef<any[]>([]);
+    const markersRef = useRef<unknown[]>([]);
+    const polygonsRef = useRef<unknown[]>([]);
     const { isLoaded, isLoading, error, loadSDK } = useKakaoMaps();
     const [isGeocoding, setIsGeocoding] = useState(false);
     const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
@@ -76,11 +75,40 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       return categoryMap[category] || 'general';
     };
 
+    // Type guards for Kakao Maps objects
+    const isKakaoMarker = (
+      obj: unknown
+    ): obj is { setMap: (map: unknown) => void } => {
+      return (
+        obj !== null &&
+        typeof obj === 'object' &&
+        'setMap' in obj &&
+        typeof (obj as { setMap: unknown }).setMap === 'function'
+      );
+    };
+
+    const isKakaoPolygon = (
+      obj: unknown
+    ): obj is {
+      setMap: (map: unknown) => void;
+      setOptions: (options: Record<string, unknown>) => void;
+    } => {
+      return (
+        obj !== null &&
+        typeof obj === 'object' &&
+        'setMap' in obj &&
+        'setOptions' in obj &&
+        typeof (obj as { setMap: unknown }).setMap === 'function' &&
+        typeof (obj as { setOptions: unknown }).setOptions === 'function'
+      );
+    };
+
     // Clear existing markers
     const clearMarkers = useCallback(() => {
       markersRef.current.forEach((marker) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (marker as any).setMap(null);
+        if (isKakaoMarker(marker)) {
+          marker.setMap(null);
+        }
       });
       markersRef.current = [];
     }, []);
@@ -88,53 +116,97 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     // Clear existing polygons
     const clearPolygons = useCallback(() => {
       polygonsRef.current.forEach((polygon) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (polygon as any).setMap(null);
+        if (isKakaoPolygon(polygon)) {
+          polygon.setMap(null);
+        }
       });
       polygonsRef.current = [];
     }, []);
 
+    const getCategoryIcon = (category: string): string => {
+      const iconMap: Record<string, string> = {
+        재활용: '/src/assets/icons/categories/tags/recycle.svg',
+        음식물: '/src/assets/icons/categories/tags/food.svg',
+        일반: '/src/assets/icons/categories/tags/general.svg',
+        기타: '/src/assets/icons/categories/tags/other.svg',
+      };
+      return iconMap[category] || iconMap['기타'];
+    };
+
+    const getRepeatIcon = (): string => {
+      return '/src/assets/icons/categories/tags/repeat.svg';
+    };
+
+    const getPinIcon = (): string => {
+      return '/src/assets/icons/map_card/location_pin.svg';
+    };
+
+    const getGreenCircleIcon = (): string => {
+      return '/src/assets/icons/map_card/green_circle.svg';
+    };
+
+    const getYellowCircleIcon = (): string => {
+      return '/src/assets/icons/map_card/yellow_circle.svg';
+    };
+
     // Create marker for a pin
     const createMarker = useCallback(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (pin: PinData): any => {
+      (pin: PinData): unknown => {
         if (!mapInstanceRef.current || !window.kakao) return null;
 
         const imageSrc = getPinImageSrc(pin.category, pin.isRepeat);
         const config =
           PIN_CONFIGS[getCategoryKey(pin.category)] || PIN_CONFIGS.general;
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const imageSize = new (window.kakao.maps as any).Size(
-          config.size.width,
-          config.size.height
-        );
+        const imageSize = new (
+          window.kakao.maps as unknown as {
+            Size: new (width: number, height: number) => unknown;
+          }
+        ).Size(config.size.width, config.size.height);
         const imageOption = {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          offset: new (window.kakao.maps as any).Point(
-            config.offset.x,
-            config.offset.y
-          ),
+          offset: new (
+            window.kakao.maps as unknown as {
+              Point: new (x: number, y: number) => unknown;
+            }
+          ).Point(config.offset.x, config.offset.y),
         };
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const markerImage = new (window.kakao.maps as any).MarkerImage(
-          imageSrc,
-          imageSize,
-          imageOption
-        );
+        const markerImage = new (
+          window.kakao.maps as unknown as {
+            MarkerImage: new (
+              src: string,
+              size: unknown,
+              options: { offset: unknown }
+            ) => unknown;
+          }
+        ).MarkerImage(imageSrc, imageSize, imageOption);
         const markerPosition = new window.kakao.maps.LatLng(pin.lat, pin.lng);
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const marker = new (window.kakao.maps as any).Marker({
+        const marker = new (
+          window.kakao.maps as unknown as {
+            Marker: new (options: {
+              position: unknown;
+              image: unknown;
+            }) => unknown;
+          }
+        ).Marker({
           position: markerPosition,
           image: markerImage,
         });
 
         // Add click event listener
         if (onPinClick) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window.kakao.maps as any).event.addListener(marker, 'click', () => {
+          (
+            window.kakao.maps as unknown as {
+              event: {
+                addListener: (
+                  target: unknown,
+                  event: string,
+                  handler: () => void
+                ) => void;
+              };
+            }
+          ).event.addListener(marker, 'click', () => {
             onPinClick({
               pin,
               marker,
@@ -143,8 +215,87 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
           });
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (marker as any).setMap(mapInstanceRef.current);
+        if (isKakaoMarker(marker)) {
+          marker.setMap(mapInstanceRef.current);
+        }
+
+        const iwContent =
+          '<div style="display: flex; flex-direction: column; padding: 12px; max-width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
+          '<div style="display: flex; gap: 8px; align-items: center; height: 30px">' +
+          '<img src="' +
+          getCategoryIcon(pin.category) +
+          '" alt="카테고리" style="width: 60px; flex-shrink: 0;" />' +
+          (pin.isRepeat
+            ? '<img src="' +
+              getRepeatIcon() +
+              '" alt="반복민원" style="width: 70px; flex-shrink: 0;" />'
+            : '') +
+          '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
+          pin.content +
+          '</p>' +
+          '</div>' +
+          '<p style="font-size: 16px; font-weight: 600; color: #7C7C7C; margin: 4px 0;">' +
+          formatDateTimeToKorean(pin.datetime) +
+          '</p>' +
+          '<div style="display: flex; align-items: center; margin: 4px 0;">' +
+          '<img src="' +
+          getPinIcon() +
+          '" alt="위치" style="width: 14px; height: 14px; margin-right: 4px;" />' +
+          '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
+          pin.address.slice(6) +
+          '</p>' +
+          '</div>' +
+          '<div style="display: flex; align-items: center;">' +
+          '<img src="' +
+          (pin.status ? getGreenCircleIcon() : getYellowCircleIcon()) +
+          '" alt="상태" style="width: 14px; height: 14px; margin-right: 4px;" />' +
+          '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
+          (pin.status ? '완료' : '처리중') +
+          '</p>' +
+          '</div>' +
+          '</div>';
+
+        const infowindow = new window.kakao.maps.InfoWindow({
+          content: iwContent,
+        });
+
+        // Add mouse events
+        (
+          window.kakao.maps as unknown as {
+            event: {
+              addListener: (
+                target: unknown,
+                event: string,
+                handler: () => void
+              ) => void;
+            };
+          }
+        ).event.addListener(marker, 'mouseover', function () {
+          if (mapInstanceRef.current) {
+            infowindow.open(
+              mapInstanceRef.current,
+              marker as unknown as {
+                getPosition: () => { lat: () => number; lng: () => number };
+                setPosition: (position: unknown) => void;
+              }
+            );
+          }
+        });
+
+        (
+          window.kakao.maps as unknown as {
+            event: {
+              addListener: (
+                target: unknown,
+                event: string,
+                handler: () => void
+              ) => void;
+            };
+          }
+        ).event.addListener(marker, 'mouseout', function () {
+          infowindow.close();
+        });
+
         return marker;
       },
       [onPinClick]
@@ -152,8 +303,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
     // Create polygon from feature data
     const createPolygon = useCallback(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (feature: PolygonFeature): any => {
+      (feature: PolygonFeature): unknown => {
         if (!mapInstanceRef.current || !window.kakao) return null;
 
         try {
@@ -191,8 +341,11 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
           console.log('Converted path:', path);
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const polygon = new (window.kakao.maps as any).Polygon({
+          const polygon = new (
+            window.kakao.maps as unknown as {
+              Polygon: new (options: Record<string, unknown>) => unknown;
+            }
+          ).Polygon({
             map: mapInstanceRef.current,
             path: path,
             strokeWeight: 2,
@@ -206,39 +359,56 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
           // Add click event listener
           if (onPolygonClick) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (window.kakao.maps as any).event.addListener(
-              polygon,
-              'click',
-              () => {
-                onPolygonClick({
-                  polygon: feature,
-                  map: mapInstanceRef.current,
-                });
+            (
+              window.kakao.maps as unknown as {
+                event: {
+                  addListener: (
+                    target: unknown,
+                    event: string,
+                    handler: () => void
+                  ) => void;
+                };
               }
-            );
+            ).event.addListener(polygon, 'click', () => {
+              onPolygonClick({
+                polygon: feature,
+                map: mapInstanceRef.current,
+              });
+            });
           }
 
           // Add hover effects
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window.kakao.maps as any).event.addListener(
-            polygon,
-            'mouseover',
-            function () {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (polygon as any).setOptions({ fillColor: '#09f' });
+          (
+            window.kakao.maps as unknown as {
+              event: {
+                addListener: (
+                  target: unknown,
+                  event: string,
+                  handler: () => void
+                ) => void;
+              };
             }
-          );
+          ).event.addListener(polygon, 'mouseover', function () {
+            if (isKakaoPolygon(polygon)) {
+              polygon.setOptions({ fillColor: '#09f' });
+            }
+          });
 
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (window.kakao.maps as any).event.addListener(
-            polygon,
-            'mouseout',
-            function () {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (polygon as any).setOptions({ fillColor: '#fff' });
+          (
+            window.kakao.maps as unknown as {
+              event: {
+                addListener: (
+                  target: unknown,
+                  event: string,
+                  handler: () => void
+                ) => void;
+              };
             }
-          );
+          ).event.addListener(polygon, 'mouseout', function () {
+            if (isKakaoPolygon(polygon)) {
+              polygon.setOptions({ fillColor: '#fff' });
+            }
+          });
 
           return polygon;
         } catch (error) {

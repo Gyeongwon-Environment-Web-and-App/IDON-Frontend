@@ -26,9 +26,7 @@ export const fetchPolygonsByCategory = async (
   }
 };
 
-/**
- * Get available categories for polygon data
- */
+// Get available categories for polygon data
 export const getAvailableCategories = (): string[] => {
   return ['음식물', '재활용', '일반', '기타'];
 };
