@@ -1,11 +1,10 @@
 import React, { lazy, Suspense } from 'react';
 
+import { Cell } from 'recharts';
+
 import type { PieChartProps } from '../../types/stats';
 
 // Dynamic imports for Recharts components to enable tree shaking
-const Cell = lazy(() =>
-  import('recharts').then((module) => ({ default: module.Cell }))
-);
 const Pie = lazy(() =>
   import('recharts').then((module) => ({ default: module.Pie }))
 );

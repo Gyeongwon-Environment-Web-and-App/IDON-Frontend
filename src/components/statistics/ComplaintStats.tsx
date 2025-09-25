@@ -82,7 +82,6 @@ const ComplaintStats = () => {
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
   const [selectedTimeline, setSelectedTimeline] = useState<string>('시간대');
-  const [selectedWeekday, setSelectedWeekday] = useState<string>('요일별');
 
   const getTrashTypeColor = (type: string) => {
     switch (type) {
@@ -146,7 +145,7 @@ const ComplaintStats = () => {
     '#004207',
   ];
   const TrashChartColors = ['#58CC02', '#59B9FF', '#AF8AFF', '#F5694A'];
-  const ComplaintChartColors = ['red', '#a8a8a8'];
+  const ComplaintChartColors = ['#FF0000', '#a8a8a8'];
 
   return (
     <div className="w-[100%] h-screen">
@@ -252,58 +251,6 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
-                >
-                  <span className="text-sm">{selectedWeekday}</span>
-                  <img src={triangle} alt="요일별 선택" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="center"
-                className="[&>*]:justify-center !min-w-[80px]"
-              >
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedWeekday('월요일');
-                  }}
-                >
-                  월요일
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedWeekday('화요일');
-                  }}
-                >
-                  화요일
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedWeekday('수요일');
-                  }}
-                >
-                  수요일
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedWeekday('목요일');
-                  }}
-                >
-                  목요일
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    setSelectedWeekday('금요일');
-                  }}
-                >
-                  금요일
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
             <div className="flex items-center gap-2">
               <AreaDropdown
                 onSelectionChange={handleAreaSelectionChange}
@@ -354,52 +301,6 @@ const ComplaintStats = () => {
             onDateRangeChange={setDateRange}
             containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
           />
-          <p className="text-base font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
-            <div className="md:w-[60%] w-[100%] flex">
-              <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                {dongComplaintData.map((item, index) => (
-                  <span
-                    key={item.name}
-                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: DongChartColors[index] }}
-                  >
-                    {item.name}
-                  </span>
-                ))}
-              </div>
-              <CustomPieChart
-                data={dongComplaintData}
-                colors={DongChartColors}
-              />
-            </div>
-            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {dongComplaintData.map((item, index) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: DongChartColors[index] }}
-                    />
-                    <span className="text-md font-semibold">{item.name}</span>
-                  </div>
-                  <p className="text-md font-semibold">{item.value}건</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="mt-10">
           <p className="font-semibold text-8d8d8d">
             최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
@@ -436,6 +337,52 @@ const ComplaintStats = () => {
                     <span
                       className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: TrashChartColors[index] }}
+                    />
+                    <span className="text-md font-semibold">{item.name}</span>
+                  </div>
+                  <p className="text-md font-semibold">{item.value}건</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+        <section className="mt-10">
+        <p className="text-base font-semibold text-8d8d8d">
+            최근{' '}
+            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+              ? formatDateRange(dateRange.from, dateRange.to)
+              : formatDate(new Date())}
+            의 민원 통계
+          </p>
+          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+          <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
+            <div className="md:w-[60%] w-[100%] flex">
+              <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+                {dongComplaintData.map((item, index) => (
+                  <span
+                    key={item.name}
+                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                    style={{ backgroundColor: DongChartColors[index] }}
+                  >
+                    {item.name}
+                  </span>
+                ))}
+              </div>
+              <CustomPieChart
+                data={dongComplaintData}
+                colors={DongChartColors}
+              />
+            </div>
+            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
+              {dongComplaintData.map((item, index) => (
+                <div
+                  key={item.name}
+                  className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: DongChartColors[index] }}
                     />
                     <span className="text-md font-semibold">{item.name}</span>
                   </div>

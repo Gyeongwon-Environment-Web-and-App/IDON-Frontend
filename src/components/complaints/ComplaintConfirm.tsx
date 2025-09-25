@@ -72,7 +72,7 @@ export default function ComplaintConfirm({
       <form className="md:border md:border-light-border rounded-[15px]">
         <DateTimeBox
           visible={false}
-          repeat={false}
+          repeat={formData.source.bad}
           readOnly={false}
           onBack={onBack}
           date={formData.datetime ? new Date(formData.datetime) : new Date()}

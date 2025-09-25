@@ -7,6 +7,22 @@ import { getPinImageSrc, PIN_CONFIGS } from '@/utils/pinUtils';
 
 import type { KakaoMap } from './useKakaoMaps';
 
+// Icon paths - moved outside component to avoid re-renders
+const ICON_PATHS = {
+  category: {
+    재활용: '/src/assets/icons/categories/tags/recycle.svg',
+    음식물: '/src/assets/icons/categories/tags/food.svg',
+    일반: '/src/assets/icons/categories/tags/general.svg',
+    기타: '/src/assets/icons/categories/tags/other.svg',
+  },
+  repeat: '/src/assets/icons/categories/tags/repeat.svg',
+  pin: '/src/assets/icons/map_card/location_pin.svg',
+  status: {
+    completed: '/src/assets/icons/map_card/green_circle.svg',
+    pending: '/src/assets/icons/map_card/yellow_circle.svg',
+  },
+} as const;
+
 interface UsePinManagerProps {
   mapInstance: KakaoMap | null;
   pins: PinData[];
@@ -30,6 +46,10 @@ export const usePinManager = ({
   const markersRef = useRef<unknown[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
+  const [clickedInfoWindow, setClickedInfoWindow] = useState<{
+    marker: unknown;
+    infowindow: unknown;
+  } | null>(null);
 
   // Type guards for Kakao Maps objects
   const isKakaoMarker = (
@@ -43,6 +63,21 @@ export const usePinManager = ({
     );
   };
 
+  const isInfoWindowOpen = (infowindow: unknown): boolean => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return !!(infowindow && (infowindow as any).getMap() !== null);
+  };
+
+  const closeAllInfoWindows = useCallback(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    markersRef.current.forEach((markerData: any) => {
+      if (markerData.infowindow && isInfoWindowOpen(markerData.infowindow)) {
+        markerData.infowindow.close();
+      }
+    });
+    setClickedInfoWindow(null);
+  }, []);
+
   const getCategoryKey = (category: string): string => {
     const categoryMap: Record<string, string> = {
       재활용: 'recycle',
@@ -53,40 +88,45 @@ export const usePinManager = ({
     return categoryMap[category] || 'general';
   };
 
-  const getCategoryIcon = (category: string): string => {
-    const iconMap: Record<string, string> = {
-      재활용: '/src/assets/icons/categories/tags/recycle.svg',
-      음식물: '/src/assets/icons/categories/tags/food.svg',
-      일반: '/src/assets/icons/categories/tags/general.svg',
-      기타: '/src/assets/icons/categories/tags/other.svg',
+  // Helper function to reduce Kakao Maps type casting repetition
+  const getKakaoMaps = () => {
+    if (!window.kakao?.maps) return null;
+    return window.kakao.maps as unknown as {
+      Size: new (width: number, height: number) => unknown;
+      Point: new (x: number, y: number) => unknown;
+      MarkerImage: new (
+        src: string,
+        size: unknown,
+        options: { offset: unknown }
+      ) => unknown;
+      Marker: new (options: { position: unknown; image: unknown }) => unknown;
+      InfoWindow: new (options: { content: string }) => unknown;
+      LatLng: new (lat: number, lng: number) => unknown;
+      event: {
+        addListener: (
+          target: unknown,
+          event: string,
+          handler: () => void
+        ) => void;
+        removeListener: (
+          target: unknown,
+          event: string,
+          handler: () => void
+        ) => void;
+      };
     };
-    return iconMap[category] || iconMap['기타'];
-  };
-
-  const getRepeatIcon = (): string => {
-    return '/src/assets/icons/categories/tags/repeat.svg';
-  };
-
-  const getPinIcon = (): string => {
-    return '/src/assets/icons/map_card/location_pin.svg';
-  };
-
-  const getGreenCircleIcon = (): string => {
-    return '/src/assets/icons/map_card/green_circle.svg';
-  };
-
-  const getYellowCircleIcon = (): string => {
-    return '/src/assets/icons/map_card/yellow_circle.svg';
   };
 
   // Clear existing markers
   const clearMarkers = useCallback(() => {
-    markersRef.current.forEach((marker) => {
-      if (isKakaoMarker(marker)) {
-        marker.setMap(null);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    markersRef.current.forEach((markerData: any) => {
+      if (markerData && markerData.marker && isKakaoMarker(markerData.marker)) {
+        markerData.marker.setMap(null);
       }
     });
     markersRef.current = [];
+    setClickedInfoWindow(null);
   }, []);
 
   // Create marker for a pin
@@ -96,80 +136,44 @@ export const usePinManager = ({
         return null;
       }
 
+      const kakaoMaps = getKakaoMaps();
+      if (!kakaoMaps) return null;
+
       const imageSrc = getPinImageSrc(pin.category, pin.isRepeat);
       const config =
         PIN_CONFIGS[getCategoryKey(pin.category)] || PIN_CONFIGS.general;
 
-      const imageSize = new (
-        window.kakao.maps as unknown as {
-          Size: new (width: number, height: number) => unknown;
-        }
-      ).Size(config.size.width, config.size.height);
+      const imageSize = new kakaoMaps.Size(
+        config.size.width,
+        config.size.height
+      );
       const imageOption = {
-        offset: new (
-          window.kakao.maps as unknown as {
-            Point: new (x: number, y: number) => unknown;
-          }
-        ).Point(config.offset.x, config.offset.y),
+        offset: new kakaoMaps.Point(config.offset.x, config.offset.y),
       };
 
-      const markerImage = new (
-        window.kakao.maps as unknown as {
-          MarkerImage: new (
-            src: string,
-            size: unknown,
-            options: { offset: unknown }
-          ) => unknown;
-        }
-      ).MarkerImage(imageSrc, imageSize, imageOption);
-      const markerPosition = new window.kakao.maps.LatLng(pin.lat, pin.lng);
+      const markerImage = new kakaoMaps.MarkerImage(
+        imageSrc,
+        imageSize,
+        imageOption
+      );
+      const markerPosition = new kakaoMaps.LatLng(pin.lat, pin.lng);
 
-      const marker = new (
-        window.kakao.maps as unknown as {
-          Marker: new (options: {
-            position: unknown;
-            image: unknown;
-          }) => unknown;
-        }
-      ).Marker({
+      const marker = new kakaoMaps.Marker({
         position: markerPosition,
         image: markerImage,
       });
 
-      // Add click event listener
-      if (onPinClick) {
-        (
-          window.kakao.maps as unknown as {
-            event: {
-              addListener: (
-                target: unknown,
-                event: string,
-                handler: () => void
-              ) => void;
-            };
-          }
-        ).event.addListener(marker, 'click', () => {
-          onPinClick({
-            pin,
-            marker,
-            map: mapInstance,
-          });
-        });
-      }
-
-      if (isKakaoMarker(marker)) {
-        marker.setMap(mapInstance);
-      }
-
       const iwContent =
-        '<div style="display: flex; flex-direction: column; padding: 12px; max-width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
+        '<div style="display: flex; flex-direction: column; padding: 12px; width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
         '<div style="display: flex; gap: 8px; align-items: center; height: 30px">' +
         '<img src="' +
-        getCategoryIcon(pin.category) +
+        (ICON_PATHS.category[
+          pin.category as keyof typeof ICON_PATHS.category
+        ] || ICON_PATHS.category.기타) +
         '" alt="카테고리" style="width: 60px; flex-shrink: 0;" />' +
         (pin.isRepeat
           ? '<img src="' +
-            getRepeatIcon() +
+            ICON_PATHS.repeat +
             '" alt="반복민원" style="width: 70px; flex-shrink: 0;" />'
           : '') +
         '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
@@ -181,7 +185,7 @@ export const usePinManager = ({
         '</p>' +
         '<div style="display: flex; align-items: center; margin: 4px 0;">' +
         '<img src="' +
-        getPinIcon() +
+        ICON_PATHS.pin +
         '" alt="위치" style="width: 14px; height: 14px; margin-right: 4px;" />' +
         '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
         pin.address.slice(6) +
@@ -189,7 +193,7 @@ export const usePinManager = ({
         '</div>' +
         '<div style="display: flex; align-items: center;">' +
         '<img src="' +
-        (pin.status ? getGreenCircleIcon() : getYellowCircleIcon()) +
+        (pin.status ? ICON_PATHS.status.completed : ICON_PATHS.status.pending) +
         '" alt="상태" style="width: 14px; height: 14px; margin-right: 4px;" />' +
         '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
         (pin.status ? '완료' : '처리중') +
@@ -197,50 +201,66 @@ export const usePinManager = ({
         '</div>' +
         '</div>';
 
-      const infowindow = new window.kakao.maps.InfoWindow({
+      const infowindow = new kakaoMaps.InfoWindow({
         content: iwContent,
       });
 
-      // Add mouse events
-      (
-        window.kakao.maps as unknown as {
-          event: {
-            addListener: (
-              target: unknown,
-              event: string,
-              handler: () => void
-            ) => void;
-          };
+      const markerData = {
+        marker,
+        infowindow,
+        pin,
+      };
+
+      // Add event listeners
+      const addEventListener = (event: string, handler: () => void) => {
+        kakaoMaps.event.addListener(marker, event, handler);
+      };
+
+      // Click event for toggle functionality
+      addEventListener('click', () => {
+        // Handle pin click callback first
+        if (onPinClick) {
+          onPinClick({ pin, marker, map: mapInstance });
         }
-      ).event.addListener(marker, 'mouseover', function () {
-        if (mapInstance) {
-          infowindow.open(
-            mapInstance as unknown as typeof mapInstance,
-            marker as unknown as {
-              getPosition: () => { lat: () => number; lng: () => number };
-              setPosition: (position: unknown) => void;
-            }
-          );
+
+        // Toggle info window
+        const isCurrentlyOpen = isInfoWindowOpen(infowindow);
+
+        if (isCurrentlyOpen) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infowindow as any).close();
+          setClickedInfoWindow(null);
+        } else {
+          closeAllInfoWindows();
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infowindow as any).open(mapInstance as any, marker as any);
+          setClickedInfoWindow({ marker, infowindow });
         }
       });
 
-      (
-        window.kakao.maps as unknown as {
-          event: {
-            addListener: (
-              target: unknown,
-              event: string,
-              handler: () => void
-            ) => void;
-          };
+      // Mouseover event (only if no clicked info window is open)
+      addEventListener('mouseover', () => {
+        if (!clickedInfoWindow && mapInstance) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infowindow as any).open(mapInstance as any, marker as any);
         }
-      ).event.addListener(marker, 'mouseout', function () {
-        infowindow.close();
       });
 
-      return marker;
+      // Mouseout event (only if this isn't the clicked info window)
+      addEventListener('mouseout', () => {
+        if (!clickedInfoWindow || clickedInfoWindow.marker !== marker) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infowindow as any).close();
+        }
+      });
+
+      if (isKakaoMarker(marker)) {
+        marker.setMap(mapInstance);
+      }
+
+      return markerData;
     },
-    [onPinClick, mapInstance]
+    [onPinClick, mapInstance, clickedInfoWindow, closeAllInfoWindows]
   );
 
   // Update pins on map
@@ -296,14 +316,6 @@ export const usePinManager = ({
               lng: coordinates.lng,
             };
             validPins.push(pinWithCoords);
-            console.log(
-              '✅ Geocoded pin:',
-              pin.id,
-              coordinates.lat,
-              coordinates.lng
-            );
-          } else {
-            console.warn('⚠️ No coordinates found for address:', pin.address);
           }
         });
       } catch (error) {
@@ -345,6 +357,25 @@ export const usePinManager = ({
       createMarkersFromGeocodedPins();
     }
   }, [createMarkersFromGeocodedPins, mapInstance, isLoaded]);
+
+  // Add map click listener to close info windows when clicking on empty map areas
+  useEffect(() => {
+    if (!mapInstance || !isLoaded) return;
+
+    const kakaoMaps = getKakaoMaps();
+    if (!kakaoMaps) return;
+
+    const handleMapClick = () => {
+      closeAllInfoWindows();
+    };
+
+    kakaoMaps.event.addListener(mapInstance, 'click', handleMapClick);
+
+    // Cleanup
+    return () => {
+      kakaoMaps.event.removeListener(mapInstance, 'click', handleMapClick);
+    };
+  }, [mapInstance, isLoaded, closeAllInfoWindows]);
 
   return {
     isGeocoding,
