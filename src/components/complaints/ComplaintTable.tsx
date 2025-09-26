@@ -60,6 +60,10 @@ const ComplaintTable: React.FC = () => {
     selectedComplaintStatus,
     isPopupOpen,
     selectedComplaintId,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    resetPagination,
     setDateRange,
     setSearchTerm,
     setSortOrder,
@@ -71,7 +75,11 @@ const ComplaintTable: React.FC = () => {
     setSelectedComplaintId,
     updateComplaint,
     deleteSelectedComplaints,
+    getPaginatedComplaints,
+    getPaginationInfo,
   } = useComplaintTableStore();
+  const paginatedComplaints = getPaginatedComplaints();
+  const paginationInfo = getPaginationInfo();
 
   // Use the enhanced useComplaints hook with dateRange
   const {
@@ -92,15 +100,28 @@ const ComplaintTable: React.FC = () => {
     }
   }, [apiComplaints, isLoading, setComplaints, setFilteredComplaints]);
 
+  // Handle pagination state consistency when filtered data changes
+  useEffect(() => {
+    const totalPages = Math.ceil(filteredComplaints.length / pageSize);
+
+    // If current page is beyond available pages, reset to page 1
+    if (currentPage > totalPages && totalPages > 0) {
+      console.warn(
+        `Current page ${currentPage} exceeds total pages ${totalPages}. Resetting to page 1.`
+      );
+      setCurrentPage(1);
+    }
+  }, [filteredComplaints.length, currentPage, pageSize, setCurrentPage]);
+
   // 전체 선택 핸들러
   const handleSelectAll = () => {
-    if (selectedRows.size === filteredComplaints.length) {
+    if (selectedRows.size === paginatedComplaints.length) {
       // 모든 행이 선택된 경우 선택 해제
       setSelectedRows(new Set());
     } else {
       // 모든 행 선택
       const allIds = new Set(
-        filteredComplaints.map((complaint) => complaint.id)
+        paginatedComplaints.map((complaint) => complaint.id)
       );
       setSelectedRows(allIds);
     }
@@ -129,7 +150,10 @@ const ComplaintTable: React.FC = () => {
       header: () => (
         <div className="flex justify-center items-center pr-4">
           <Checkbox
-            checked={selectedRows.size === filteredComplaints.length}
+            checked={
+              selectedRows.size === paginatedComplaints.length &&
+              paginatedComplaints.length > 0
+            }
             onCheckedChange={handleSelectAll}
             aria-label="Select all"
             className="bg-white"
@@ -287,6 +311,7 @@ const ComplaintTable: React.FC = () => {
 
   // 시간 필터링 함수
   const handleSortChange = (order: '최근' | '옛') => {
+    resetPagination();
     setSortOrder(order);
 
     // ISO 날짜 문자열을 Date 객체로 변환하는 함수 (시간 제외)
@@ -323,6 +348,7 @@ const ComplaintTable: React.FC = () => {
 
   // 필터링 함수
   const handleFilterChange = async (filterType: string) => {
+    resetPagination();
     if (filterType === '전체 민원') {
       setFilteredComplaints(storeComplaints);
       return;
@@ -348,6 +374,7 @@ const ComplaintTable: React.FC = () => {
 
   // 검색 기능
   const handleSearch = (searchValue: string) => {
+    resetPagination();
     setSearchTerm(searchValue);
 
     if (!searchValue.trim()) {
@@ -443,11 +470,67 @@ const ComplaintTable: React.FC = () => {
     }
   );
 
-  // 각 complaint에 상태 변경 콜백 추가
-  const complaintsWithCallbacks = filteredComplaints.map((complaint) => ({
-    ...complaint,
-    onStatusChange: handleStatusChange,
-  }));
+  const handlePageChange = (page: number) => {
+    // Validate page number
+    if (page < 1 || page > paginationInfo.totalPages) {
+      console.warn(
+        `Invalid page number: ${page}. Total pages: ${paginationInfo.totalPages}`
+      );
+      return;
+    }
+    setCurrentPage(page);
+  };
+
+  const handleFirstPage = () => {
+    if (paginationInfo.totalPages > 0) {
+      setCurrentPage(1);
+    }
+  };
+
+  const handleLastPage = () => {
+    if (paginationInfo.totalPages > 0) {
+      setCurrentPage(paginationInfo.totalPages);
+    }
+  };
+
+  const handlePrevPage = () => {
+    if (paginationInfo.hasPrevPage) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (paginationInfo.hasNextPage) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+  const generatePageNumbers = () => {
+    const { totalPages, currentPage } = paginationInfo;
+
+    // Handle edge cases
+    if (totalPages <= 0) {
+      return [];
+    }
+
+    if (totalPages === 1) {
+      return [1];
+    }
+
+    const pages = [];
+    const maxVisiblePages = 10;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
 
   return (
     <div className="w-full 2xl:w-[110%] overflow-x-auto">
@@ -511,7 +594,10 @@ const ComplaintTable: React.FC = () => {
             onClick={handleSelectAll}
           >
             <Checkbox
-              checked={selectedRows.size === filteredComplaints.length}
+              checked={
+                selectedRows.size === paginatedComplaints.length &&
+                paginatedComplaints.length > 0
+              }
             />
             전체 선택
           </div>
@@ -627,14 +713,21 @@ const ComplaintTable: React.FC = () => {
           <div className="flex items-center justify-center py-8">
             <div className="text-red-500">{fetchError}</div>
           </div>
-        ) : complaintsWithCallbacks.length === 0 ? (
+        ) : paginatedComplaints.length === 0 ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-500">민원이 없습니다.</div>
+            <div className="text-gray-500">
+              {filteredComplaints.length === 0
+                ? '민원이 없습니다.'
+                : '현재 페이지에 표시할 민원이 없습니다.'}
+            </div>
           </div>
         ) : (
           <DataTable
             columns={columns}
-            data={complaintsWithCallbacks}
+            data={paginatedComplaints.map((complaint) => ({
+              ...complaint,
+              onStatusChange: handleStatusChange,
+            }))}
             onRowClick={(complaint) => handleRowClick(complaint.id)}
             clickableColumnIds={[
               'select',
@@ -661,12 +754,16 @@ const ComplaintTable: React.FC = () => {
           <div className="flex items-center justify-center py-8">
             <div className="text-red-500">{fetchError}</div>
           </div>
-        ) : filteredComplaints.length === 0 ? (
+        ) : paginatedComplaints.length === 0 ? (
           <div className="flex items-center justify-center py-8">
-            <div className="text-gray-500">민원이 없습니다.</div>
+            <div className="text-gray-500">
+              {filteredComplaints.length === 0
+                ? '민원이 없습니다.'
+                : '현재 페이지에 표시할 민원이 없습니다.'}
+            </div>
           </div>
         ) : (
-          filteredComplaints.map((complaint) => (
+          paginatedComplaints.map((complaint) => (
             <ComplaintCard
               key={complaint.id}
               complaint={complaint}
@@ -680,52 +777,63 @@ const ComplaintTable: React.FC = () => {
       </div>
 
       {/* 페이지네이션 */}
-      <div className="hidden lg:flex items-center justify-center mt-8">
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-none outline-none shadow-none"
-          >
-            <ChevronsLeft className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-none outline-none shadow-none"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
+      {paginationInfo.totalPages > 0 && (
+        <div className="hidden lg:flex items-center justify-center mt-8">
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleFirstPage}
+              disabled={!paginationInfo.hasPrevPage}
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handlePrevPage}
+              disabled={!paginationInfo.hasPrevPage}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
 
-          <div className="flex items-center space-x-1">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((page) => (
-              <Button
-                key={page}
-                variant={page === 1 ? 'default' : 'outline'}
-                size="sm"
-                className="w-8 h-8 border-none outline-none shadow-none text-sm"
-              >
-                {page}
-              </Button>
-            ))}
+            <div className="flex items-center space-x-1">
+              {generatePageNumbers().map((page) => (
+                <Button
+                  key={page}
+                  variant={page === 1 ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className="w-8 h-8 border-none outline-none shadow-none text-sm"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleNextPage}
+              disabled={!paginationInfo.hasNextPage}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleLastPage}
+              disabled={!paginationInfo.hasNextPage}
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
           </div>
-
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-none outline-none shadow-none"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            className="border-none outline-none shadow-none"
-          >
-            <ChevronsRight className="w-4 h-4" />
-          </Button>
         </div>
-      </div>
+      )}
     </div>
   );
 };

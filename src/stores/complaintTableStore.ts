@@ -23,6 +23,10 @@ interface ComplaintTableState {
   selectedComplaintStatus: boolean | null;
   selectedRows: Set<number>;
 
+  // Pagination
+  currentPage: number;
+  pageSize: number;
+
   // Actions
   setDateRange: (range: DateRange | undefined) => void;
   setSearchTerm: (term: string) => void;
@@ -33,6 +37,23 @@ interface ComplaintTableState {
   setSelectedComplaintId: (id: string | null) => void;
   setSelectedComplaintStatus: (status: boolean | null) => void;
   setSelectedRows: (rows: Set<number>) => void;
+  // Pagination Actions
+  setCurrentPage: (page: number) => void;
+  setPageSize: (size: number) => void;
+  resetPagination: () => void;
+
+  // Pagination Helper Functions
+  getTotalPages: () => number;
+  getPaginatedComplaints: () => Complaint[];
+  getPaginationInfo: () => {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+    startItem: number;
+    endItem: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 
   // Helper actions
   addComplaint: (complaint: Complaint) => void;
@@ -59,6 +80,9 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
       selectedComplaintId: null,
       selectedComplaintStatus: null,
       selectedRows: new Set(),
+      // Pagination
+      currentPage: 1,
+      pageSize: 8,
 
       // Actions
       setDateRange: (range) => set({ dateRange: range }),
@@ -173,7 +197,45 @@ export const useComplaintTableStore = create<ComplaintTableState>()(
           selectedComplaintId: null,
           selectedComplaintStatus: null,
           selectedRows: new Set(),
+          currentPage: 1,
+          pageSize: 8,
         }),
+
+      // Pagination Actions
+      setCurrentPage: (page) => set({ currentPage: page }),
+      setPageSize: (size) => set({ currentPage: 1, pageSize: size }),
+      resetPagination: () => set({ currentPage: 1 }),
+
+      // Pagination Helper Functions
+      getTotalPages: () => {
+        const { filteredComplaints, pageSize } = get();
+        return Math.ceil(filteredComplaints.length / pageSize);
+      },
+
+      getPaginatedComplaints: () => {
+        const { filteredComplaints, currentPage, pageSize } = get();
+        const startIndex = (currentPage - 1) * pageSize;
+        const endIndex = startIndex + pageSize;
+        return filteredComplaints.slice(startIndex, endIndex);
+      },
+
+      getPaginationInfo: () => {
+        const { filteredComplaints, currentPage, pageSize } = get();
+        const totalItems = filteredComplaints.length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        const startItem = (currentPage - 1) * pageSize + 1;
+        const endItem = Math.min(currentPage * pageSize, totalItems);
+
+        return {
+          totalItems,
+          totalPages,
+          currentPage,
+          startItem,
+          endItem,
+          hasNextPage: currentPage < totalPages,
+          hasPrevPage: currentPage > 1,
+        };
+      },
     }),
     {
       name: 'complaint-table-storage', // localStorage key
