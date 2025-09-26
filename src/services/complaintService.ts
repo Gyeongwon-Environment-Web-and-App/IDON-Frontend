@@ -58,9 +58,7 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    categories:
-      complaintExtended.categories ||
-      complaintExtended.teams.map((team) => team.category),
+    categories: complaintExtended.teams.map((team) => team.category),
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
@@ -141,9 +139,18 @@ export const complaintService = {
 
   async getComplaintById(id: string): Promise<Complaint> {
     try {
+      console.log('🌐 API Call: /complaint/getById/' + id, {
+        timestamp: new Date().toISOString(),
+      });
+
       const response = await apiClient.get<ComplaintByIdApiResponse>(
         `/complaint/getById/${id}`
       );
+
+      console.log('📡 API Response for getById:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
 
       if (!response.data) {
         throw new Error('API response data is null or undefined');
@@ -153,9 +160,17 @@ export const complaintService = {
         throw new Error('API response missing complaint_extended property');
       }
 
-      return convertComplaintExtendedToComplaint(
+      const convertedComplaint = convertComplaintExtendedToComplaint(
         response.data.complaint_extended
       );
+
+      console.log('🔄 Converted complaint for getById:', {
+        convertedComplaint,
+        categories: convertedComplaint.categories,
+        timestamp: new Date().toISOString(),
+      });
+
+      return convertedComplaint;
     } catch (error) {
       console.error('Error in getComplaintById:', error);
       throw error;

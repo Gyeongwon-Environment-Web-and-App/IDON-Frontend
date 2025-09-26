@@ -28,6 +28,7 @@ import {
   Search,
 } from '@/lib/icons';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
+import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
 import { formatDateToYYMMDD } from '@/utils/formatDate';
 
@@ -38,7 +39,6 @@ import type { Complaint } from '../../types/complaint';
 import DateRangePicker from '../common/DateRangePicker';
 import Popup from '../forms/Popup';
 import ComplaintCard from './ComplaintCard';
-import { complaintService } from '@/services/complaintService';
 
 // Extended complaint type with callback
 interface ComplaintWithCallback extends Complaint {
@@ -330,7 +330,8 @@ const ComplaintTable: React.FC = () => {
 
     try {
       setIsCategoryLoading(true);
-      const categoryComplaints = await complaintService.getComplaintsByCategory(filterType);
+      const categoryComplaints =
+        await complaintService.getComplaintsByCategory(filterType);
 
       setFilteredComplaints(categoryComplaints);
     } catch (error) {

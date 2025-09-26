@@ -10,7 +10,11 @@ import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { Complaint } from '@/types/complaint';
 
 import sample from '../../assets/background/sample.jpg';
+import food from '../../assets/icons/categories/tags/food.svg';
+import general from '../../assets/icons/categories/tags/general.svg';
+import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
+import attentionRed from '../../assets/icons/common/attention_red.svg';
 import fix from '../../assets/icons/common/fix.svg';
 import greenCircle from '../../assets/icons/map_card/green_circle.svg';
 import pin from '../../assets/icons/map_card/location_pin.svg';
@@ -28,6 +32,22 @@ const getPhoneNumber = (complaint: Complaint | null): string | null => {
 
 const getFirstUsername = (complaint: Complaint | null): string | null => {
   return complaint?.notify?.usernames?.[0] || null;
+};
+
+// Helper function to get category icon
+const getCategoryIcon = (category: string): string => {
+  switch (category) {
+    case '재활용':
+      return recycle;
+    case '음식물':
+      return food;
+    case '일반':
+      return general;
+    case '기타':
+      return other;
+    default:
+      return recycle; // Default fallback
+  }
 };
 
 const ComplaintDetail: React.FC = () => {
@@ -98,13 +118,18 @@ const ComplaintDetail: React.FC = () => {
 
     const fetchComplaint = async () => {
       try {
+        // Clear any cached data first
+        setSelectedComplaint(null);
         const complaint = await getComplaintById(currentComplaintId);
+        console.log('ComplaintDetail - Fetched complaint data:', complaint);
+        console.log('ComplaintDetail - Categories:', complaint.categories);
         setSelectedComplaint(complaint);
       } catch (error) {
         console.error('Failed to fetch complaint:', error);
       }
     };
 
+    // Always fetch fresh data, don't rely on cached data
     fetchComplaint();
   }, [currentComplaintId, getComplaintById, setSelectedComplaint]);
 
@@ -208,10 +233,38 @@ const ComplaintDetail: React.FC = () => {
       {/* Complaint Details */}
       <div className="p-2 py-0 md:p-4 md:py-2">
         <img src={sample} alt="샘플사진" className="rounded-sm mb-3 md:mb-6" />
-
         <div className="space-y-1 md:space-y-2">
           <div className="flex gap-2 items-center">
-            <img src={recycle} alt={`${selectedComplaint?.type || '재활용'}`} />
+            <div className="flex gap-1">
+              {(() => {
+                console.log(
+                  'ComplaintDetail - selectedComplaint:',
+                  selectedComplaint
+                );
+                console.log(
+                  'ComplaintDetail - selectedComplaint.categories:',
+                  selectedComplaint?.categories
+                );
+                return selectedComplaint?.categories
+                  ?.filter((category) => category !== 'manager')
+                  ?.map((category, index) => {
+                    console.log(
+                      'Rendering category:',
+                      category,
+                      'at index:',
+                      index
+                    );
+                    return (
+                      <img
+                        key={index}
+                        src={getCategoryIcon(category)}
+                        alt={`${category} 카테고리`}
+                        className="w-14 h-6"
+                      />
+                    );
+                  });
+              })()}
+            </div>
             <p className="text-xl font-semibold">
               {selectedComplaint?.content || '민원 제목'}
             </p>
@@ -246,6 +299,23 @@ const ComplaintDetail: React.FC = () => {
             </label>
           </div>
 
+          {selectedComplaint?.addressFrequency !== undefined &&
+            selectedComplaint.addressFrequency > 0 && (
+              <div className="pt-2 md:pt-3">
+                <div className="flex items-center gap-2">
+                  <img
+                    src={attentionRed}
+                    alt="경고 아이콘"
+                    className="w-4 h-4"
+                  />
+                  <label className="text-sm md:text-base font-semibold text-red">
+                    최근 한 달간 이 주소에서 민원이{' '}
+                    {selectedComplaint.addressFrequency}번 들어왔습니다.
+                  </label>
+                </div>
+              </div>
+            )}
+
           <div className="flex gap-1 md:gap-2 items-center">
             <img src={phone} alt="전화" className="w-4 md:w-5 h-4 md:h-5" />
             <label className="text-base md:text-lg font-semibold">
@@ -256,6 +326,23 @@ const ComplaintDetail: React.FC = () => {
               )
             </label>
           </div>
+
+          {selectedComplaint?.phoneFrequency !== undefined &&
+            selectedComplaint.phoneFrequency > 0 && (
+              <div className="pt-2 md:pt-3">
+                <div className="flex items-center gap-2">
+                  <img
+                    src={attentionRed}
+                    alt="경고 아이콘"
+                    className="w-4 h-4"
+                  />
+                  <label className="text-sm md:text-base font-semibold text-red">
+                    최근 한 달간 이 전화번호에서 민원이{' '}
+                    {selectedComplaint.phoneFrequency}번 들어왔습니다.
+                  </label>
+                </div>
+              </div>
+            )}
 
           <div className="flex gap-1 md:gap-2 items-center">
             <img

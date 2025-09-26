@@ -106,8 +106,8 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
 
   setTempAddress: (address) => set({ tempAddress: address }),
 
-  setAddressFrequencyInfo: (addressInfo) =>
-    set({ addressFrequencyInfo: addressInfo }),
+  setAddressFrequencyInfo: (addressInfo) => set({ addressFrequencyInfo: addressInfo }),
+
   setPhoneFrequencyInfo: (phoneInfo) => set({ phoneFrequencyInfo: phoneInfo }),
 
   resetForm: () =>

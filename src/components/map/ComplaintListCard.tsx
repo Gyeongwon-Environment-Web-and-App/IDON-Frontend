@@ -16,6 +16,22 @@ import pin from '../../assets/icons/map_card/location_pin.svg';
 import yellowCircle from '../../assets/icons/map_card/yellow_circle.svg';
 import type { Complaint } from '../../types/complaint';
 
+// Helper function to get category icon
+const getCategoryIcon = (category: string): string => {
+  switch (category) {
+    case '재활용':
+      return recycle;
+    case '음식물':
+      return food;
+    case '일반':
+      return general;
+    case '기타':
+      return other;
+    default:
+      return recycle; // Default fallback
+  }
+};
+
 interface ComplaintListCardProps {
   complaint: Complaint;
 }
@@ -41,21 +57,20 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
         />
         <div className="py-1">
           <div className="flex gap-1">
-            <img
-              src={
-                complaint.teams[0].category === '재활용'
-                  ? recycle
-                  : complaint.teams[0].category === '음식물'
-                    ? food
-                    : complaint.teams[0].category === '기타'
-                      ? other
-                      : complaint.teams[0].category === '기타'
-                        ? general
-                        : ''
-              }
-              alt="쓰레기 상성 태그"
-              className="w-10 md:w-12"
-            />
+            <div className="flex gap-1">
+              {complaint.categories
+                ?.filter((category) => category !== 'manager')
+                ?.map((category, index) => {
+                  return (
+                    <img
+                      key={index}
+                      src={getCategoryIcon(category)}
+                      alt={`${category} 카테고리`}
+                      className="w-10 md:w-12"
+                    />
+                  );
+                })}
+            </div>
             {complaint.source.bad ? (
               <img src={bad} alt="반복민원 태그" className="w-12 md:w-14" />
             ) : (

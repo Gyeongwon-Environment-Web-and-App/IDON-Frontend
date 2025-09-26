@@ -16,6 +16,12 @@ export const useComplaints = (dateRange?: DateRange) => {
     try {
       const data = await complaintService.getComplaints(currentDateRange);
       const sortedData = data.sort((a, b) => b.id - a.id);
+
+      console.log('Complaints fetched:', {
+        complaints: sortedData,
+        dateRange: currentDateRange,
+      });
+
       setComplaints(sortedData);
     } catch (error) {
       setFetchError('민원 불러오기 실패');
