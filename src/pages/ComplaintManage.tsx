@@ -129,7 +129,10 @@ const ComplaintManage = () => {
           bad: formData.source?.bad || false,
         },
         notify: {
-          usernames: formData.notify?.usernames || [],
+          // Transform usernames array to boolean flags for API
+          teams: formData.notify?.usernames?.includes('팀장님께 전달') || false,
+          manager:
+            formData.notify?.usernames?.includes('소장님께 전달') || false,
         },
       };
 
@@ -232,12 +235,11 @@ const ComplaintManage = () => {
                   onSubmit={() => setShowConfirm(true)}
                 />
               ) : (
-                  <ComplaintConfirm
-                    onSubmit={onSubmit}
-                    onBack={() => setShowConfirm(false)}
-                  />
-                )
-              )}
+                <ComplaintConfirm
+                  onSubmit={onSubmit}
+                  onBack={() => setShowConfirm(false)}
+                />
+              ))}
             {activeTab === 'stats' && (
               <>
                 <ComplaintStats />

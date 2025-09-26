@@ -264,10 +264,9 @@ export default function ComplaintConfirm({
           <TextForward
             options={[
               '소장님께 전달',
-              '담당 기사님께 전달',
-              '담당 팀장님께 전달',
+              '팀장님께 전달',
             ]}
-            mobileOptions={['소장님', '담당 기사님', '팀장님']} // 모바일용 짧은 텍스트
+            mobileOptions={['소장님', '팀장님']} // 모바일용 짧은 텍스트
             selectedValues={getNotifyData()}
             onChange={(updatedList) =>
               updateFormData({
