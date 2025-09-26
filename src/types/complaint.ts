@@ -28,6 +28,13 @@ export interface Team {
   drivers: Driver[];
 }
 
+// Team interface for category API response (without drivers)
+export interface TeamForCategory {
+  id: number;
+  category: string;
+  team_nm: string;
+}
+
 export interface ComplaintExtended {
   id: number;
   datetime: string;
@@ -51,6 +58,38 @@ export interface ComplaintApiResponse {
 export interface ComplaintByIdApiResponse {
   message: string;
   complaint_extended: ComplaintExtended;
+}
+
+// Complaint interface for category API response (different structure)
+export interface ComplaintForCategory {
+  id: number;
+  datetime: string;
+  content: string;
+  status: boolean;
+  type: string;
+  route: string;
+  bad: boolean;
+  user: {
+    id: number;
+    name: string;
+    serial_no: string;
+  };
+  address: {
+    id: number;
+    address: string;
+    region_nm: string;
+  };
+  source: {
+    id: number;
+    phone_no: string;
+    bad: boolean;
+  };
+  teams: TeamForCategory[];
+}
+
+export interface ComplaintByCategoryApiResponse {
+  message: string;
+  complaints: ComplaintForCategory[];
 }
 
 // Form Data Interface (for creating new complaints)

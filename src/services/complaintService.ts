@@ -1,11 +1,13 @@
 import type { DateRange } from 'react-day-picker';
 
 import apiClient from '@/lib/api';
-import type {
-  Complaint,
-  ComplaintApiResponse,
-  ComplaintByIdApiResponse,
-  ComplaintExtended,
+import {
+  type Complaint,
+  type ComplaintApiResponse,
+  type ComplaintByCategoryApiResponse,
+  type ComplaintByIdApiResponse,
+  type ComplaintExtended,
+  type ComplaintForCategory,
 } from '@/types/complaint';
 
 const formatDate = (date: Date): string => {
@@ -56,7 +58,7 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    category: complaintExtended.category,
+    category: complaintExtended.teams.map((team) => team.category).join(', '),
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
@@ -73,31 +75,68 @@ const convertComplaintExtendedToComplaint = (
   };
 };
 
+const convertComplaintForCategoryToComplaint = (
+  complaintForCategory: ComplaintForCategory
+): Complaint => {
+  if (!complaintForCategory) {
+    throw new Error('complaintForCategory is null or undefined');
+  }
+
+  if (!complaintForCategory.address) {
+    throw new Error('complaintForCategory.address is null or undefined');
+  }
+
+  return {
+    id: complaintForCategory.id,
+    address: complaintForCategory.address.address,
+    datetime: complaintForCategory.datetime,
+    category: complaintForCategory.teams
+      .map((team) => team.category)
+      .join(', '),
+    type: complaintForCategory.type,
+    content: complaintForCategory.content,
+    route: complaintForCategory.route,
+    source: complaintForCategory.source,
+    notify: {
+      usernames: [],
+    },
+    uploadedFiles: [],
+    status: complaintForCategory.status,
+    user: {
+      name: complaintForCategory.user.name,
+      serial_no: complaintForCategory.user.serial_no,
+      phone_no: '',
+    },
+    teams: complaintForCategory.teams.map((team) => ({
+      ...team,
+      drivers: [],
+    })),
+  };
+};
+
 export const complaintService = {
   async getComplaints(dateRange?: DateRange): Promise<Complaint[]> {
-    const dateRangeRequest = getDateRangeFromPicker(dateRange);
+    try {
+      const dateRangeRequest = getDateRangeFromPicker(dateRange);
 
-    console.log('Request body (ISO format):', {
-      startDate: dateRangeRequest.startDate,
-      endDate: dateRangeRequest.endDate,
-    });
+      const response = await apiClient.post<ComplaintApiResponse>(
+        '/complaint/getByDates',
+        {
+          startDate: dateRangeRequest.startDate,
+          endDate: dateRangeRequest.endDate,
+        }
+      );
 
-    const response = await apiClient.post<ComplaintApiResponse>(
-      '/complaint/getByDates',
-      {
-        startDate: dateRangeRequest.startDate,
-        endDate: dateRangeRequest.endDate,
-      }
-    );
+      // Convert the API response to the expected format
+      const complaints = response.data.complaints_extended.map(
+        convertComplaintExtendedToComplaint
+      );
 
-    // Convert the API response to the expected format
-    const complaints = response.data.complaints_extended.map(
-      convertComplaintExtendedToComplaint
-    );
-
-    console.log('Complaints:', complaints);
-
-    return complaints;
+      return complaints;
+    } catch (error) {
+      console.error('Error fetching complaints by date range:', error);
+      throw error;
+    }
   },
 
   async getComplaintById(id: string): Promise<Complaint> {
@@ -132,14 +171,43 @@ export const complaintService = {
       route?: string;
       status?: boolean | null;
     }
-  ): Promise<Complaint> {
-    const response = await apiClient.patch(`/complaint/edit/${id}`, updates);
-    return response.data;
+  ): Promise<void> {
+    try {
+      await apiClient.patch(`/complaint/edit/${id}`, updates);
+    } catch (error) {
+      console.error(`Error updating complaint ${id}:`, error);
+      throw error;
+    }
   },
 
   async deleteComplaints(ids: number[]): Promise<void> {
-    await apiClient.delete('/complaint/deleteOneOrMany', {
-      data: { ids },
-    });
+    try {
+      await apiClient.delete('/complaint/deleteOneOrMany', {
+        data: { ids },
+      });
+    } catch (error) {
+      console.error(`Error deleting complaints [${ids.join(', ')}]:`, error);
+      throw error;
+    }
+  },
+
+  async getComplaintsByCategory(category: string): Promise<Complaint[]> {
+    try {
+      const response = await apiClient.get<ComplaintByCategoryApiResponse>(
+        `/complaint/getByCategory/${category}`
+      );
+
+      const complaints = response.data.complaints.map(
+        convertComplaintForCategoryToComplaint
+      );
+
+      return complaints;
+    } catch (error) {
+      console.error(
+        `Error fetching complaints for category ${category}:`,
+        error
+      );
+      throw error;
+    }
   },
 };

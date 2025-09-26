@@ -38,6 +38,7 @@ import type { Complaint } from '../../types/complaint';
 import DateRangePicker from '../common/DateRangePicker';
 import Popup from '../forms/Popup';
 import ComplaintCard from './ComplaintCard';
+import { complaintService } from '@/services/complaintService';
 
 // Extended complaint type with callback
 interface ComplaintWithCallback extends Complaint {
@@ -47,6 +48,7 @@ interface ComplaintWithCallback extends Complaint {
 const ComplaintTable: React.FC = () => {
   const navigate = useNavigate();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isCategoryLoading, setIsCategoryLoading] = useState(false);
 
   const {
     dateRange,
@@ -320,17 +322,27 @@ const ComplaintTable: React.FC = () => {
   };
 
   // 필터링 함수
-  const handleFilterChange = (filterType: string) => {
+  const handleFilterChange = async (filterType: string) => {
     if (filterType === '전체 민원') {
       setFilteredComplaints(storeComplaints);
       return;
     }
 
-    const filtered = storeComplaints.filter((complaint) => {
-      return complaint.type === filterType;
-    });
+    try {
+      setIsCategoryLoading(true);
+      const categoryComplaints = await complaintService.getComplaintsByCategory(filterType);
 
-    setFilteredComplaints(filtered);
+      setFilteredComplaints(categoryComplaints);
+    } catch (error) {
+      console.error(`ComplaintTable ${filterType} fetch 오류,: ${error}`);
+
+      const filtered = storeComplaints.filter((complaint) => {
+        return complaint.type === filterType;
+      });
+      setFilteredComplaints(filtered);
+    } finally {
+      setIsCategoryLoading(false);
+    }
   };
 
   // 검색 기능
@@ -510,8 +522,9 @@ const ComplaintTable: React.FC = () => {
                     variant="outline"
                     size="sm"
                     className="shadow-none border border-a2a2a2 md:border-[#575757] outline-none text-sm px-2"
+                    disabled={isCategoryLoading}
                   >
-                    전체 민원
+                    {isCategoryLoading ? '로딩중...' : '전체 민원'}
                     <img src={triangle} alt="쓰레기상성 필터 버튼" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -577,8 +590,16 @@ const ComplaintTable: React.FC = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => {}}>PDF</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => {}}>Excel</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => window.alert('개발 중입니다!')}
+                  >
+                    PDF
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => window.alert('개발 중입니다!')}
+                  >
+                    Excel
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
