@@ -168,38 +168,15 @@ export default function ComplaintForm({
     const newTimeout = setTimeout(async () => {
       try {
         // First try path parameter
-        const response = await apiClient.get(
-          `/complaint/getFrequencyByAddress/${encodeURIComponent(selectedAddress)}`
+        const response = await apiClient.post(
+          `/complaint/getFrequencyByAddress`,
+          { address: selectedAddress }
         );
-        setAddressFrequencyInfo(response.data.numberOfComplaints);
+        setAddressFrequencyInfo(response.data.count);
         console.log('주소 빈도 정보: ', response.data);
       } catch (error) {
-        if (
-          error &&
-          typeof error === 'object' &&
-          'response' in error &&
-          error.response &&
-          typeof error.response === 'object' &&
-          'status' in error.response &&
-          error.response.status === 404
-        ) {
-          try {
-            const response = await apiClient.get(
-              '/complaint/getFrequencyByAddress',
-              {
-                params: { address: selectedAddress },
-              }
-            );
-            setAddressFrequencyInfo(response.data.numberOfComplaints);
-            console.log('주소 빈도 정보: ', response.data);
-          } catch (fallbackError) {
-            console.log('주소 빈도 정보 조회 실패: ', fallbackError);
-            setAddressFrequencyInfo(null);
-          }
-        } else {
-          console.log('주소 빈도 정보 조회 실패: ', error);
-          setAddressFrequencyInfo(null);
-        }
+        console.log('주소 빈도 정보 조회 실패: ', error);
+        setAddressFrequencyInfo(null);
       }
     }, 1000);
 
@@ -209,38 +186,15 @@ export default function ComplaintForm({
   const handlePhoneClick = (phone_no: string) => {
     setTimeout(async () => {
       try {
-        const response = await apiClient.get(
-          `/complaint/getFrequencyByPhone/${encodeURIComponent(phone_no)}`
+        const response = await apiClient.post(
+          `/complaint/getFrequencyByPhone`,
+          { phone: phone_no }
         );
-        setPhoneFrequencyInfo(response.data.numberOfComplaints);
+        setPhoneFrequencyInfo(response.data.count);
         console.log('전화번호 빈도 정보: ', response.data);
       } catch (error) {
-        if (
-          error &&
-          typeof error === 'object' &&
-          'response' in error &&
-          error.response &&
-          typeof error.response === 'object' &&
-          'status' in error.response &&
-          error.response.status === 404
-        ) {
-          try {
-            const response = await apiClient.get(
-              '/complaint/getFrequencyByPhone',
-              {
-                params: { phone: phone_no },
-              }
-            );
-            setPhoneFrequencyInfo(response.data.numberOfComplaints);
-            console.log('전화번호 빈도 정보: ', response.data);
-          } catch (fallbackError) {
-            console.log('전화번호 빈도 정보 조회 실패: ', fallbackError);
-            setPhoneFrequencyInfo(null);
-          }
-        } else {
-          console.log('전화번호 빈도 정보 조회 실패: ', error);
-          setPhoneFrequencyInfo(null);
-        }
+        console.log('전화번호 빈도 정보 조회 실패: ', error);
+        setPhoneFrequencyInfo(null);
       }
     }, 1000);
   };
