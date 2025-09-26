@@ -90,7 +90,7 @@ const ComplaintDetail: React.FC = () => {
     if (!phoneNo) return;
     try {
       const response = await apiClient.post('/complaint/getFrequencyByPhone', {
-        phone: phoneNo,
+        phone_no: phoneNo,
       });
       setPhoneFrequency(response.data.count);
     } catch (error) {

@@ -46,10 +46,6 @@ export const usePinManager = ({
   const markersRef = useRef<unknown[]>([]);
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
-  const [clickedInfoWindow, setClickedInfoWindow] = useState<{
-    marker: unknown;
-    infowindow: unknown;
-  } | null>(null);
 
   // Type guards for Kakao Maps objects
   const isKakaoMarker = (
@@ -75,7 +71,6 @@ export const usePinManager = ({
         markerData.infowindow.close();
       }
     });
-    setClickedInfoWindow(null);
   }, []);
 
   // Combine both functions into one to handle category arrays and get the correct key
@@ -130,7 +125,6 @@ export const usePinManager = ({
       }
     });
     markersRef.current = [];
-    setClickedInfoWindow(null);
   }, []);
 
   // Create marker for a pin
@@ -183,7 +177,7 @@ export const usePinManager = ({
 
       const iwContent =
         '<div style="display: flex; flex-direction: column; padding: 12px; width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
-        '<div style="display: flex; gap: 8px; align-items: center; height: 30px">' +
+        '<div style="display: flex; gap: 8px; align-items: center; height: 30px;">' +
         categoryIconsHtml +
         (pin.isRepeat
           ? '<img src="' +
@@ -230,42 +224,28 @@ export const usePinManager = ({
         kakaoMaps.event.addListener(marker, event, handler);
       };
 
-      // Click event for toggle functionality
+      // Click event for navigation and close info window
       addEventListener('click', () => {
-        // Handle pin click callback first
         if (onPinClick) {
           onPinClick({ pin, marker, map: mapInstance });
         }
-
-        // Toggle info window
-        const isCurrentlyOpen = isInfoWindowOpen(infowindow);
-
-        if (isCurrentlyOpen) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (infowindow as any).close();
-          setClickedInfoWindow(null);
-        } else {
-          closeAllInfoWindows();
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (infowindow as any).open(mapInstance as any, marker as any);
-          setClickedInfoWindow({ marker, infowindow });
-        }
+        // Close info window after navigation
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (infowindow as any).close();
       });
 
-      // Mouseover event (only if no clicked info window is open)
+      // Mouseover event
       addEventListener('mouseover', () => {
-        if (!clickedInfoWindow && mapInstance) {
+        if (mapInstance) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (infowindow as any).open(mapInstance as any, marker as any);
         }
       });
 
-      // Mouseout event (only if this isn't the clicked info window)
+      // Mouseout event
       addEventListener('mouseout', () => {
-        if (!clickedInfoWindow || clickedInfoWindow.marker !== marker) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (infowindow as any).close();
-        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (infowindow as any).close();
       });
 
       if (isKakaoMarker(marker)) {
@@ -274,7 +254,7 @@ export const usePinManager = ({
 
       return markerData;
     },
-    [onPinClick, mapInstance, clickedInfoWindow, closeAllInfoWindows]
+    [onPinClick, mapInstance, closeAllInfoWindows]
   );
 
   // Update pins on map
@@ -371,25 +351,6 @@ export const usePinManager = ({
       createMarkersFromGeocodedPins();
     }
   }, [createMarkersFromGeocodedPins, mapInstance, isLoaded]);
-
-  // Add map click listener to close info windows when clicking on empty map areas
-  useEffect(() => {
-    if (!mapInstance || !isLoaded) return;
-
-    const kakaoMaps = getKakaoMaps();
-    if (!kakaoMaps) return;
-
-    const handleMapClick = () => {
-      closeAllInfoWindows();
-    };
-
-    kakaoMaps.event.addListener(mapInstance, 'click', handleMapClick);
-
-    // Cleanup
-    return () => {
-      kakaoMaps.event.removeListener(mapInstance, 'click', handleMapClick);
-    };
-  }, [mapInstance, isLoaded, closeAllInfoWindows]);
 
   return {
     isGeocoding,
