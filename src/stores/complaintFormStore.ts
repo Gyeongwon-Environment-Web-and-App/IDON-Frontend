@@ -32,8 +32,6 @@ interface ComplaintFormState {
   loading: boolean;
   error: string | null;
   tempAddress: string;
-  addressFrequencyInfo: number | null;
-  phoneFrequencyInfo: number | null;
 
   // Actions (functions that update state)
   updateFormData: (updates: Partial<ComplaintFormData>) => void;
@@ -42,8 +40,6 @@ interface ComplaintFormState {
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
   setTempAddress: (address: string) => void;
-  setAddressFrequencyInfo: (addressInfo: number | null) => void;
-  setPhoneFrequencyInfo: (phoneInfo: number | null) => void;
   resetForm: () => void;
   fetchDriverData: (address: string, categories: string[]) => Promise<void>;
   setDriverData: (data: DriverData) => void;
@@ -86,8 +82,6 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   loading: false,
   error: null,
   tempAddress: '',
-  addressFrequencyInfo: null,
-  phoneFrequencyInfo: null,
   driverData: initialDriverData,
 
   // Actions
@@ -106,10 +100,6 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
 
   setTempAddress: (address) => set({ tempAddress: address }),
 
-  setAddressFrequencyInfo: (addressInfo) => set({ addressFrequencyInfo: addressInfo }),
-
-  setPhoneFrequencyInfo: (phoneInfo) => set({ phoneFrequencyInfo: phoneInfo }),
-
   resetForm: () =>
     set({
       formData: initialFormData,
@@ -119,8 +109,6 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
       loading: false,
       error: null,
       tempAddress: '',
-      addressFrequencyInfo: null,
-      phoneFrequencyInfo: null,
     }),
 
   // Edit mode actions

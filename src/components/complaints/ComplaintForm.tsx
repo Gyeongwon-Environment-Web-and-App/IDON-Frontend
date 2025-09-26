@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import attention from '../../assets/icons/common/attention.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
@@ -30,8 +30,6 @@ export default function ComplaintForm({
     loading,
     error,
     tempAddress,
-    addressFrequencyInfo,
-    phoneFrequencyInfo,
     updateFormData,
     fetchDriverData,
     setShowAddressSearch,
@@ -39,9 +37,15 @@ export default function ComplaintForm({
     setLoading,
     setError,
     setTempAddress,
-    setAddressFrequencyInfo,
-    setPhoneFrequencyInfo,
   } = useComplaintFormStore();
+
+  // Local state for frequency data
+  const [addressFrequencyInfo, setAddressFrequencyInfo] = useState<
+    number | null
+  >(null);
+  const [phoneFrequencyInfo, setPhoneFrequencyInfo] = useState<number | null>(
+    null
+  );
 
   // Get UI state and actions from Zustand store
   const {
@@ -49,13 +53,15 @@ export default function ComplaintForm({
     showMap,
     mapCoordinates,
     resetMapCenter,
-    frequencyTimeout,
     setFocus,
     setShowMap,
     setMapCoordinates,
     setResetMapCenter,
-    setFrequencyTimeout,
   } = useComplaintFormUIStore();
+
+  // Local timeout management for frequency fetching
+  const [frequencyTimeout, setFrequencyTimeout] =
+    useState<NodeJS.Timeout | null>(null);
 
   const dropdownRef = useRef<HTMLDivElement>(null);
   const mapDropdownRef = useRef<HTMLDivElement>(null);

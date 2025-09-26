@@ -24,15 +24,13 @@ interface ComplaintFormUIState {
   mapCoordinates: MapCoordinates | null;
   resetMapCenter: boolean;
 
-  // Timeout management
-  frequencyTimeout: NodeJS.Timeout | null;
+  // Timeout management (removed frequencyTimeout as it's now handled locally)
 
   // Actions
   setFocus: (focus: Partial<FocusState>) => void;
   setShowMap: (show: boolean) => void;
   setMapCoordinates: (coordinates: MapCoordinates | null) => void;
   setResetMapCenter: (reset: boolean) => void;
-  setFrequencyTimeout: (timeout: NodeJS.Timeout | null) => void;
 
   // Helper actions
   resetFocus: () => void;
@@ -51,7 +49,6 @@ export const useComplaintFormUIStore = create<ComplaintFormUIState>()(
     showMap: false,
     mapCoordinates: null,
     resetMapCenter: false,
-    frequencyTimeout: null,
 
     // Actions
     setFocus: (newFocus) =>
@@ -64,8 +61,6 @@ export const useComplaintFormUIStore = create<ComplaintFormUIState>()(
     setMapCoordinates: (coordinates) => set({ mapCoordinates: coordinates }),
 
     setResetMapCenter: (reset) => set({ resetMapCenter: reset }),
-
-    setFrequencyTimeout: (timeout) => set({ frequencyTimeout: timeout }),
 
     // Helper actions
     resetFocus: () =>

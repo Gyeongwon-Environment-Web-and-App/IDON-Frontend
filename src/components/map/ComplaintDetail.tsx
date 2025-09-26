@@ -1,8 +1,9 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useNavigate, useParams } from 'react-router-dom';
 
 import { useComplaints } from '@/hooks/useComplaints';
+import apiClient from '@/lib/api';
 import { createStatusChangeHandler } from '@/lib/popupHandlers';
 import { complaintService } from '@/services/complaintService';
 import { useComplaintTableStore } from '@/stores/complaintTableStore';
@@ -52,8 +53,10 @@ const getCategoryIcon = (category: string): string => {
 
 const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
-  const { selectedComplaintId, selectedComplaint, setSelectedComplaint } =
-    useMapOverviewStore();
+  const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
+  const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [frequencyLoading, setFrequencyLoading] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -64,8 +67,37 @@ const ComplaintDetail: React.FC = () => {
     setSelectedComplaintId,
     updateComplaint,
   } = useComplaintTableStore();
-
+  const { selectedComplaintId, selectedComplaint, setSelectedComplaint } =
+    useMapOverviewStore();
   const { getComplaintById, isLoading, fetchError } = useComplaints();
+
+  const fetchAddressFrequency = async (address: string) => {
+    try {
+      const response = await apiClient.post(
+        '/complaint/getFrequencyByAddress',
+        {
+          address: address,
+        }
+      );
+      setAddressFrequency(response.data.count);
+    } catch (error) {
+      console.log('Complaint Detail 주소 빈도 조회 실패:', error);
+      setAddressFrequency(null);
+    }
+  };
+
+  const fetchPhoneFrequency = async (phoneNo: string) => {
+    if (!phoneNo) return;
+    try {
+      const response = await apiClient.post('/complaint/getFrequencyByPhone', {
+        phone: phoneNo,
+      });
+      setPhoneFrequency(response.data.count);
+    } catch (error) {
+      console.log('Complaint Detail 전화번호 빈도 조회 실패:', error);
+      setPhoneFrequency(null);
+    }
+  };
 
   const statusChangeHandler = createStatusChangeHandler(
     selectedComplaintId,
@@ -148,6 +180,20 @@ const ComplaintDetail: React.FC = () => {
       refreshComplaint();
     }
   }, [isPopupOpen, currentComplaintId, getComplaintById, setSelectedComplaint]);
+
+  useEffect(() => {
+    if (selectedComplaint) {
+      setFrequencyLoading(true);
+      fetchAddressFrequency(selectedComplaint.address);
+
+      const phoneNo = selectedComplaint.source?.phone_no;
+      if (phoneNo) {
+        fetchPhoneFrequency(phoneNo);
+      }
+
+      setFrequencyLoading(false);
+    }
+  }, [selectedComplaint]);
 
   if (isLoading) {
     return (
@@ -266,7 +312,8 @@ const ComplaintDetail: React.FC = () => {
               })()}
             </div>
             <p className="text-xl font-semibold">
-              {selectedComplaint?.content || '민원 제목'}
+              {selectedComplaint?.content ||
+                `${selectedComplaint?.address.slice(7)} 민원`}
             </p>
             <button
               className="flex p-0 w-[3.2rem]"
@@ -299,22 +346,17 @@ const ComplaintDetail: React.FC = () => {
             </label>
           </div>
 
-          {selectedComplaint?.addressFrequency !== undefined &&
-            selectedComplaint.addressFrequency > 0 && (
-              <div className="pt-2 md:pt-3">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={attentionRed}
-                    alt="경고 아이콘"
-                    className="w-4 h-4"
-                  />
-                  <label className="text-sm md:text-base font-semibold text-red">
-                    최근 한 달간 이 주소에서 민원이{' '}
-                    {selectedComplaint.addressFrequency}번 들어왔습니다.
-                  </label>
-                </div>
+          {addressFrequency !== null && addressFrequency > 0 && (
+            <div className="pt-0">
+              <div className="flex items-center gap-2">
+                <img src={attentionRed} alt="경고 아이콘" className="w-4 h-4" />
+                <label className="text-sm md:text-base font-semibold text-red">
+                  최근 한 달간 이 주소에서 민원이 {addressFrequency}번
+                  들어왔습니다.
+                </label>
               </div>
-            )}
+            </div>
+          )}
 
           <div className="flex gap-1 md:gap-2 items-center">
             <img src={phone} alt="전화" className="w-4 md:w-5 h-4 md:h-5" />
@@ -327,22 +369,17 @@ const ComplaintDetail: React.FC = () => {
             </label>
           </div>
 
-          {selectedComplaint?.phoneFrequency !== undefined &&
-            selectedComplaint.phoneFrequency > 0 && (
-              <div className="pt-2 md:pt-3">
-                <div className="flex items-center gap-2">
-                  <img
-                    src={attentionRed}
-                    alt="경고 아이콘"
-                    className="w-4 h-4"
-                  />
-                  <label className="text-sm md:text-base font-semibold text-red">
-                    최근 한 달간 이 전화번호에서 민원이{' '}
-                    {selectedComplaint.phoneFrequency}번 들어왔습니다.
-                  </label>
-                </div>
+          {phoneFrequency !== null && phoneFrequency > 0 && (
+            <div className="pt-0">
+              <div className="flex items-center gap-2">
+                <img src={attentionRed} alt="경고 아이콘" className="w-4 h-4" />
+                <label className="text-sm md:text-base font-semibold text-red">
+                  최근 한 달간 이 전화번호에서 민원이 {phoneFrequency}번
+                  들어왔습니다.
+                </label>
               </div>
-            )}
+            </div>
+          )}
 
           <div className="flex gap-1 md:gap-2 items-center">
             <img

@@ -77,7 +77,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               ''
             )}
             <p className="font-semibold text-sm md:text-base truncate">
-              {complaint.content}
+              {complaint.content || `${complaint.address.slice(7)} 민원` }
             </p>
           </div>
           <p className="text-xs md:text-sm font-semibold text-[#7C7C7C] mt-1">

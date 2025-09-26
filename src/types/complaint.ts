@@ -151,9 +151,6 @@ export interface Complaint {
   status: boolean;
   user: User;
   teams: Team[];
-
-  addressFrequency?: number;
-  phoneFrequency?: number;
 }
 
 export interface DriverInfo {
