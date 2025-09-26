@@ -1,7 +1,14 @@
 // stores/complaintFormStore.ts
 import { create } from 'zustand';
 
-import type { ComplaintFormData } from '../types/complaint';
+import apiClient from '@/lib/api';
+
+import {
+  type ComplaintExtended,
+  type ComplaintFormData,
+  type DriverData,
+  type DriverDataResponse,
+} from '../types/complaint';
 
 // Define address interface for type safety
 interface AddressData {
@@ -17,6 +24,7 @@ interface AddressData {
 interface ComplaintFormState {
   // Form data
   formData: ComplaintFormData;
+  driverData: DriverData;
 
   // UI state
   showAddressSearch: boolean;
@@ -37,9 +45,12 @@ interface ComplaintFormState {
   setAddressFrequencyInfo: (addressInfo: number | null) => void;
   setPhoneFrequencyInfo: (phoneInfo: number | null) => void;
   resetForm: () => void;
+  fetchDriverData: (address: string, categories: string[]) => Promise<void>;
+  setDriverData: (data: DriverData) => void;
+  resetDriverData: () => void;
 
   // Edit mode actions
-  populateFormForEdit: (complaintData: any) => void;
+  populateFormForEdit: (complaintData: ComplaintExtended) => void;
 }
 
 // Step 2: Initial form data
@@ -60,6 +71,12 @@ const initialFormData: ComplaintFormData = {
   uploadedFiles: [],
 };
 
+const initialDriverData: DriverData = {
+  teams: [],
+  loading: false,
+  error: null,
+};
+
 // Step 3: Create the store
 export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   // Initial state
@@ -71,6 +88,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   tempAddress: '',
   addressFrequencyInfo: null,
   phoneFrequencyInfo: null,
+  driverData: initialDriverData,
 
   // Actions
   updateFormData: (updates) =>
@@ -95,6 +113,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   resetForm: () =>
     set({
       formData: initialFormData,
+      driverData: initialDriverData,
       showAddressSearch: false,
       addresses: [],
       loading: false,
@@ -108,7 +127,7 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   populateFormForEdit: (complaintData) =>
     set(() => {
       const formData = {
-        address: complaintData.address || '',
+        address: complaintData.address?.address || '',
         datetime: complaintData.datetime || new Date().toISOString(),
         categories: complaintData.categories || [],
         type: complaintData.type || '',
@@ -119,10 +138,10 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
           bad: complaintData.source?.bad || false,
         },
         notify: {
-          usernames: complaintData.notify?.usernames || [],
+          usernames: [],
         },
-        uploadedFiles: complaintData.uploadedFiles || [],
-        coordinates: complaintData.coordinates || null,
+        uploadedFiles: [],
+        coordinates: undefined,
       };
 
       return {
@@ -130,4 +149,39 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
         tempAddress: formData.address,
       };
     }),
+
+  // 차량 기사 정보 가져오기
+  fetchDriverData: async (address: string, categories: string[]) => {
+    set((state) => ({
+      driverData: { ...state.driverData, loading: true, error: null },
+    }));
+
+    try {
+      const response = await apiClient.post<DriverDataResponse>(
+        '/complaint/getTeamsDriversForComplaint',
+        { address, categories }
+      );
+
+      set((state) => ({
+        driverData: {
+          ...state.driverData,
+          teams: response.data.teams,
+          loading: false,
+          error: null,
+        },
+      }));
+    } catch (error) {
+      set((state) => ({
+        driverData: {
+          ...state.driverData,
+          loading: false,
+          error: `드라이버 정보를 가져오는데 실패했습니다: ${error}`,
+        },
+      }));
+    }
+  },
+
+  setDriverData: (data) => set({ driverData: data }),
+
+  resetDriverData: () => set({ driverData: initialDriverData }),
 }));

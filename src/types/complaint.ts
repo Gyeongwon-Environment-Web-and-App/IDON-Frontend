@@ -40,7 +40,7 @@ export interface ComplaintExtended {
   datetime: string;
   content: string;
   status: boolean;
-  category: string;
+  categories: string[];
   type: string;
   route: string;
   bad: boolean;
@@ -125,7 +125,7 @@ export interface Complaint {
   id: number;
   address: string;
   datetime: string;
-  category: string;
+  categories: string[];
   type: string;
   content: string;
   route: string;
@@ -151,4 +151,28 @@ export interface Complaint {
   status: boolean;
   user: User;
   teams: Team[];
+}
+
+export interface DriverInfo {
+  id: number;
+  name: string;
+  phone_no: string;
+}
+
+export interface TeamInfo {
+  id: number;
+  team_nm: string;
+  category: string;
+  drivers: DriverInfo[];
+}
+
+export interface DriverDataResponse {
+  message: string;
+  teams: TeamInfo[];
+}
+
+export interface DriverData {
+  teams: TeamInfo[];
+  loading: boolean;
+  error: string | null;
 }

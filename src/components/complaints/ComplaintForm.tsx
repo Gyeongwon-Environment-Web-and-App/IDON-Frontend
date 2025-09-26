@@ -33,6 +33,7 @@ export default function ComplaintForm({
     addressFrequencyInfo,
     phoneFrequencyInfo,
     updateFormData,
+    fetchDriverData,
     setShowAddressSearch,
     setAddresses,
     setLoading,
@@ -70,6 +71,16 @@ export default function ComplaintForm({
   useEffect(() => {
     setTempAddress(formData.address);
   }, [formData.address, setTempAddress]);
+
+  // 드라이버 데이터 가져오기 - 주소와 카테고리가 모두 있을 때
+  useEffect(() => {
+    const shouldFetchDriverData =
+      formData.address && formData.categories && formData.categories.length > 0;
+
+    if (shouldFetchDriverData) {
+      fetchDriverData(formData.address, formData.categories);
+    }
+  }, [formData.address, formData.categories, fetchDriverData]);
 
   // Reset map center flag after it's been used (simplified)
   useEffect(() => {

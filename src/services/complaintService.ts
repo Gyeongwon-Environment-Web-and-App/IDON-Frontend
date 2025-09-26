@@ -58,7 +58,9 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    category: complaintExtended.teams.map((team) => team.category).join(', '),
+    categories:
+      complaintExtended.categories ||
+      complaintExtended.teams.map((team) => team.category),
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
@@ -90,9 +92,7 @@ const convertComplaintForCategoryToComplaint = (
     id: complaintForCategory.id,
     address: complaintForCategory.address.address,
     datetime: complaintForCategory.datetime,
-    category: complaintForCategory.teams
-      .map((team) => team.category)
-      .join(', '),
+    categories: complaintForCategory.teams.map((team) => team.category),
     type: complaintForCategory.type,
     content: complaintForCategory.content,
     route: complaintForCategory.route,
