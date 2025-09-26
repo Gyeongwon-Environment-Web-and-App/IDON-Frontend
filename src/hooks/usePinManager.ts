@@ -78,14 +78,18 @@ export const usePinManager = ({
     setClickedInfoWindow(null);
   }, []);
 
-  const getCategoryKey = (category: string): string => {
+  // Combine both functions into one to handle category arrays and get the correct key
+  const getCategoryKey = (category: string[]): string => {
+    const validCategories = category.filter((cat) => cat !== 'manager');
+    const primaryCategory = validCategories[0] || '기타';
+
     const categoryMap: Record<string, string> = {
       재활용: 'recycle',
       음식물: 'food',
       일반: 'general',
       기타: 'others',
     };
-    return categoryMap[category] || 'general';
+    return categoryMap[primaryCategory] || 'general';
   };
 
   // Helper function to reduce Kakao Maps type casting repetition
@@ -163,18 +167,28 @@ export const usePinManager = ({
         image: markerImage,
       });
 
+      // Get all valid categories (excluding 'manager')
+      const validCategories = pin.category.filter((cat) => cat !== 'manager');
+      const categoryIconsHtml = validCategories
+        .map(
+          (tag) =>
+            '<img src="' +
+            (ICON_PATHS.category[tag as keyof typeof ICON_PATHS.category] ||
+              ICON_PATHS.category.기타) +
+            '" alt="' +
+            tag +
+            '" style="width: 55px; flex-shrink: 0;" />'
+        )
+        .join('');
+
       const iwContent =
         '<div style="display: flex; flex-direction: column; padding: 12px; width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
         '<div style="display: flex; gap: 8px; align-items: center; height: 30px">' +
-        '<img src="' +
-        (ICON_PATHS.category[
-          pin.category as keyof typeof ICON_PATHS.category
-        ] || ICON_PATHS.category.기타) +
-        '" alt="카테고리" style="width: 60px; flex-shrink: 0;" />' +
+        categoryIconsHtml +
         (pin.isRepeat
           ? '<img src="' +
             ICON_PATHS.repeat +
-            '" alt="반복민원" style="width: 70px; flex-shrink: 0;" />'
+            '" alt="반복민원" style="width: 67px; flex-shrink: 0;" />'
           : '') +
         '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
         pin.content +

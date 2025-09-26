@@ -35,8 +35,11 @@ export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   },
 };
 
-export const getPinImageSrc = (category: string, isRepeat: boolean): string => {
+export const getPinImageSrc = (categories: string[], isRepeat: boolean): string => {
   const basePath = '/src/assets/icons/pins/';
+  
+  const validCategories = categories.filter(cat => cat !== 'manager');
+  const primaryCategory = validCategories[0] || '기타';
 
   const categoryMap: Record<string, string> = {
     재활용: 'recycle',
@@ -45,7 +48,7 @@ export const getPinImageSrc = (category: string, isRepeat: boolean): string => {
     기타: 'others',
   };
 
-  const categoryKey = categoryMap[category] || 'general';
+  const categoryKey = categoryMap[primaryCategory] || 'general';
   const suffix = isRepeat ? '_repeat' : '_pin';
 
   return `${basePath}${categoryKey}${suffix}.svg`;
@@ -63,7 +66,7 @@ export const complaintToPinData = (complaint: Complaint): PinData => {
     id: `pin-${complaint.id}`,
     lat: hasValidCoordinates ? lat : 0,
     lng: hasValidCoordinates ? lng : 0,
-    category: complaint.teams[0]?.category || '기타',
+    category: complaint.categories || '기타',
     isRepeat: complaint.source.bad,
     address: complaint.address,
     complaintId: complaint.id,
@@ -104,3 +107,27 @@ export const getRepresentativeComplaint = (
 
   return sorted[0];
 };
+
+export const complaintToPinDataWithGroup = (
+  complaint: Complaint,
+  allComplaintsInGroup: Complaint[]
+): PinData => {
+  const lat = complaint.coordinates?.latitude || 0;
+  const lng = complaint.coordinates?.longitude || 0;
+
+  const hasValidCoordinates = isValidCoordinate(lat, lng);
+  const hasAnyBadComplaint = allComplaintsInGroup.some(c => c.source.bad);
+
+  return {
+    id: `pin-${complaint.id}`,
+    lat: hasValidCoordinates ? lat : 0,
+    lng: hasValidCoordinates ? lng : 0,
+    category: complaint.categories || '기타',
+    isRepeat: hasAnyBadComplaint,
+    address: complaint.address,
+    complaintId: complaint.id,
+    content: complaint.content,
+    datetime: complaint.datetime,
+    status: complaint.status,
+  }
+}

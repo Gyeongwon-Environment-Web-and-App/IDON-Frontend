@@ -13,6 +13,7 @@ import {
   complaintToPinData,
   getRepresentativeComplaint,
   groupComplaintsByAddress,
+  complaintToPinDataWithGroup,
 } from '@/utils/pinUtils';
 
 export default function MapOverview() {
@@ -47,7 +48,7 @@ export default function MapOverview() {
       id: 'pin-dummy-test',
       lat: 37.668875236,
       lng: 127.044191742,
-      category: '음식물',
+      category: ['일반', '기타'],
       isRepeat: true,
       address: '서울특별시 도봉구 도봉로150다길 3',
       complaintId: 9999,
@@ -67,7 +68,7 @@ export default function MapOverview() {
       groupedComplaints.forEach((complaintsAtAddress, address) => {
         const representativeComplaint =
           getRepresentativeComplaint(complaintsAtAddress);
-        const pin = complaintToPinData(representativeComplaint);
+        const pin = complaintToPinDataWithGroup(representativeComplaint, complaintsAtAddress);
         pinData.push(pin);
         console.log(
           `🗺️ Created pin for address: ${address}, category: ${pin.category}, repeat: ${pin.isRepeat}`

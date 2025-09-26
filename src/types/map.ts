@@ -3,7 +3,7 @@ export interface PinData {
   id: string;
   lat: number;
   lng: number;
-  category: string;
+  category: string[];
   isRepeat: boolean;
   address: string;
   complaintId: number;
