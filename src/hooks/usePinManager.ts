@@ -191,7 +191,7 @@ export const usePinManager = ({
             '" alt="반복민원" style="width: 67px; flex-shrink: 0;" />'
           : '') +
         '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
-        pin.content +
+        (pin.content || `${pin.address.slice(7)} 민원`) +
         '</p>' +
         '</div>' +
         '<p style="font-size: 16px; font-weight: 600; color: #7C7C7C; margin: 4px 0;">' +

@@ -10,7 +10,6 @@ import { useComplaints } from '@/hooks/useComplaints';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
 import {
-  complaintToPinData,
   getRepresentativeComplaint,
   groupComplaintsByAddress,
   complaintToPinDataWithGroup,
