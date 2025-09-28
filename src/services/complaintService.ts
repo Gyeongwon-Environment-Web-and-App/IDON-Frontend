@@ -225,4 +225,32 @@ export const complaintService = {
       throw error;
     }
   },
+
+  async getComplaintsByCategoryAndDate(
+    category: string,
+    dateRange?: DateRange
+  ): Promise<Complaint[]> {
+    try {
+      const categoryComplaints = await this.getComplaintsByCategory(category);
+
+      if (dateRange) {
+        const dateRangeRequest = getDateRangeFromPicker(dateRange);
+        const startDate = new Date(dateRangeRequest.startDate);
+        const endDate = new Date(dateRangeRequest.endDate);
+
+        return categoryComplaints.filter((complaint) => {
+          const complaintDate = new Date(complaint.datetime);
+          return complaintDate >= startDate && complaintDate <= endDate;
+        });
+      }
+
+      return categoryComplaints;
+    } catch (error) {
+      console.error(
+        `Error fetching complaints for category ${category} with date range:`,
+        error
+      );
+      throw error;
+    }
+  },
 };

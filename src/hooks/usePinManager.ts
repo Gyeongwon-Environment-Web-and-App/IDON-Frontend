@@ -59,21 +59,7 @@ export const usePinManager = ({
     );
   };
 
-  const isInfoWindowOpen = (infowindow: unknown): boolean => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return !!(infowindow && (infowindow as any).getMap() !== null);
-  };
-
-  const closeAllInfoWindows = useCallback(() => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    markersRef.current.forEach((markerData: any) => {
-      if (markerData.infowindow && isInfoWindowOpen(markerData.infowindow)) {
-        markerData.infowindow.close();
-      }
-    });
-  }, []);
-
-  // Combine both functions into one to handle category arrays and get the correct key
+  // Combine both fuclickedInfoWindownctions into one to handle category arrays and get the correct key
   const getCategoryKey = (category: string[]): string => {
     const validCategories = category.filter((cat) => cat !== 'manager');
     const primaryCategory = validCategories[0] || '기타';
@@ -254,18 +240,27 @@ export const usePinManager = ({
 
       return markerData;
     },
-    [onPinClick, mapInstance, closeAllInfoWindows]
+    [onPinClick, mapInstance]
   );
 
   // Update pins on map
   const updatePins = useCallback(async () => {
-    if (!mapInstance || !isLoaded || pins.length === 0) {
+    if (!mapInstance || !isLoaded) {
       setIsGeocoding(false);
       return;
     }
 
-    // Clear existing markers and set geocoding state
+    // Always clear existing markers first
     clearMarkers();
+
+    // If no pins to process, just clear and return
+    if (pins.length === 0) {
+      setIsGeocoding(false);
+      setGeocodedPins([]);
+      return;
+    }
+
+    // Set geocoding state for processing pins
     setIsGeocoding(true);
 
     // Separate pins with valid coordinates from those that need geocoding
@@ -324,18 +319,22 @@ export const usePinManager = ({
 
   // Create markers from geocoded pins (separate from geocoding process)
   const createMarkersFromGeocodedPins = useCallback(() => {
-    if (!mapInstance || !isLoaded || geocodedPins.length === 0) {
+    if (!mapInstance || !isLoaded) {
       return;
     }
 
+    // Always clear existing markers first
     clearMarkers();
 
-    geocodedPins.forEach((pin) => {
-      const marker = createMarker(pin);
-      if (marker) {
-        markersRef.current.push(marker);
-      }
-    });
+    // Only create new markers if there are pins to display
+    if (geocodedPins.length > 0) {
+      geocodedPins.forEach((pin) => {
+        const marker = createMarker(pin);
+        if (marker) {
+          markersRef.current.push(marker);
+        }
+      });
+    }
   }, [geocodedPins, isLoaded, clearMarkers, createMarker, mapInstance]);
 
   // Update pins when pins prop changes OR when map instance becomes available

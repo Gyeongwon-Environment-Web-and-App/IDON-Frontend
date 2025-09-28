@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
@@ -22,6 +22,8 @@ interface MapFiltersProps {
   onDateRangeChange: (dateRange: DateRange | undefined) => void;
   // onFilterChange: (filter: FilterOptions) => void;
   // isLoading?: boolean;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 // interface FilterOptions {
@@ -52,8 +54,14 @@ const MapFilters: React.FC<MapFiltersProps> = ({
   sidebarOpen,
   dateRange,
   onDateRangeChange,
+  selectedCategory = 'all',
+  onCategoryChange,
 }) => {
-  const [selectedFilter, setSelectedFilter] = useState('all');
+  const handleFilterClick = (categoryId: string) => {
+    if (onCategoryChange) {
+      onCategoryChange(categoryId);
+    }
+  };
 
   return (
     <div
@@ -63,12 +71,12 @@ const MapFilters: React.FC<MapFiltersProps> = ({
         {filterOptions.map((option) => (
           <button
             key={option.id}
-            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md px-2 sm:px-3 py-2 ${selectedFilter === option.id ? 'bg-darker-green text-white' : 'bg-white'}`}
-            onClick={() => setSelectedFilter(option.id)}
+            className={`flex gap-x-2 border border-d9d9d9 rounded-full shadow-md px-2 sm:px-3 py-2 ${selectedCategory === option.id ? 'bg-darker-green text-white' : 'bg-white'}`}
+            onClick={() => handleFilterClick(option.id)}
           >
             <img
               src={
-                selectedFilter === option.id ? option.iconWhite : option.icon
+                selectedCategory === option.id ? option.iconWhite : option.icon
               }
               alt={`${option.label} 필터`}
             />

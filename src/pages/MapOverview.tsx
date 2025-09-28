@@ -10,9 +10,9 @@ import { useComplaints } from '@/hooks/useComplaints';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
 import {
+  complaintToPinDataWithGroup,
   getRepresentativeComplaint,
   groupComplaintsByAddress,
-  complaintToPinDataWithGroup,
 } from '@/utils/pinUtils';
 
 export default function MapOverview() {
@@ -23,6 +23,7 @@ export default function MapOverview() {
 
   // Date range state - lifted up from MapFilters
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const {
     sidebarOpen,
@@ -38,44 +39,47 @@ export default function MapOverview() {
   } = useMapOverviewStore();
 
   // Fetch complaints data
-  const { complaints } = useComplaints(dateRange);
+  const { complaints } = useComplaints(dateRange, selectedCategory);
 
-  // Convert complaints to pin data with clustering
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  // 민원 -> 지도 핀
   const pins = useMemo((): PinData[] => {
-    // Always create dummy pin first
-    const dummyPin: PinData = {
-      id: 'pin-dummy-test',
-      lat: 37.668875236,
-      lng: 127.044191742,
-      category: ['일반', '기타'],
-      isRepeat: true,
-      address: '서울특별시 도봉구 도봉로150다길 3',
-      complaintId: 9999,
-      content: '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
-      datetime: '2024-01-15T10:30:00',
-      status: true,
-    };
-
-    const pinData: PinData[] = [dummyPin];
+    const pinData: PinData[] = [];
 
     // Add real complaints if available
     if (complaints && complaints.length > 0) {
+      const dummyPin: PinData = {
+        id: 'pin-dummy-test',
+        lat: 37.668875236,
+        lng: 127.044191742,
+        category: ['일반', '기타'],
+        isRepeat: true,
+        address: '서울특별시 도봉구 도봉로150다길 3',
+        complaintId: 9999,
+        content: '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
+        datetime: '2024-01-15T10:30:00',
+        status: true,
+      };
+      pinData.push(dummyPin);
+
       // 동일한 주소 그룹으로 묶기
       const groupedComplaints = groupComplaintsByAddress(complaints);
 
       // 그룹 -> 핀
-      groupedComplaints.forEach((complaintsAtAddress, address) => {
+      groupedComplaints.forEach((complaintsAtAddress) => {
         const representativeComplaint =
           getRepresentativeComplaint(complaintsAtAddress);
-        const pin = complaintToPinDataWithGroup(representativeComplaint, complaintsAtAddress);
-        pinData.push(pin);
-        console.log(
-          `🗺️ Created pin for address: ${address}, category: ${pin.category}, repeat: ${pin.isRepeat}`
+        const pin = complaintToPinDataWithGroup(
+          representativeComplaint,
+          complaintsAtAddress
         );
+        pinData.push(pin);
       });
     }
 
-    console.log('🗺️ Total pins created:', pinData.length);
     return pinData;
   }, [complaints]);
 
@@ -148,6 +152,8 @@ export default function MapOverview() {
         sidebarOpen={sidebarOpen}
         dateRange={dateRange}
         onDateRangeChange={setDateRange}
+        selectedCategory={selectedCategory}
+        onCategoryChange={handleCategoryChange}
       />
       {/* Render nested routes with dateRange context */}
       <Outlet context={{ dateRange }} />
