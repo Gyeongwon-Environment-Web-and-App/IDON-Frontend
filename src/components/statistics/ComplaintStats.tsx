@@ -13,15 +13,12 @@ import {
 import { useStatistics } from '@/hooks/useStatistics';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
+import {
+  getHybridChartData,
+  shouldShowFirstPieChart,
+} from '@/utils/hybridDataSelector';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
-import {
-  complaintData,
-  complaintTypeData,
-  dongComplaintData,
-  timeSlotData,
-  weekdayData,
-} from '../../data/chartData';
 import DateRangePicker from '../common/DateRangePicker';
 import { CustomPieChart } from './CustomPieChart';
 import { TimeSlotBarChart } from './TimeSlotBarChart';
@@ -83,34 +80,62 @@ const ComplaintStats = () => {
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
   const [selectedTimeline, setSelectedTimeline] = useState<string>('시간대');
-  const { isLoading, error, fetchStatistics } = useStatistics();
+  const {
+    transformedData,
+    isLoading,
+    error,
+    fetchStatistics,
+    clearStatistics,
+  } = useStatistics();
 
-  const DongChartColors = [
-    '#72E900',
-    '#8ADEAB',
-    '#3CC092',
-    '#00BA13',
-    '#007A0C',
-    '#004207',
-  ];
-  const TrashChartColors = ['#58CC02', '#59B9FF', '#AF8AFF', '#F5694A'];
-  const ComplaintChartColors = ['#FF0000', '#a8a8a8'];
+  const chartData = getHybridChartData(transformedData, selectedTrashType);
+  const showFirstPieChart = shouldShowFirstPieChart(selectedTrashType);
 
+  // Enhanced color system with fallbacks
+  const ColorMappings = {
+    // Trash types
+    trash: {
+      재활용: '#58CC02',
+      일반: '#59B9FF',
+      기타: '#AF8AFF',
+      음식물: '#F5694A',
+    } as Record<string, string>,
+
+    // Regions/Dongs
+    regions: {
+      쌍문1동: '#72E900',
+      쌍문2동: '#8ADEAB',
+      쌍문3동: '#3CC092',
+      쌍문4동: '#00BA13',
+      방학1동: '#007A0C',
+      방학3동: '#004207',
+    } as Record<string, string>,
+
+    // Complaint types
+    complaints: {
+      '반복 민원': '#FF0000',
+      '일반 민원': '#a8a8a8',
+      부정적: '#FF0000',
+      긍정적: '#a8a8a8',
+    } as Record<string, string>,
+
+    // Special cases
+    special: {
+      전체통계: '#333333',
+    } as Record<string, string>,
+  };
+
+  // Color getter functions
+  const getTrashColor = (name: string) =>
+    ColorMappings.trash[name] || ColorMappings.special[name] || '#cccccc';
+  const getRegionColor = (name: string) =>
+    ColorMappings.regions[name] || '#cccccc';
+  const getComplaintColor = (name: string) =>
+    ColorMappings.complaints[name] || '#cccccc';
+
+  // Legacy function for dropdown button color
   const getTrashTypeColor = (type: string) => {
-    switch (type) {
-      case '전체통계':
-        return '#333333';
-      case '음식물':
-        return '#F5694A';
-      case '재활용':
-        return '#58CC02';
-      case '일반':
-        return '#59B9FF';
-      case '기타':
-        return '#AF8AFF';
-      default:
-        return 'black';
-    }
+    return getTrashColor(type) || 'black';
   };
 
   const getSelectedAreaDisplay = (areas: string[]) => {
@@ -151,6 +176,7 @@ const ComplaintStats = () => {
     setSelectedTrashType(trashType);
 
     if (trashType === '전체통계' || trashType === '쓰레기 종류') {
+      clearStatistics();
       return;
     }
 
@@ -158,8 +184,8 @@ const ComplaintStats = () => {
   };
 
   // 가장 많고 적은 민원 시간대 계산
-  const timeStats = highestComplaintTime(timeSlotData);
-  const weekdayStats = highestComplaintTime(weekdayData);
+  const timeStats = highestComplaintTime(chartData.timeSlotData);
+  const weekdayStats = highestComplaintTime(chartData.weekdayData);
 
   return (
     <div className="w-[100%] h-screen">
@@ -317,57 +343,61 @@ const ComplaintStats = () => {
             도봉구 {getSelectedAreaDisplay(selectedAreas)}
           </h3>
         </div>
-        <section className="relative">
-          <DateRangePicker
-            dateRange={dateRange}
-            onDateRangeChange={setDateRange}
-            containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
-          />
-          <p className="font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
-            <div className="md:w-[60%] w-[100%] flex">
-              <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                {complaintTypeData.map((item, index) => (
-                  <span
+        {showFirstPieChart && (
+          <section className="relative">
+            <DateRangePicker
+              dateRange={dateRange}
+              onDateRangeChange={setDateRange}
+              containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
+            />
+            <p className="font-semibold text-8d8d8d">
+              최근{' '}
+              {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+                ? formatDateRange(dateRange.from, dateRange.to)
+                : formatDate(new Date())}
+              의 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
+              <div className="md:w-[60%] w-[100%] flex">
+                <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+                  {chartData.complaintTypeData.map((item) => (
+                    <span
+                      key={item.name}
+                      className="px-3 py-1 text-xs font-semibold text-white"
+                      style={{ backgroundColor: getTrashColor(item.name) }}
+                    >
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+                <CustomPieChart
+                  data={chartData.complaintTypeData}
+                  colors={chartData.complaintTypeData.map((item) =>
+                    getTrashColor(item.name)
+                  )}
+                />
+              </div>
+              <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
+                {chartData.complaintTypeData.map((item) => (
+                  <div
                     key={item.name}
-                    className="px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: TrashChartColors[index] }}
+                    className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
                   >
-                    {item.name}
-                  </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: getTrashColor(item.name) }}
+                      />
+                      <span className="text-md font-semibold">{item.name}</span>
+                    </div>
+                    <p className="text-md font-semibold">{item.value}건</p>
+                  </div>
                 ))}
               </div>
-              <CustomPieChart
-                data={complaintTypeData}
-                colors={TrashChartColors}
-              />
             </div>
-            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {complaintTypeData.map((item, index) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: TrashChartColors[index] }}
-                    />
-                    <span className="text-md font-semibold">{item.name}</span>
-                  </div>
-                  <p className="text-md font-semibold">{item.value}건</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
         <section className="mt-10">
           <p className="text-base font-semibold text-8d8d8d">
             최근{' '}
@@ -380,23 +410,25 @@ const ComplaintStats = () => {
           <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
             <div className="md:w-[60%] w-[100%] flex">
               <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                {dongComplaintData.map((item, index) => (
+                {chartData.dongComplaintData.map((item) => (
                   <span
                     key={item.name}
                     className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: DongChartColors[index] }}
+                    style={{ backgroundColor: getRegionColor(item.name) }}
                   >
                     {item.name}
                   </span>
                 ))}
               </div>
               <CustomPieChart
-                data={dongComplaintData}
-                colors={DongChartColors}
+                data={chartData.dongComplaintData}
+                colors={chartData.dongComplaintData.map((item) =>
+                  getRegionColor(item.name)
+                )}
               />
             </div>
             <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {dongComplaintData.map((item, index) => (
+              {chartData.dongComplaintData.map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
@@ -404,7 +436,7 @@ const ComplaintStats = () => {
                   <div className="flex items-center gap-2">
                     <span
                       className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: DongChartColors[index] }}
+                      style={{ backgroundColor: getRegionColor(item.name) }}
                     />
                     <span className="text-md font-semibold">{item.name}</span>
                   </div>
@@ -426,23 +458,25 @@ const ComplaintStats = () => {
           <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
             <div className="md:w-[60%] w-[100%] flex">
               <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
-                {complaintData.map((item, index) => (
+                {chartData.complaintData.map((item) => (
                   <span
                     key={item.name}
                     className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: ComplaintChartColors[index] }}
+                    style={{ backgroundColor: getComplaintColor(item.name) }}
                   >
                     {item.name}
                   </span>
                 ))}
               </div>
               <CustomPieChart
-                data={complaintData}
-                colors={ComplaintChartColors}
+                data={chartData.complaintData}
+                colors={chartData.complaintData.map((item) =>
+                  getComplaintColor(item.name)
+                )}
               />
             </div>
             <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {complaintData.map((item, index) => (
+              {chartData.complaintData.map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
@@ -450,7 +484,7 @@ const ComplaintStats = () => {
                   <div className="flex items-center gap-2">
                     <span
                       className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: ComplaintChartColors[index] }}
+                      style={{ backgroundColor: getComplaintColor(item.name) }}
                     />
                     <span className="text-md font-semibold">{item.name}</span>
                   </div>
@@ -471,7 +505,16 @@ const ComplaintStats = () => {
           <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
           <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
             <div className="mb-10 md:mb-5">
-              <TimeSlotBarChart data={timeSlotData} colors={TrashChartColors} />
+              <TimeSlotBarChart
+                data={chartData.timeSlotData}
+                colors={
+                  selectedTrashType &&
+                  selectedTrashType !== '전체통계' &&
+                  selectedTrashType !== '쓰레기 종류'
+                    ? [getTrashColor(selectedTrashType)]
+                    : Object.values(ColorMappings.trash)
+                }
+              />
             </div>
             <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
               <div className="flex justify-between md:inline">
@@ -504,7 +547,16 @@ const ComplaintStats = () => {
           <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
           <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
             <div className="md:mb-0 mb-5">
-              <WeekDayBarChart data={weekdayData} colors={TrashChartColors} />
+              <WeekDayBarChart
+                data={chartData.weekdayData}
+                colors={
+                  selectedTrashType &&
+                  selectedTrashType !== '전체통계' &&
+                  selectedTrashType !== '쓰레기 종류'
+                    ? [getTrashColor(selectedTrashType)]
+                    : Object.values(ColorMappings.trash)
+                }
+              />
             </div>
             <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
               <div className="flex justify-between md:inline">
@@ -527,10 +579,10 @@ const ComplaintStats = () => {
           </div>
         </section>
 
-        {isLoading && (
-          <div className="flex justify-center items-center p-4">
+        {isLoading && selectedTrashType && selectedTrashType !== '전체통계' && (
+          <div className="flex justify-center items-center p-2">
             <div className="text-sm text-gray-600">
-              통계 데이터를 불러오는 중...
+              {selectedTrashType} 통계를 불러오는 중...
             </div>
           </div>
         )}

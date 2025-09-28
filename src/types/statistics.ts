@@ -1,3 +1,5 @@
+import type { ChartDataItem, BarChartItem } from './stats';
+
 export interface StatisticsRequest {
   startDate: string;
   endDate: string;
@@ -53,4 +55,19 @@ export interface StatisticsData {
   days: CategoriesDaysResponse;
   timePeriods: CategoriesTimePeriodsResponse;
   regions: CategoriesRegionsResponse;
+}
+
+export interface TransformedStatisticsData {
+  positiveNegatives: ChartDataItem[];
+  days: BarChartItem[];
+  timePeriods: BarChartItem[];
+  regions: ChartDataItem[];
+}
+
+export interface HybridChartData {
+  complaintTypeData: ChartDataItem[];
+  dongComplaintData: ChartDataItem[];
+  complaintData: ChartDataItem[];
+  timeSlotData: BarChartItem[];
+  weekdayData: BarChartItem[];
 }
