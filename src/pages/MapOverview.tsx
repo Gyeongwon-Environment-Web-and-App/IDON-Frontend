@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { Outlet, useLocation, useNavigate, useParams } from 'react-router-dom';
 import MapFilters from '@/components/map/MapFilters';
 import MapSideMenu from '@/components/map/MapSideMenu';
 import SimpleKakaoMap from '@/components/map/SimpleKakaoMap';
-import { useComplaints } from '@/hooks/useComplaints';
+import { useMapComplaints } from '@/hooks/useMapComplaints';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
 import {
@@ -38,8 +38,16 @@ export default function MapOverview() {
     setActiveSidebar,
   } = useMapOverviewStore();
 
+  // Callback to reset category to 'all'
+  const handleCategoryReset = useCallback(() => {
+    setSelectedCategory('all');
+  }, []);
+
   // Fetch complaints data
-  const { complaints } = useComplaints(dateRange, selectedCategory);
+  const { complaints } = useMapComplaints(
+    selectedCategory,
+    handleCategoryReset
+  );
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);

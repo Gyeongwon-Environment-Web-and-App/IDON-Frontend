@@ -10,6 +10,21 @@ import {
   type ComplaintForCategory,
 } from '@/types/complaint';
 
+// Map API response structure
+interface MapComplaint {
+  id: number;
+  address: string;
+  phone_no: string;
+  category: string;
+  truck_no: string;
+  datetime: string;
+  content: string;
+  status: string;
+  type: string;
+  route: string;
+  bad: boolean;
+}
+
 const formatDate = (date: Date): string => {
   // Ensure we have a valid Date object
   const dateObj = date instanceof Date ? date : new Date(date);
@@ -109,6 +124,47 @@ const convertComplaintForCategoryToComplaint = (
       ...team,
       drivers: [],
     })),
+  };
+};
+
+// Helper function to convert MapComplaint to Complaint
+const convertMapComplaintToComplaint = (
+  mapComplaint: MapComplaint
+): Complaint => {
+  if (!mapComplaint) {
+    throw new Error('mapComplaint is null or undefined');
+  }
+
+  return {
+    id: mapComplaint.id,
+    address: mapComplaint.address,
+    datetime: mapComplaint.datetime,
+    categories: [mapComplaint.category],
+    type: mapComplaint.type,
+    content: mapComplaint.content,
+    route: mapComplaint.route,
+    source: {
+      phone_no: mapComplaint.phone_no,
+      bad: mapComplaint.bad,
+    },
+    notify: {
+      usernames: [],
+    },
+    uploadedFiles: [],
+    status: mapComplaint.status === 'true',
+    user: {
+      name: '',
+      serial_no: '',
+      phone_no: mapComplaint.phone_no,
+    },
+    teams: [
+      {
+        id: 0,
+        category: mapComplaint.category,
+        team_nm: '',
+        drivers: [],
+      },
+    ],
   };
 };
 
@@ -250,6 +306,69 @@ export const complaintService = {
         `Error fetching complaints for category ${category} with date range:`,
         error
       );
+      throw error;
+    }
+  },
+
+  async getComplaintsForMap(categories: string[]): Promise<Complaint[]> {
+    try {
+      console.log('🌐 API Call: /map/getRecentComplaintsByCategories', {
+        categories,
+        timestamp: new Date().toISOString(),
+      });
+
+      const response = await apiClient.post(
+        '/map/getRecentComplaintsByCategories',
+        {
+          categories: categories,
+        }
+      );
+
+      console.log('📡 API Response for map categories:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Handle different possible response structures
+      let complaints: Complaint[] = [];
+
+      if (response.data.data && Array.isArray(response.data.data)) {
+        // If response has data array (map API structure: {message: 'OK', data: [...]})
+        complaints = response.data.data.map((item: unknown) => {
+          return convertMapComplaintToComplaint(item as MapComplaint);
+        });
+      } else if (Array.isArray(response.data)) {
+        complaints = response.data.map((item: unknown) => {
+          const itemObj = item as Record<string, unknown>;
+          if (
+            itemObj &&
+            typeof itemObj === 'object' &&
+            'address' in itemObj &&
+            typeof itemObj.address === 'object'
+          ) {
+            return convertComplaintExtendedToComplaint(
+              item as ComplaintExtended
+            );
+          } else {
+            return convertComplaintForCategoryToComplaint(
+              item as ComplaintForCategory
+            );
+          }
+        });
+      } else {
+        console.error('Unexpected API response structure:', response.data);
+        throw new Error('Unexpected API response structure');
+      }
+
+      console.log('🔄 Converted complaints for map:', {
+        complaints,
+        count: complaints.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      return complaints;
+    } catch (error) {
+      console.error('Error fetching complaints for map by categories:', error);
       throw error;
     }
   },
