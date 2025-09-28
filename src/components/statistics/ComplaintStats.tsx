@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useStatistics } from '@/hooks/useStatistics';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 
@@ -82,6 +83,18 @@ const ComplaintStats = () => {
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
   const [selectedTimeline, setSelectedTimeline] = useState<string>('시간대');
+  const { isLoading, error, fetchStatistics } = useStatistics();
+
+  const DongChartColors = [
+    '#72E900',
+    '#8ADEAB',
+    '#3CC092',
+    '#00BA13',
+    '#007A0C',
+    '#004207',
+  ];
+  const TrashChartColors = ['#58CC02', '#59B9FF', '#AF8AFF', '#F5694A'];
+  const ComplaintChartColors = ['#FF0000', '#a8a8a8'];
 
   const getTrashTypeColor = (type: string) => {
     switch (type) {
@@ -98,10 +111,6 @@ const ComplaintStats = () => {
       default:
         return 'black';
     }
-  };
-
-  const handleAreaSelectionChange = (areas: string[]) => {
-    setSelectedAreas(areas);
   };
 
   const getSelectedAreaDisplay = (areas: string[]) => {
@@ -134,20 +143,23 @@ const ComplaintStats = () => {
     return displayParts.join(', ');
   };
 
+  const handleAreaSelectionChange = (areas: string[]) => {
+    setSelectedAreas(areas);
+  };
+
+  const handleTrashTypeChange = async (trashType: string) => {
+    setSelectedTrashType(trashType);
+
+    if (trashType === '전체통계' || trashType === '쓰레기 종류') {
+      return;
+    }
+
+    await fetchStatistics([trashType], dateRange);
+  };
+
   // 가장 많고 적은 민원 시간대 계산
   const timeStats = highestComplaintTime(timeSlotData);
   const weekdayStats = highestComplaintTime(weekdayData);
-
-  const DongChartColors = [
-    '#72E900',
-    '#8ADEAB',
-    '#3CC092',
-    '#00BA13',
-    '#007A0C',
-    '#004207',
-  ];
-  const TrashChartColors = ['#58CC02', '#59B9FF', '#AF8AFF', '#F5694A'];
-  const ComplaintChartColors = ['#FF0000', '#a8a8a8'];
 
   return (
     <div className="w-[100%] h-screen">
@@ -176,7 +188,7 @@ const ComplaintStats = () => {
               >
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType('전체통계');
+                    handleTrashTypeChange('전체통계');
                   }}
                   className="text-[#333333]"
                 >
@@ -184,7 +196,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType('음식물');
+                    handleTrashTypeChange('음식물');
                   }}
                   className="text-[#F5694A]"
                 >
@@ -192,7 +204,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType('재활용');
+                    handleTrashTypeChange('재활용');
                   }}
                   className="text-[#58CC02]"
                 >
@@ -200,7 +212,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType('일반');
+                    handleTrashTypeChange('일반');
                   }}
                   className="text-[#59B9FF]"
                 >
@@ -208,7 +220,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTrashType('기타');
+                    handleTrashTypeChange('기타');
                   }}
                   className="text-[#AF8AFF]"
                 >
@@ -514,6 +526,20 @@ const ComplaintStats = () => {
             </div>
           </div>
         </section>
+
+        {isLoading && (
+          <div className="flex justify-center items-center p-4">
+            <div className="text-sm text-gray-600">
+              통계 데이터를 불러오는 중...
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex justify-center items-center p-4">
+            <div className="text-sm text-red-600">오류: {error}</div>
+          </div>
+        )}
       </div>
     </div>
   );
