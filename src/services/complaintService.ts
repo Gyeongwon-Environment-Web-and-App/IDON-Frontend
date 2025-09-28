@@ -271,6 +271,17 @@ export const complaintService = {
       const complaints = response.data.complaints.map(
         convertComplaintForCategoryToComplaint
       );
+      console.log(`complaint table fetch by ${category}:`, {
+        count: complaints.length,
+        complaintIds: complaints.map((c) => c.id),
+        complaints: complaints.map((c) => ({
+          id: c.id,
+          type: c.type,
+          category: c.teams?.map((t) => t.category).join(', ') || 'No category',
+          datetime: c.datetime,
+          address: c.address,
+        })),
+      });
 
       return complaints;
     } catch (error) {
@@ -307,6 +318,41 @@ export const complaintService = {
         error
       );
       throw error;
+    }
+  },
+
+  async getAllCategories(): Promise<string[]> {
+    try {
+      console.log('🌐 API Call: /complaint/getAllCategories', {
+        timestamp: new Date().toISOString(),
+      });
+
+      const response = await apiClient.get('/complaint/getAllCategories');
+
+      console.log('📡 API Response for all categories:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Filter to only include allowed categories
+      const allowedCategories = ['음식물', '재활용', '일반', '기타'];
+      const categories = response.data.categories || response.data || [];
+
+      const filteredCategories = categories.filter((category: string) =>
+        allowedCategories.includes(category)
+      );
+
+      console.log('🔄 Filtered categories:', {
+        allCategories: categories,
+        filteredCategories,
+        timestamp: new Date().toISOString(),
+      });
+
+      return filteredCategories;
+    } catch (error) {
+      console.error('Error fetching all categories:', error);
+      // Return fallback categories if API fails
+      return ['음식물', '재활용', '일반', '기타'];
     }
   },
 

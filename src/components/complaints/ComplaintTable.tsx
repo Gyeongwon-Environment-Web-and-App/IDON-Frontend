@@ -143,6 +143,8 @@ const ComplaintTable: React.FC = () => {
     navigate(`/map/overview/complaints/${complaintId}`);
   };
 
+  const ALLOWED_CATEGORIES = ['음식물', '재활용', '일반', '기타'];
+
   // 컬럼 정의
   const columns: ColumnDef<ComplaintWithCallback>[] = [
     {
@@ -200,13 +202,19 @@ const ComplaintTable: React.FC = () => {
     {
       accessorKey: 'category',
       header: '상성',
-      cell: ({ row }) => (
-        <div className="text-center">
-          {row.original.teams?.length > 0
-            ? row.original.teams.map((team) => team.category).join(', ')
-            : '상성 없음'}
-        </div>
-      ),
+      cell: ({ row }) => {
+        const filteredCategories =
+          row.original.teams
+            ?.filter((team) => ALLOWED_CATEGORIES.includes(team.category))
+            .map((team) => team.category) || [];
+        return (
+          <div className="text-center">
+            {filteredCategories.length > 0
+              ? filteredCategories.join(', ')
+              : '상성 없음'}
+          </div>
+        );
+      },
     },
     {
       accessorKey: 'address',
