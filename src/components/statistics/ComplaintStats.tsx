@@ -85,6 +85,8 @@ const ComplaintStats = () => {
 
   const getTrashTypeColor = (type: string) => {
     switch (type) {
+      case '전체통계':
+        return '#333333';
       case '음식물':
         return '#F5694A';
       case '재활용':
@@ -160,7 +162,7 @@ const ComplaintStats = () => {
                   style={{
                     color: getTrashTypeColor(selectedTrashType),
                   }}
-                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                  className="flex items-center shadow-none !outline-none border-[#575757] focus:border-[#575757] mr-2"
                 >
                   <span className="text-sm font-semibold">
                     {selectedTrashType}
@@ -170,8 +172,16 @@ const ComplaintStats = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 align="center"
-                className="[&>*]:justify-center !min-w-[110px] !font-semibold"
+                className="[&>*]:justify-center !min-w-[110px]"
               >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTrashType('전체통계');
+                  }}
+                  className="text-[#333333]"
+                >
+                  전체통계
+                </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
                     setSelectedTrashType('음식물');
@@ -347,7 +357,7 @@ const ComplaintStats = () => {
           </div>
         </section>
         <section className="mt-10">
-        <p className="text-base font-semibold text-8d8d8d">
+          <p className="text-base font-semibold text-8d8d8d">
             최근{' '}
             {dateRange?.from instanceof Date && dateRange?.to instanceof Date
               ? formatDateRange(dateRange.from, dateRange.to)

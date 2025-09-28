@@ -630,19 +630,35 @@ const ComplaintTable: React.FC = () => {
                     전체 민원
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleFilterChange('음식물')}
+                    onClick={() => {
+                      handleFilterChange('음식물');
+                    }}
+                    className="text-[#F5694A]"
                   >
                     음식물
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onClick={() => handleFilterChange('재활용')}
+                    onClick={() => {
+                      handleFilterChange('재활용');
+                    }}
+                    className="text-[#58CC02]"
                   >
                     재활용
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange('생활')}>
-                    생활
+                  <DropdownMenuItem
+                    onClick={() => {
+                      handleFilterChange('일반');
+                    }}
+                    className="text-[#59B9FF]"
+                  >
+                    일반
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => handleFilterChange('기타')}>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      handleFilterChange('기타');
+                    }}
+                    className="text-[#AF8AFF]"
+                  >
                     기타
                   </DropdownMenuItem>
                 </DropdownMenuContent>
