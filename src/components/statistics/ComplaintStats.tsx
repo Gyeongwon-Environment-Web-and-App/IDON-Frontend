@@ -79,7 +79,8 @@ const ComplaintStats = () => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
-  const [selectedTimeline, setSelectedTimeline] = useState<string>('시간대');
+  const [selectedTimeline, setSelectedTimeline] = useState<string>('8:30-9:30');
+  const [selectedWeekday, setSelectedWeekday] = useState<string>('요일별');
   const {
     transformedData,
     isLoading,
@@ -127,7 +128,7 @@ const ComplaintStats = () => {
 
   // Color getter functions
   const getTrashColor = (name: string) =>
-    ColorMappings.trash[name] || ColorMappings.special[name] || '#cccccc';
+    ColorMappings.trash[name] || ColorMappings.special[name] || '#000000';
   const getRegionColor = (name: string) =>
     ColorMappings.regions[name] || '#cccccc';
   const getComplaintColor = (name: string) =>
@@ -271,31 +272,118 @@ const ComplaintStats = () => {
               >
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline('연도별');
+                    setSelectedTimeline('8:30-9:30');
                   }}
                 >
-                  연도별
+                  8:30-9:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline('월별');
+                    setSelectedTimeline('9:30-10:30');
                   }}
                 >
-                  월별
+                  9:30-10:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline('주간');
+                    setSelectedTimeline('10:30-11:30');
                   }}
                 >
-                  주간
+                  10:30-11:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
-                    setSelectedTimeline('일간');
+                    setSelectedTimeline('11:30-12:30');
                   }}
                 >
-                  일간
+                  11:30-12:30
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline('12:30-13:30');
+                  }}
+                >
+                  12:30-13:30
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline('13:30-14:30');
+                  }}
+                >
+                  13:30-14:30
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline('14:30-15:30');
+                  }}
+                >
+                  14:30-15:30
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline('15:30-16:30');
+                  }}
+                >
+                  15:30-16:30
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedTimeline('16:30-17:30');
+                  }}
+                >
+                  16:30-17:30
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
+                >
+                  <span className="text-sm">{selectedWeekday}</span>
+                  <img src={triangle} alt="요일별 선택" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="center"
+                className="[&>*]:justify-center !min-w-[80px]"
+              >
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday('월요일');
+                  }}
+                >
+                  월요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday('화요일');
+                  }}
+                >
+                  화요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday('수요일');
+                  }}
+                >
+                  수요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday('목요일');
+                  }}
+                >
+                  목요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    setSelectedWeekday('금요일');
+                  }}
+                >
+                  금요일
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
