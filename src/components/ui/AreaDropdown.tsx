@@ -12,10 +12,13 @@ interface AreaDropdownProps {
   childItemClassName?: string;
   triangleIcon?: string;
   onSelectionChange?: (selectedAreas: string[]) => void;
+
+  selectedAreas?: string[];
+  onSelectedAreasChange?: (areas: string[]) => void;
 }
 
 // Hardcoded area hierarchy for better performance
-const areaHierarchy = {
+const areaHierarchy: { [key: string]: string[] } = {
   쌍문동: ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'],
   방학동: ['방학 1동', '방학 3동'],
 };
@@ -27,22 +30,106 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
   childItemClassName = 'pl-10 bg-f0f0f0 rounded-none',
   triangleIcon = triangle,
   onSelectionChange,
+  selectedAreas: controlledSelectedAreas,
+  onSelectedAreasChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const { selectedAreas, selectAll, deselectAll, toggleArea } =
-    useAreaSelection({
-      areaHierarchy,
-      initialSelectedAreas: [],
-    });
+  // Internal state for uncontrolled mode
+  const {
+    selectedAreas: internalSelectedAreas,
+    selectAll,
+    deselectAll,
+    toggleArea,
+  } = useAreaSelection({
+    areaHierarchy,
+    initialSelectedAreas: [],
+  });
+
+  // Use controlled state if provided, otherwise use internal state
+  const selectedAreas = controlledSelectedAreas ?? internalSelectedAreas;
 
   // Calculate total number of items for select all logic
   const allItems =
     Object.values(areaHierarchy).flat().length +
     Object.keys(areaHierarchy).length;
 
-  // Handle click outside to close dropdown
+  // Get all areas (parents + children)
+  const getAllAreas = () => {
+    const allAreas: string[] = [];
+    Object.entries(areaHierarchy).forEach(([parent, children]) => {
+      allAreas.push(parent, ...children);
+    });
+    return allAreas;
+  };
+
+  const handleSelectAll = () => {
+    if (selectedAreas.length === allItems) {
+      // Deselect all
+      if (onSelectedAreasChange) {
+        onSelectedAreasChange([]);
+      } else {
+        deselectAll();
+      }
+    } else {
+      // Select all
+      if (onSelectedAreasChange) {
+        onSelectedAreasChange(getAllAreas());
+      } else {
+        selectAll();
+      }
+    }
+  };
+
+  const handleAreaToggle = (area: string) => {
+    if (onSelectedAreasChange) {
+      // Controlled mode - calculate next state manually
+      let newAreas: string[];
+
+      if (selectedAreas.includes(area)) {
+        // If it's a parent area, remove it and all its children
+        if (areaHierarchy[area]) {
+          newAreas = selectedAreas.filter(
+            (a) => a !== area && !areaHierarchy[area].includes(a)
+          );
+        } else {
+          // If it's a child area, just remove it
+          newAreas = selectedAreas.filter((a) => a !== area);
+        }
+      } else {
+        // If it's a parent area, add it and all its children
+        if (areaHierarchy[area]) {
+          newAreas = [...selectedAreas, area, ...areaHierarchy[area]];
+          newAreas = [...new Set(newAreas)]; // Remove duplicates
+        } else {
+          // If it's a child area, just add it
+          newAreas = [...selectedAreas, area];
+        }
+      }
+
+      // Update parent areas based on their children's selection state
+      Object.entries(areaHierarchy).forEach(([parent, children]) => {
+        const allChildrenSelected = children.every((child) =>
+          newAreas.includes(child)
+        );
+
+        if (allChildrenSelected && !newAreas.includes(parent)) {
+          // All children are selected, so select the parent
+          newAreas.push(parent);
+        } else if (!allChildrenSelected && newAreas.includes(parent)) {
+          // Not all children are selected, so deselect the parent
+          newAreas = newAreas.filter((a) => a !== parent);
+        }
+      });
+
+      onSelectedAreasChange(newAreas);
+    } else {
+      // Uncontrolled mode - use existing hook
+      toggleArea(area);
+    }
+  };
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -63,25 +150,11 @@ export const AreaDropdown: React.FC<AreaDropdownProps> = ({
   }, [isOpen]);
 
   // Notify parent component when selection changes
-  React.useEffect(() => {
+  useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange(selectedAreas);
     }
   }, [selectedAreas, onSelectionChange]);
-
-  const handleSelectAll = () => {
-    if (selectedAreas.length === allItems) {
-      // Deselect all
-      deselectAll();
-    } else {
-      // Select all
-      selectAll();
-    }
-  };
-
-  const handleAreaToggle = (area: string) => {
-    toggleArea(area);
-  };
 
   const handleTriggerClick = () => {
     setIsOpen(!isOpen);

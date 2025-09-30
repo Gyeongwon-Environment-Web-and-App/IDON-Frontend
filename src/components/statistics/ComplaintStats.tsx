@@ -1,7 +1,3 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-import type { DateRange } from 'react-day-picker';
-
 import { AreaDropdown } from '@/components/ui/AreaDropdown';
 import { Button } from '@/components/ui/button';
 import {
@@ -10,141 +6,16 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useRegionStatistics } from '@/hooks/useRegionStatistics';
-import { useStatistics } from '@/hooks/useStatistics';
-import { useTimePeriodByDay } from '@/hooks/useTimePeriodByDay';
+import { useComplaintCharts } from '@/hooks/useComplaintCharts';
+import { useComplaintFilters } from '@/hooks/useComplaintFilters';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
-import {
-  getHybridChartData,
-  shouldShowFirstPieChart,
-} from '@/utils/hybridDataSelector';
-import {
-  transformRegionDataToRegionChartData,
-  transformRegionDaysToBarChartData,
-  transformRegionPosNegToChartData,
-  transformRegionTimePeriodsToBarChartData,
-} from '@/utils/regionStatsTransformers';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
 import DateRangePicker from '../common/DateRangePicker';
 import { SimplePieChart } from './SimplePieChart';
 import { SimpleTimeSlotChart } from './SimpleTimeSlotChart';
 import { SimpleWeekdayChart } from './SimpleWeekdayChart';
-
-// Enhanced color system with fallbacks - moved outside component for stability
-const ColorMappings = {
-  // Trash types
-  trash: {
-    재활용: '#58CC02',
-    일반: '#59B9FF',
-    기타: '#AF8AFF',
-    음식물: '#F5694A',
-  } as Record<string, string>,
-
-  // Regions/Dongs
-  regions: {
-    쌍문1동: '#72E900',
-    쌍문2동: '#8ADEAB',
-    쌍문3동: '#3CC092',
-    쌍문4동: '#00BA13',
-    방학1동: '#007A0C',
-    방학3동: '#004207',
-  } as Record<string, string>,
-
-  // Complaint types
-  complaints: {
-    '반복 민원': '#FF0000',
-    '일반 민원': '#a8a8a8',
-    부정적: '#FF0000',
-    긍정적: '#a8a8a8',
-  } as Record<string, string>,
-
-  // Special cases
-  special: {
-    전체통계: '#333333',
-  } as Record<string, string>,
-};
-
-const mapComplaintLabel = (label: string): string => {
-  const labelMap: Record<string, string> = {
-    부정적: '반복 민원',
-    긍정적: '일반 민원',
-  };
-  return labelMap[label] || label; // Return original if no mapping found
-};
-
-// Transform time period by day API data to BarChartItem format
-interface TimePeriodByDayItem {
-  hour: string;
-  count: number;
-}
-
-interface TimePeriodByDayResponse {
-  data: Record<string, TimePeriodByDayItem[]>;
-}
-
-const transformTimePeriodByDayData = (
-  data: TimePeriodByDayResponse,
-  selectedWeekday: string
-): BarChartItem[] => {
-  const weekdayMap: Record<string, string> = {
-    월요일: '1',
-    화요일: '2',
-    수요일: '3',
-    목요일: '4',
-    금요일: '5',
-    토요일: '6',
-    일요일: '7',
-  };
-
-  const selectedDayNumber = weekdayMap[selectedWeekday];
-  const dayData = data?.data?.[selectedDayNumber] || [];
-
-  console.log('Transform debug:', {
-    selectedWeekday,
-    selectedDayNumber,
-    dayData,
-    allData: data?.data,
-  });
-
-  // Normalize API hour values like "08:30" -> "8:30" to match chart ticks
-  const normalizeHour = (value: string): string => {
-    const [hh, mm] = value.split(':');
-    return `${Number(hh)}:${mm}`;
-  };
-  const normalizedDayData = dayData.map((item) => ({
-    ...item,
-    hour: normalizeHour(item.hour),
-  }));
-
-  const timeSlots: BarChartItem[] = [];
-  for (let hour = 8; hour <= 17; hour++) {
-    const hourKey = `${hour}:30`;
-    const found = normalizedDayData.find(
-      (item: TimePeriodByDayItem) => item.hour === hourKey
-    );
-
-    timeSlots.push({
-      hour: hourKey,
-      time: hourKey,
-      count: found ? Number(found.count) : 0,
-    });
-  }
-
-  console.log('Final transformed timeSlots:', timeSlots);
-  return timeSlots;
-};
-
-// Color getter functions - moved outside component for stability
-const getTrashColor = (name: string) =>
-  ColorMappings.trash[name] || ColorMappings.special[name] || '#000000';
-
-const getRegionColor = (name: string) =>
-  ColorMappings.regions[name] || '#cccccc';
-
-const getComplaintColor = (name: string) =>
-  ColorMappings.complaints[name] || '#cccccc';
 
 // 날짜 포매팅 함수
 const formatDate = (date: Date): string => {
@@ -159,282 +30,58 @@ const formatDateRange = (from: Date, to: Date): string => {
   return `${formatDate(from)} - ${formatDate(to)}`;
 };
 
-const highestComplaintTime = (data: BarChartItem[]) => {
-  let maxComplaints = -1;
-  let minComplaints = Infinity;
-  let totalComplaints = 0;
-  let maxTime = '';
-  let minTime = '';
-
-  data.forEach((item) => {
-    // 각 시간대의 총 민원 수 계산 (time 제외한 모든 카테고리 합계)
-    const totalTimeComplaints = Object.keys(item)
-      .filter((key) => key !== 'time')
-      .reduce((sum, key) => sum + Number(item[key]), 0);
-
-    // 가장 많은 민원 시간대 찾기
-    if (totalTimeComplaints > maxComplaints) {
-      maxComplaints = totalTimeComplaints;
-      maxTime = item.time;
-    }
-
-    // 가장 적은 민원 시간대 찾기
-    if (totalTimeComplaints < minComplaints) {
-      minComplaints = totalTimeComplaints;
-      minTime = item.time;
-    }
-
-    totalComplaints += totalTimeComplaints;
-  });
-
-  return {
-    maxTime,
-    minTime,
-    maxComplaints,
-    minComplaints,
-    totalComplaints,
-  };
-};
-
 const ComplaintStats = () => {
-  const [dateRange, setDateRange] = useState<DateRange | undefined>();
-  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [selectedTrashType, setSelectedTrashType] =
-    useState<string>('쓰레기 종류');
-  const [selectedTimeline, setSelectedTimeline] =
-    useState<string>('전체 시간대');
-  const [selectedWeekday, setSelectedWeekday] = useState<string>('전체 요일');
-
+  // Use the extracted hooks for filters and charts
   const {
-    transformedData,
-    isLoading,
-    error,
-    fetchStatistics,
-    clearStatistics,
-  } = useStatistics();
-
-  const {
-    regionData,
-    isLoading: regionLoading,
-    error: regionError,
-    fetchRegionStatistics,
-    clearRegionStatistics,
-  } = useRegionStatistics();
-
-  const {
-    data: timePeriodByDayData,
-    isLoading: timePeriodByDayLoading,
-    error: timePeriodByDayError,
-    fetchTimePeriodByDay,
-    clearData: clearTimePeriodByDay,
-  } = useTimePeriodByDay();
-
-  // 메모화된 차트 데이터 계산 - 안정적인 의존성으로 수정
-  const chartData = useMemo(
-    () => getHybridChartData(transformedData, selectedTrashType),
-    [transformedData, selectedTrashType]
-  );
-
-  const showFirstPieChart = useMemo(
-    () => shouldShowFirstPieChart(selectedTrashType, selectedAreas.length > 0),
-    [selectedTrashType, selectedAreas.length]
-  );
-
-  // Transform region data for charts - 안정적인 의존성으로 수정
-  const regionPosNegData = useMemo(
-    () =>
-      transformRegionPosNegToChartData(regionData.posNeg).map((item) => ({
-        ...item,
-        name: mapComplaintLabel(item.name),
-      })),
-    [regionData.posNeg]
-  );
-
-  const regionDaysData = useMemo(
-    () => transformRegionDaysToBarChartData(regionData.days),
-    [regionData.days]
-  );
-
-  const regionTimePeriodsData = useMemo(
-    () => transformRegionTimePeriodsToBarChartData(regionData.timePeriods),
-    [regionData.timePeriods]
-  );
-
-  const regionChartData = useMemo(
-    () => transformRegionDataToRegionChartData(regionData.posNeg),
-    [regionData.posNeg]
-  );
-
-  const getTrashTypeColor = (type: string) => {
-    return getTrashColor(type) || 'black';
-  };
-
-  const getSelectedAreaDisplay = useCallback((areas: string[]) => {
-    if (areas.length === 0) return '전체 지역';
-
-    const 쌍문Children = ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'];
-    const 방학Children = ['방학 1동', '방학 3동'];
-
-    const selected쌍문Children = 쌍문Children.filter((child) =>
-      areas.includes(child)
-    );
-    const selected방학Children = 방학Children.filter((child) =>
-      areas.includes(child)
-    );
-
-    const displayParts = [];
-
-    if (selected쌍문Children.length === 쌍문Children.length) {
-      displayParts.push('쌍문동');
-    } else if (selected쌍문Children.length > 0) {
-      displayParts.push(selected쌍문Children.join(', '));
-    }
-
-    if (selected방학Children.length === 방학Children.length) {
-      displayParts.push('방학동');
-    } else if (selected방학Children.length > 0) {
-      displayParts.push(selected방학Children.join(', '));
-    }
-
-    return displayParts.join(', ');
-  }, []);
-
-  const handleAreaSelectionChange = useCallback(
-    async (areas: string[]) => {
-      setSelectedAreas(areas);
-
-      // Clear trash type data when switching to region selection
-      if (areas.length > 0) {
-        setSelectedTrashType('쓰레기 종류');
-        clearStatistics();
-      }
-
-      if (areas.length > 0) {
-        // Fetch region statistics when areas are selected
-        await fetchRegionStatistics(areas, selectedTimeline, dateRange);
-      } else {
-        // Clear region statistics when no areas are selected
-        clearRegionStatistics();
-      }
-    },
-    [
-      selectedTimeline,
-      dateRange,
-      fetchRegionStatistics,
-      clearRegionStatistics,
-      clearStatistics,
-    ]
-  );
-
-  const handleTrashTypeChange = useCallback(
-    async (trashType: string) => {
-      setSelectedTrashType(trashType);
-
-      setSelectedAreas([]);
-      clearRegionStatistics();
-
-      if (trashType === '전체통계' || trashType === '쓰레기 종류') {
-        clearStatistics();
-        return;
-      }
-
-      await fetchStatistics([trashType], dateRange);
-    },
-    [dateRange, fetchStatistics, clearStatistics, clearRegionStatistics]
-  );
-
-  // 가장 많고 적은 민원 시간대 계산 - 안정적인 의존성으로 수정
-  const timeStats = useMemo(() => {
-    if (selectedAreas.length > 0) {
-      return highestComplaintTime(regionTimePeriodsData);
-    }
-    return highestComplaintTime(chartData.timeSlotData);
-  }, [selectedAreas.length, regionTimePeriodsData, chartData.timeSlotData]);
-
-  const weekdayStats = useMemo(() => {
-    if (selectedAreas.length > 0) {
-      return highestComplaintTime(regionDaysData);
-    }
-    return highestComplaintTime(chartData.weekdayData);
-  }, [selectedAreas.length, regionDaysData, chartData.weekdayData]);
-
-  // 메모화된 색상 배열들 - 안정적인 의존성으로 수정
-  const complaintTypeColors = useMemo(
-    () => chartData.complaintTypeData.map((item) => getTrashColor(item.name)),
-    [chartData.complaintTypeData]
-  );
-
-  const dongComplaintColors = useMemo(() => {
-    const data =
-      selectedAreas.length > 0 ? regionChartData : chartData.dongComplaintData;
-    return data.map((item) => getRegionColor(item.name));
-  }, [selectedAreas.length, regionChartData, chartData.dongComplaintData]);
-
-  const complaintDataColors = useMemo(() => {
-    const data =
-      selectedAreas.length > 0 ? regionPosNegData : chartData.complaintData;
-    return data.map((item) => getComplaintColor(item.name));
-  }, [selectedAreas.length, regionPosNegData, chartData.complaintData]);
-
-  // Effect to handle filter changes and trigger data fetching
-  useEffect(() => {
-    const fetchData = async () => {
-      // If areas are selected, fetch region statistics
-      if (selectedAreas.length > 0) {
-        await fetchRegionStatistics(selectedAreas, selectedTimeline, dateRange);
-      } else {
-        // Clear region statistics when no areas are selected
-        clearRegionStatistics();
-      }
-
-      // If trash type is selected and not default, fetch statistics
-      if (
-        selectedTrashType &&
-        selectedTrashType !== '전체통계' &&
-        selectedTrashType !== '쓰레기 종류'
-      ) {
-        await fetchStatistics([selectedTrashType], dateRange);
-      } else {
-        // Clear statistics when default trash type is selected
-        clearStatistics();
-      }
-    };
-
-    fetchData();
-  }, [
-    selectedAreas,
-    selectedTimeline,
-    selectedWeekday,
-    selectedTrashType,
     dateRange,
-    fetchRegionStatistics,
-    clearRegionStatistics,
-    fetchStatistics,
-    clearStatistics,
-  ]);
+    setDateRange,
+    selectedAreas,
+    selectedTrashType,
+    // selectedTimeline,
+    selectedWeekday,
+    transformedData,
+    regionData,
+    timePeriodByDayData,
+    isLoading,
+    regionLoading,
+    timePeriodByDayLoading,
+    error,
+    regionError,
+    timePeriodByDayError,
+    handleAreaSelectionChange,
+    handleTrashTypeChange,
+    getSelectedAreaDisplay,
+    // setSelectedTimeline,
+    setSelectedWeekday,
+  } = useComplaintFilters();
 
-  // Effect to reset related filters when one filter changes
-  useEffect(() => {
-    // Reset timeline and weekday when trash type changes
-    if (selectedTrashType !== '쓰레기 종류') {
-      setSelectedTimeline('전체 시간대');
-      setSelectedWeekday('전체 요일');
-    }
-  }, [selectedTrashType]);
-
-  useEffect(() => {
-    if (selectedWeekday !== '전체 요일' || dateRange) {
-      fetchTimePeriodByDay(dateRange, selectedWeekday);
-    } else {
-      clearTimePeriodByDay();
-    }
-  }, [selectedWeekday, dateRange, fetchTimePeriodByDay, clearTimePeriodByDay]);
-
-  useEffect(() => {
-    // Reset timeline and weekday when areas change
-    setSelectedTimeline('전체 시간대');
-    setSelectedWeekday('전체 요일');
-  }, [selectedAreas]);
+  const {
+    chartData,
+    regionPosNegData,
+    regionDaysData,
+    regionTimePeriodsData,
+    regionChartData,
+    weekdayTimeSlotData,
+    timeStats,
+    weekdayStats,
+    complaintTypeColors,
+    dongComplaintColors,
+    complaintDataColors,
+    getTrashTypeColor,
+    getTrashColor,
+    getRegionColor,
+    getComplaintColor,
+    mapComplaintLabel,
+    showFirstPieChart,
+    ColorMappings,
+  } = useComplaintCharts({
+    transformedData,
+    regionData,
+    selectedAreas,
+    selectedTrashType,
+    timePeriodByDayData,
+    selectedWeekday,
+  });
 
   return (
     <div className="w-[100%] h-screen">
@@ -503,7 +150,7 @@ const ComplaintStats = () => {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-            <DropdownMenu>
+            {/* <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="outline"
@@ -521,145 +168,57 @@ const ComplaintStats = () => {
                 <DropdownMenuItem
                   onClick={async () => {
                     setSelectedTimeline('전체 시간대');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '전체 시간대',
-                        dateRange
-                      );
-                    }
                   }}
                 >
                   전체 시간대
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('8:30-9:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '8:30-9:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('8:30-9:30')}
                 >
                   8:30-9:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('9:30-10:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '9:30-10:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('9:30-10:30')}
                 >
                   9:30-10:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('10:30-11:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '10:30-11:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('10:30-11:30')}
                 >
                   10:30-11:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('11:30-12:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '11:30-12:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('11:30-12:30')}
                 >
                   11:30-12:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('12:30-13:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '12:30-13:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('12:30-13:30')}
                 >
                   12:30-13:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('13:30-14:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '13:30-14:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('13:30-14:30')}
                 >
                   13:30-14:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('14:30-15:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '14:30-15:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('14:30-15:30')}
                 >
                   14:30-15:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('15:30-16:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '15:30-16:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('15:30-16:30')}
                 >
                   15:30-16:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedTimeline('16:30-17:30');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        '16:30-17:30',
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedTimeline('16:30-17:30')}
                 >
                   16:30-17:30
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+            </DropdownMenu> */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
@@ -676,93 +235,31 @@ const ComplaintStats = () => {
                 className="[&>*]:justify-center !min-w-[80px]"
               >
                 <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('전체 요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
+                  onClick={() => setSelectedWeekday('전체 요일')}
                 >
                   전체 요일
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('월요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeekday('월요일')}>
                   월요일
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('화요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeekday('화요일')}>
                   화요일
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('수요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeekday('수요일')}>
                   수요일
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('목요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeekday('목요일')}>
                   목요일
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={async () => {
-                    setSelectedWeekday('금요일');
-                    if (selectedAreas.length > 0) {
-                      await fetchRegionStatistics(
-                        selectedAreas,
-                        selectedTimeline,
-                        dateRange
-                      );
-                    }
-                  }}
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeekday('금요일')}>
                   금요일
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
             <div className="flex items-center gap-2">
               <AreaDropdown
+                selectedAreas={selectedAreas}
+                onSelectedAreasChange={handleAreaSelectionChange}
                 onSelectionChange={handleAreaSelectionChange}
                 buttonText="구역 선택"
                 buttonClassName="flex items-center shadow-none outline-none border-[#575757] focus:border-[#575757] mr-2"
@@ -799,19 +296,23 @@ const ComplaintStats = () => {
             </Button>
           </div>
         </header>
-        <div className="mb-4 pb-3 rounded-lg">
-          <p className="text-base text-gray-600 mb-1">현재 조회 중인 지역은</p>
-          <h3 className="text-xl font-semibold text-gray-800">
-            도봉구 {getSelectedAreaDisplay(selectedAreas)}
-          </h3>
+        <div className="mb-4 rounded-lg flex justify-between border border-red">
+          <div>
+            <p className="text-base text-gray-600 mb-1">
+              현재 조회 중인 지역은
+            </p>
+            <h3 className="text-xl font-semibold text-gray-800">
+              도봉구 {getSelectedAreaDisplay(selectedAreas)}
+            </h3>
+          </div>
+          <DateRangePicker
+            dateRange={dateRange}
+            onDateRangeChange={setDateRange}
+            containerClassName="border border-[#575757] rounded-3xl px-4 py-0"
+          />
         </div>
         {showFirstPieChart && selectedWeekday === '전체 요일' && (
           <section className="relative">
-            <DateRangePicker
-              dateRange={dateRange}
-              onDateRangeChange={setDateRange}
-              containerClassName="border border-[#575757] rounded-3xl px-4 py-0 md:py-1 absolute md:right-0 -top-[12.3rem] md:-top-20"
-            />
             <p className="font-semibold text-8d8d8d">
               최근{' '}
               {dateRange?.from instanceof Date && dateRange?.to instanceof Date
@@ -1076,7 +577,7 @@ const ComplaintStats = () => {
         )}
 
         {/* Dedicated weekday time slot section - only shows when specific weekday is selected */}
-        {selectedWeekday !== '전체 요일' && timePeriodByDayData && (
+        {selectedWeekday !== '전체 요일' && weekdayTimeSlotData.length > 0 && (
           <section className="mt-10">
             <p className="font-semibold text-8d8d8d">
               {selectedWeekday} 시간대별 민원 통계
@@ -1087,15 +588,12 @@ const ComplaintStats = () => {
             <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
               <div className="mb-10 md:mb-5">
                 <SimpleTimeSlotChart
-                  data={transformTimePeriodByDayData(
-                    timePeriodByDayData,
-                    selectedWeekday
-                  )}
+                  data={weekdayTimeSlotData}
                   colors={
                     selectedTrashType &&
                     selectedTrashType !== '전체통계' &&
                     selectedTrashType !== '쓰레기 종류'
-                      ? [getTrashColor(selectedTrashType)]
+                      ? [getTrashTypeColor(selectedTrashType)]
                       : ['#59B9FF'] // Default blue color
                   }
                 />
@@ -1109,10 +607,11 @@ const ComplaintStats = () => {
                 <div className="text-center">
                   <p className="text-black font-semibold text-sm md:text-lg">
                     총{' '}
-                    {transformTimePeriodByDayData(
-                      timePeriodByDayData,
-                      selectedWeekday
-                    ).reduce((sum, item) => sum + Number(item.count), 0)}
+                    {weekdayTimeSlotData.reduce(
+                      (sum: number, item: BarChartItem) =>
+                        sum + Number(item.count),
+                      0
+                    )}
                     건
                   </p>
                 </div>
