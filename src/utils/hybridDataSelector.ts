@@ -38,8 +38,12 @@ export const getHybridChartData = (
 
 // Helper function to check if we should show the first pie chart
 export const shouldShowFirstPieChart = (
-  selectedCategory: string | null
+  selectedCategory: string | null,
+  hasRegionData: boolean = false
 ): boolean => {
+  // Don't show first pie chart if region data is present
+  if (hasRegionData) return false;
+
   return (
     !selectedCategory ||
     selectedCategory === '전체통계' ||

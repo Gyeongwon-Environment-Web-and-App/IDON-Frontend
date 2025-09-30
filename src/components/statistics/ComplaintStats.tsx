@@ -157,8 +157,8 @@ const ComplaintStats = () => {
   );
 
   const showFirstPieChart = useMemo(
-    () => shouldShowFirstPieChart(selectedTrashType),
-    [selectedTrashType]
+    () => shouldShowFirstPieChart(selectedTrashType, selectedAreas.length > 0),
+    [selectedTrashType, selectedAreas.length]
   );
 
   // Transform region data for charts - 안정적인 의존성으로 수정
@@ -250,7 +250,6 @@ const ComplaintStats = () => {
     async (trashType: string) => {
       setSelectedTrashType(trashType);
 
-      // Clear region data when switching to trash type selection
       setSelectedAreas([]);
       clearRegionStatistics();
 
