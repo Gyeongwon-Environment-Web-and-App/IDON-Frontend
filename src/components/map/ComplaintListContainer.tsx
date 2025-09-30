@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
@@ -18,8 +18,12 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrash, setSelectedTrash] = useState<string>('');
 
-  // Use the useComplaints hook with the dateRange from context
   const { complaints, isLoading, fetchError } = useComplaints(dateRange);
+
+  const filtered = useMemo(() => {
+    if (!selectedTrash) return complaints;
+    return complaints.filter(complaint => complaint.teams.some(team => team.category === selectedTrash));
+  }, [selectedTrash, complaints])
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);
@@ -75,7 +79,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
               borderRight:
                 idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
             }}
-            onClick={() => setSelectedTrash(label)}
+            onClick={() => setSelectedTrash(t => t === label ? '' : label)}
           >
             {label}
           </button>
@@ -91,12 +95,12 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
           <p className="text-sm">에러: {fetchError}</p>
         </div>
       )}
-      {!isLoading && !fetchError && complaints.length === 0 && (
+      {!isLoading && !fetchError && filtered.length === 0 && (
         <div className="text-center text-gray-500 py-5">
           <p className="text-sm">해당 기간에 민원이 없습니다.</p>
         </div>
       )}
-      {!isLoading && !fetchError && complaints.length > 0 && (
+      {!isLoading && !fetchError && filtered.length > 0 && (
         <div className="flex flex-col h-full">
           <div className="flex items-end md:items-center justify-between px-2 pt-0 pb-3 md:pt-5 md:pb-5">
             <div className="rounded-lg mr-2 md:mr-0">
@@ -121,7 +125,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
               전체 민원 목록
             </p>
             <div className="xxxs:h-[63vh] xxs:h-[60vh] xs:h-[71vh] xsm:h-[71vh] space-y-3 overflow-y-auto scrollbar-hide">
-              {complaints
+              {filtered
                 .sort((a, b) => b.id - a.id)
                 .map((complaint) => (
                   <ComplaintListCard key={complaint.id} complaint={complaint} />
