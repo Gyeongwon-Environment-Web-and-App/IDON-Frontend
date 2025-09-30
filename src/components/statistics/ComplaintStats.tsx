@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useRegionStatistics } from '@/hooks/useRegionStatistics';
 import { useStatistics } from '@/hooks/useStatistics';
+import { useTimePeriodByDay } from '@/hooks/useTimePeriodByDay';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 import {
@@ -67,10 +68,72 @@ const ColorMappings = {
 
 const mapComplaintLabel = (label: string): string => {
   const labelMap: Record<string, string> = {
-    '부정적': '반복 민원',
-    '긍정적': '일반 민원',
+    부정적: '반복 민원',
+    긍정적: '일반 민원',
   };
   return labelMap[label] || label; // Return original if no mapping found
+};
+
+// Transform time period by day API data to BarChartItem format
+interface TimePeriodByDayItem {
+  hour: string;
+  count: number;
+}
+
+interface TimePeriodByDayResponse {
+  data: Record<string, TimePeriodByDayItem[]>;
+}
+
+const transformTimePeriodByDayData = (
+  data: TimePeriodByDayResponse,
+  selectedWeekday: string
+): BarChartItem[] => {
+  const weekdayMap: Record<string, string> = {
+    월요일: '1',
+    화요일: '2',
+    수요일: '3',
+    목요일: '4',
+    금요일: '5',
+    토요일: '6',
+    일요일: '7',
+  };
+
+  const selectedDayNumber = weekdayMap[selectedWeekday];
+  const dayData = data?.data?.[selectedDayNumber] || [];
+
+  console.log('Transform debug:', {
+    selectedWeekday,
+    selectedDayNumber,
+    dayData,
+    allData: data?.data,
+  });
+
+  // Normalize API hour values like "08:30" -> "8:30" to match chart ticks
+  const normalizeHour = (value: string): string => {
+    const [hh, mm] = value.split(':');
+    return `${Number(hh)}:${mm}`;
+  };
+  const normalizedDayData = dayData.map((item) => ({
+    ...item,
+    hour: normalizeHour(item.hour),
+  }));
+
+  const timeSlots: BarChartItem[] = [];
+  for (let hour = 8; hour <= 17; hour++) {
+    const hourKey = `${hour}:30`;
+    const found = normalizedDayData.find(
+      (item: TimePeriodByDayItem) => item.hour === hourKey
+    );
+
+    timeSlots.push({
+      hour: hourKey,
+      time: hourKey,
+      count: found ? Number(found.count) : 0,
+    });
+  }
+
+  console.log('Final transformed timeSlots:', timeSlots);
+  return timeSlots;
 };
 
 // Color getter functions - moved outside component for stability
@@ -158,6 +221,14 @@ const ComplaintStats = () => {
     clearRegionStatistics,
   } = useRegionStatistics();
 
+  const {
+    data: timePeriodByDayData,
+    isLoading: timePeriodByDayLoading,
+    error: timePeriodByDayError,
+    fetchTimePeriodByDay,
+    clearData: clearTimePeriodByDay,
+  } = useTimePeriodByDay();
+
   // 메모화된 차트 데이터 계산 - 안정적인 의존성으로 수정
   const chartData = useMemo(
     () => getHybridChartData(transformedData, selectedTrashType),
@@ -171,10 +242,11 @@ const ComplaintStats = () => {
 
   // Transform region data for charts - 안정적인 의존성으로 수정
   const regionPosNegData = useMemo(
-    () => transformRegionPosNegToChartData(regionData.posNeg).map(item => ({
-      ...item,
-      name: mapComplaintLabel(item.name)
-    })),
+    () =>
+      transformRegionPosNegToChartData(regionData.posNeg).map((item) => ({
+        ...item,
+        name: mapComplaintLabel(item.name),
+      })),
     [regionData.posNeg]
   );
 
@@ -193,9 +265,6 @@ const ComplaintStats = () => {
     [regionData.posNeg]
   );
 
-  // ColorMappings and color getter functions moved outside component for stability
-
-  // Legacy function for dropdown button color
   const getTrashTypeColor = (type: string) => {
     return getTrashColor(type) || 'black';
   };
@@ -354,9 +423,12 @@ const ComplaintStats = () => {
   }, [selectedTrashType]);
 
   useEffect(() => {
-    // Reset weekday when timeline changes
-    setSelectedWeekday('전체 요일');
-  }, [selectedTimeline]);
+    if (selectedWeekday !== '전체 요일' || dateRange) {
+      fetchTimePeriodByDay(dateRange, selectedWeekday);
+    } else {
+      clearTimePeriodByDay();
+    }
+  }, [selectedWeekday, dateRange, fetchTimePeriodByDay, clearTimePeriodByDay]);
 
   useEffect(() => {
     // Reset timeline and weekday when areas change
@@ -733,7 +805,7 @@ const ComplaintStats = () => {
             도봉구 {getSelectedAreaDisplay(selectedAreas)}
           </h3>
         </div>
-        {showFirstPieChart && (
+        {showFirstPieChart && selectedWeekday === '전체 요일' && (
           <section className="relative">
             <DateRangePicker
               dateRange={dateRange}
@@ -786,224 +858,276 @@ const ComplaintStats = () => {
             </div>
           </section>
         )}
-        <section className="mt-10">
-          <p className="text-base font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
-            <div className="md:w-[60%] w-[100%] flex">
-              <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+        {selectedWeekday === '전체 요일' && (
+          <section className="mt-10">
+            <p className="text-base font-semibold text-8d8d8d">
+              최근{' '}
+              {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+                ? formatDateRange(dateRange.from, dateRange.to)
+                : formatDate(new Date())}
+              의 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
+              <div className="md:w-[60%] w-[100%] flex">
+                <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
+                  {(selectedAreas.length > 0
+                    ? regionChartData
+                    : chartData.dongComplaintData
+                  ).map((item) => (
+                    <span
+                      key={item.name}
+                      className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                      style={{ backgroundColor: getRegionColor(item.name) }}
+                    >
+                      {item.name}
+                    </span>
+                  ))}
+                </div>
+                <SimplePieChart
+                  data={
+                    selectedAreas.length > 0
+                      ? regionChartData
+                      : chartData.dongComplaintData
+                  }
+                  colors={dongComplaintColors}
+                />
+              </div>
+              <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
                 {(selectedAreas.length > 0
                   ? regionChartData
                   : chartData.dongComplaintData
                 ).map((item) => (
-                  <span
+                  <div
                     key={item.name}
-                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: getRegionColor(item.name) }}
+                    className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
                   >
-                    {item.name}
-                  </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{ backgroundColor: getRegionColor(item.name) }}
+                      />
+                      <span className="text-md font-semibold">{item.name}</span>
+                    </div>
+                    <p className="text-md font-semibold">{item.value}건</p>
+                  </div>
                 ))}
               </div>
-              <SimplePieChart
-                data={
-                  selectedAreas.length > 0
-                    ? regionChartData
-                    : chartData.dongComplaintData
-                }
-                colors={dongComplaintColors}
-              />
             </div>
-            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {(selectedAreas.length > 0
-                ? regionChartData
-                : chartData.dongComplaintData
-              ).map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                >
-                  <div className="flex items-center gap-2">
+          </section>
+        )}
+        {selectedWeekday === '전체 요일' && (
+          <section className="mt-10">
+            <p className="font-semibold text-8d8d8d">
+              최근{' '}
+              {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+                ? formatDateRange(dateRange.from, dateRange.to)
+                : formatDate(new Date())}
+              의 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
+              <div className="md:w-[60%] w-[100%] flex">
+                <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
+                  {(selectedAreas.length > 0
+                    ? regionPosNegData
+                    : chartData.complaintData
+                  ).map((item) => (
                     <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: getRegionColor(item.name) }}
-                    />
-                    <span className="text-md font-semibold">{item.name}</span>
-                  </div>
-                  <p className="text-md font-semibold">{item.value}건</p>
+                      key={item.name}
+                      className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                      style={{ backgroundColor: getComplaintColor(item.name) }}
+                    >
+                      {mapComplaintLabel(item.name)}
+                    </span>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="mt-10">
-          <p className="font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
-            <div className="md:w-[60%] w-[100%] flex">
-              <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
+                <SimplePieChart
+                  data={
+                    selectedAreas.length > 0
+                      ? regionPosNegData
+                      : chartData.complaintData
+                  }
+                  colors={complaintDataColors}
+                />
+              </div>
+              <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
                 {(selectedAreas.length > 0
                   ? regionPosNegData
                   : chartData.complaintData
                 ).map((item) => (
-                  <span
+                  <div
                     key={item.name}
-                    className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                    style={{ backgroundColor: getComplaintColor(item.name) }}
+                    className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
                   >
-                    {mapComplaintLabel(item.name)}
-                  </span>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-3 w-3 rounded-full"
+                        style={{
+                          backgroundColor: getComplaintColor(item.name),
+                        }}
+                      />
+                      <span className="text-md font-semibold">
+                        {mapComplaintLabel(item.name)}
+                      </span>
+                    </div>
+                    <p className="text-md font-semibold">{item.value}건</p>
+                  </div>
                 ))}
               </div>
-              <SimplePieChart
-                data={
-                  selectedAreas.length > 0
-                    ? regionPosNegData
-                    : chartData.complaintData
-                }
-                colors={complaintDataColors}
-              />
             </div>
-            <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {(selectedAreas.length > 0
-                ? regionPosNegData
-                : chartData.complaintData
-              ).map((item) => (
-                <div
-                  key={item.name}
-                  className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                >
-                  <div className="flex items-center gap-2">
-                    <span
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: getComplaintColor(item.name) }}
-                    />
-                    <span className="text-md font-semibold">{mapComplaintLabel(item.name)}</span>
-                  </div>
-                  <p className="text-md font-semibold">{item.value}건</p>
+          </section>
+        )}
+        {selectedWeekday === '전체 요일' && (
+          <section className="mt-10">
+            <p className="font-semibold text-8d8d8d">
+              최근{' '}
+              {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+                ? formatDateRange(dateRange.from, dateRange.to)
+                : formatDate(new Date())}
+              의 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+              <div className="mb-10 md:mb-5">
+                <SimpleTimeSlotChart
+                  data={
+                    selectedAreas.length > 0
+                      ? regionTimePeriodsData
+                      : chartData.timeSlotData
+                  }
+                  colors={
+                    selectedTrashType &&
+                    selectedTrashType !== '전체통계' &&
+                    selectedTrashType !== '쓰레기 종류'
+                      ? [getTrashColor(selectedTrashType)]
+                      : Object.values(ColorMappings.trash)
+                  }
+                />
+              </div>
+              <div className="flex flex-col items-center md:gap-y-3 w-[95%] ">
+                <div className="flex justify-between md:inline">
+                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                    가장 많은 민원이 들어온 시간대
+                  </p>
+                  <p className="text-black font-semibold text-sm md:text-3xl md:mb-10 mb-3">
+                    {timeStats.maxTime} ({timeStats.maxComplaints}건)
+                  </p>
                 </div>
-              ))}
-            </div>
-          </div>
-        </section>
-        <section className="mt-10">
-          <p className="font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-            <div className="mb-10 md:mb-5">
-              <SimpleTimeSlotChart
-                data={
-                  selectedAreas.length > 0
-                    ? regionTimePeriodsData
-                    : chartData.timeSlotData
-                }
-                colors={
-                  selectedTrashType &&
-                  selectedTrashType !== '전체통계' &&
-                  selectedTrashType !== '쓰레기 종류'
-                    ? [getTrashColor(selectedTrashType)]
-                    : Object.values(ColorMappings.trash)
-                }
-              />
-            </div>
-            <div className="flex flex-col items-center md:gap-y-3 w-[95%] ">
-              <div className="flex justify-between md:inline">
-                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
-                  가장 많은 민원이 들어온 시간대
-                </p>
-                <p className="text-black font-semibold text-sm md:text-3xl md:mb-10 mb-3">
-                  {timeStats.maxTime} ({timeStats.maxComplaints}건)
-                </p>
-              </div>
-              <div className="flex justify-between md:inline">
-                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
-                  가장 적은 민원이 들어온 시간대
-                </p>
-                <p className="text-black font-semibold text-sm md:text-3xl">
-                  {timeStats.minTime} ({timeStats.minComplaints}건)
-                </p>
+                <div className="flex justify-between md:inline">
+                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                    가장 적은 민원이 들어온 시간대
+                  </p>
+                  <p className="text-black font-semibold text-sm md:text-3xl">
+                    {timeStats.minTime} ({timeStats.minComplaints}건)
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
-        <section className="mt-7 md:mt-10">
-          <p className="font-semibold text-8d8d8d">
-            최근{' '}
-            {dateRange?.from instanceof Date && dateRange?.to instanceof Date
-              ? formatDateRange(dateRange.from, dateRange.to)
-              : formatDate(new Date())}
-            의 민원 통계
-          </p>
-          <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
-          <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-            <div className="md:mb-0 mb-5">
-              <SimpleWeekdayChart
-                data={
-                  selectedAreas.length > 0
-                    ? regionDaysData
-                    : chartData.weekdayData
-                }
-                colors={
-                  selectedTrashType &&
-                  selectedTrashType !== '전체통계' &&
-                  selectedTrashType !== '쓰레기 종류'
-                    ? [getTrashColor(selectedTrashType)]
-                    : Object.values(ColorMappings.trash)
-                }
-              />
-            </div>
-            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
-              <div className="flex justify-between md:inline">
-                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
-                  가장 많은 민원이 들어온 요일
-                </p>
-                <p className="text-black font-semibold text-sm md:text-3xl mb-3">
-                  {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
-                </p>
+          </section>
+        )}
+        {selectedWeekday === '전체 요일' && (
+          <section className="mt-7 md:mt-10">
+            <p className="font-semibold text-8d8d8d">
+              최근{' '}
+              {dateRange?.from instanceof Date && dateRange?.to instanceof Date
+                ? formatDateRange(dateRange.from, dateRange.to)
+                : formatDate(new Date())}
+              의 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
+            <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+              <div className="md:mb-0 mb-5">
+                <SimpleWeekdayChart
+                  data={
+                    selectedAreas.length > 0
+                      ? regionDaysData
+                      : chartData.weekdayData
+                  }
+                  colors={
+                    selectedTrashType &&
+                    selectedTrashType !== '전체통계' &&
+                    selectedTrashType !== '쓰레기 종류'
+                      ? [getTrashColor(selectedTrashType)]
+                      : Object.values(ColorMappings.trash)
+                  }
+                />
               </div>
-              <div className="flex justify-between md:inline">
-                <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
-                  가장 적은 민원이 들어온 요일
-                </p>
-                <p className="text-black font-semibold text-sm md:text-3xl">
-                  {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
-                </p>
+              <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
+                <div className="flex justify-between md:inline">
+                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                    가장 많은 민원이 들어온 요일
+                  </p>
+                  <p className="text-black font-semibold text-sm md:text-3xl mb-3">
+                    {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
+                  </p>
+                </div>
+                <div className="flex justify-between md:inline">
+                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                    가장 적은 민원이 들어온 요일
+                  </p>
+                  <p className="text-black font-semibold text-sm md:text-3xl">
+                    {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
+        )}
 
-        {(isLoading || regionLoading) && (
-          <div className="flex justify-center items-center p-2">
-            <div className="text-sm text-gray-600">
-              {selectedAreas.length > 0
-                ? `${selectedAreas.join(', ')} 구역 통계를 불러오는 중...`
-                : selectedTrashType && selectedTrashType !== '전체통계'
-                  ? `${selectedTrashType} 통계를 불러오는 중...`
-                  : '통계를 불러오는 중...'}
+        {/* Dedicated weekday time slot section - only shows when specific weekday is selected */}
+        {selectedWeekday !== '전체 요일' && timePeriodByDayData && (
+          <section className="mt-10">
+            <p className="font-semibold text-8d8d8d">
+              {selectedWeekday} 시간대별 민원 통계
+            </p>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">
+              {selectedWeekday} 민원 분포
+            </h1>
+            <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+              <div className="mb-10 md:mb-5">
+                <SimpleTimeSlotChart
+                  data={transformTimePeriodByDayData(
+                    timePeriodByDayData,
+                    selectedWeekday
+                  )}
+                  colors={
+                    selectedTrashType &&
+                    selectedTrashType !== '전체통계' &&
+                    selectedTrashType !== '쓰레기 종류'
+                      ? [getTrashColor(selectedTrashType)]
+                      : ['#59B9FF'] // Default blue color
+                  }
+                />
+              </div>
+              <div className="flex flex-col items-center md:gap-y-3 w-[95%]">
+                <div className="flex justify-between md:inline">
+                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                    {selectedWeekday} 시간대별 민원 현황
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-black font-semibold text-sm md:text-lg">
+                    총{' '}
+                    {transformTimePeriodByDayData(
+                      timePeriodByDayData,
+                      selectedWeekday
+                    ).reduce((sum, item) => sum + Number(item.count), 0)}
+                    건
+                  </p>
+                </div>
+              </div>
             </div>
+          </section>
+        )}
+
+        {(isLoading || regionLoading || timePeriodByDayLoading) && (
+          <div className="flex justify-center items-center p-2">
+            <div className="text-sm text-gray-600">'통계를 불러오는 중...'</div>
           </div>
         )}
 
-        {(error || regionError) && (
+        {(error || regionError || timePeriodByDayError) && (
           <div className="flex justify-center items-center p-4">
             <div className="text-sm text-red-600">
               오류: {error || regionError}

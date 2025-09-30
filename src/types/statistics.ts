@@ -71,3 +71,23 @@ export interface HybridChartData {
   timeSlotData: BarChartItem[];
   weekdayData: BarChartItem[];
 }
+
+export interface TimerPeriodByDayRequest {
+  startDate: string;
+  endDate: string;
+  startTime: string;
+  endTime: string;
+  days: number[];
+}
+
+export interface TimePeriodByDayResponse {
+  message: string;
+  data: {
+    [key:string]: TimePeriodResponseFormat[];
+  }
+}
+
+export interface TimePeriodResponseFormat {
+  hour: string;
+  count: number;
+}

@@ -1,16 +1,18 @@
 import type { DateRange } from 'react-day-picker';
 
 import apiClient from '@/lib/api';
-import type {
-  CategoriesDaysRequest,
-  CategoriesDaysResponse,
-  CategoriesPosNegRequest,
-  CategoriesPosNegResponse,
-  CategoriesRegionsRequest,
-  CategoriesRegionsResponse,
-  CategoriesTimePeriodsRequest,
-  CategoriesTimePeriodsResponse,
-  StatisticsData,
+import {
+  type CategoriesDaysRequest,
+  type CategoriesDaysResponse,
+  type CategoriesPosNegRequest,
+  type CategoriesPosNegResponse,
+  type CategoriesRegionsRequest,
+  type CategoriesRegionsResponse,
+  type CategoriesTimePeriodsRequest,
+  type CategoriesTimePeriodsResponse,
+  type StatisticsData,
+  type TimePeriodByDayResponse,
+  type TimerPeriodByDayRequest,
 } from '@/types/statistics';
 
 const getDefaultDateRange = (): { startDate: string; endDate: string } => {
@@ -161,6 +163,44 @@ export const statisticsService = {
       console.log(
         `😈 ${categories.join(' ')}의 통계 정보 불러오기 실패: ${error}`
       );
+      throw error;
+    }
+  },
+
+  async getTimePeriodByDay(
+    dateRange?: DateRange,
+    selectedWeekDay?: string
+  ): Promise<TimePeriodByDayResponse> {
+    try {
+      const { startDate, endDate } = getDateRangeFromPicker(dateRange);
+      const weekdayMap: Record<string, number> = {
+        월요일: 1,
+        화요일: 2,
+        수요일: 3,
+        목요일: 4,
+        금요일: 5,
+        토요일: 6,
+        일요일: 7,
+      };
+      const days =
+        selectedWeekDay && selectedWeekDay !== '전체 요일'
+          ? [weekdayMap[selectedWeekDay]]
+          : [1, 2, 3, 4, 5, 6, 7];
+      const requestBody: TimerPeriodByDayRequest = {
+        startDate,
+        endDate,
+        startTime: '8:30',
+        endTime: '17:30',
+        days,
+      };
+      const response = await apiClient.post<TimePeriodByDayResponse>(
+        '/stat/time_period_by_day',
+        requestBody
+      );
+
+      return response.data;
+    } catch (error) {
+      console.log('statService-getTimePeriodByDay:', error);
       throw error;
     }
   },
