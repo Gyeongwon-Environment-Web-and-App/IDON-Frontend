@@ -571,7 +571,7 @@ const ComplaintTable: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] mb-3">
         {/* 검색 영역 */}
         <div className="flex gap-2 items-center justify-start mb-3 lg:mb-0">
-          <div className="relative flex flex-1 lg:flex-auto lg:max-w-80">
+          <div className="relative flex flex-1 lg:flex-auto lg:max-w-60">
             <Search
               className={`absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-200 ${
                 isSearchFocused ? 'text-light-green' : 'text-[#575757]'
@@ -830,7 +830,7 @@ const ComplaintTable: React.FC = () => {
               {generatePageNumbers().map((page) => (
                 <Button
                   key={page}
-                  variant={page === 1 ? 'default' : 'outline'}
+                  variant={page === currentPage ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => handlePageChange(page)}
                   className="w-8 h-8 border-none outline-none shadow-none text-sm"

@@ -65,6 +65,14 @@ const ColorMappings = {
   } as Record<string, string>,
 };
 
+const mapComplaintLabel = (label: string): string => {
+  const labelMap: Record<string, string> = {
+    '부정적': '반복 민원',
+    '긍정적': '일반 민원',
+  };
+  return labelMap[label] || label; // Return original if no mapping found
+};
+
 // Color getter functions - moved outside component for stability
 const getTrashColor = (name: string) =>
   ColorMappings.trash[name] || ColorMappings.special[name] || '#000000';
@@ -163,7 +171,10 @@ const ComplaintStats = () => {
 
   // Transform region data for charts - 안정적인 의존성으로 수정
   const regionPosNegData = useMemo(
-    () => transformRegionPosNegToChartData(regionData.posNeg),
+    () => transformRegionPosNegToChartData(regionData.posNeg).map(item => ({
+      ...item,
+      name: mapComplaintLabel(item.name)
+    })),
     [regionData.posNeg]
   );
 
@@ -852,7 +863,7 @@ const ComplaintStats = () => {
                     className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
                     style={{ backgroundColor: getComplaintColor(item.name) }}
                   >
-                    {item.name}
+                    {mapComplaintLabel(item.name)}
                   </span>
                 ))}
               </div>
@@ -879,7 +890,7 @@ const ComplaintStats = () => {
                       className="h-3 w-3 rounded-full"
                       style={{ backgroundColor: getComplaintColor(item.name) }}
                     />
-                    <span className="text-md font-semibold">{item.name}</span>
+                    <span className="text-md font-semibold">{mapComplaintLabel(item.name)}</span>
                   </div>
                   <p className="text-md font-semibold">{item.value}건</p>
                 </div>
