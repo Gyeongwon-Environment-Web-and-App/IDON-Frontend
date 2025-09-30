@@ -72,7 +72,9 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    categories: [complaintExtended.category], // Convert single category to array
+    categories: complaintExtended.teams
+      .map((team) => team.category)
+      .filter(Boolean) || ['기타'],
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
