@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
@@ -223,6 +223,12 @@ const ComplaintStats = () => {
     async (areas: string[]) => {
       setSelectedAreas(areas);
 
+      // Clear trash type data when switching to region selection
+      if (areas.length > 0) {
+        setSelectedTrashType('쓰레기 종류');
+        clearStatistics();
+      }
+
       if (areas.length > 0) {
         // Fetch region statistics when areas are selected
         await fetchRegionStatistics(areas, selectedTimeline, dateRange);
@@ -231,12 +237,22 @@ const ComplaintStats = () => {
         clearRegionStatistics();
       }
     },
-    [selectedTimeline, dateRange, fetchRegionStatistics, clearRegionStatistics]
+    [
+      selectedTimeline,
+      dateRange,
+      fetchRegionStatistics,
+      clearRegionStatistics,
+      clearStatistics,
+    ]
   );
 
   const handleTrashTypeChange = useCallback(
     async (trashType: string) => {
       setSelectedTrashType(trashType);
+
+      // Clear region data when switching to trash type selection
+      setSelectedAreas([]);
+      clearRegionStatistics();
 
       if (trashType === '전체통계' || trashType === '쓰레기 종류') {
         clearStatistics();
@@ -245,7 +261,7 @@ const ComplaintStats = () => {
 
       await fetchStatistics([trashType], dateRange);
     },
-    [dateRange, fetchStatistics, clearStatistics]
+    [dateRange, fetchStatistics, clearStatistics, clearRegionStatistics]
   );
 
   // 가장 많고 적은 민원 시간대 계산 - 안정적인 의존성으로 수정
@@ -280,6 +296,63 @@ const ComplaintStats = () => {
       selectedAreas.length > 0 ? regionPosNegData : chartData.complaintData;
     return data.map((item) => getComplaintColor(item.name));
   }, [selectedAreas.length, regionPosNegData, chartData.complaintData]);
+
+  // Effect to handle filter changes and trigger data fetching
+  useEffect(() => {
+    const fetchData = async () => {
+      // If areas are selected, fetch region statistics
+      if (selectedAreas.length > 0) {
+        await fetchRegionStatistics(selectedAreas, selectedTimeline, dateRange);
+      } else {
+        // Clear region statistics when no areas are selected
+        clearRegionStatistics();
+      }
+
+      // If trash type is selected and not default, fetch statistics
+      if (
+        selectedTrashType &&
+        selectedTrashType !== '전체통계' &&
+        selectedTrashType !== '쓰레기 종류'
+      ) {
+        await fetchStatistics([selectedTrashType], dateRange);
+      } else {
+        // Clear statistics when default trash type is selected
+        clearStatistics();
+      }
+    };
+
+    fetchData();
+  }, [
+    selectedAreas,
+    selectedTimeline,
+    selectedWeekday,
+    selectedTrashType,
+    dateRange,
+    fetchRegionStatistics,
+    clearRegionStatistics,
+    fetchStatistics,
+    clearStatistics,
+  ]);
+
+  // Effect to reset related filters when one filter changes
+  useEffect(() => {
+    // Reset timeline and weekday when trash type changes
+    if (selectedTrashType !== '쓰레기 종류') {
+      setSelectedTimeline('전체 시간대');
+      setSelectedWeekday('전체 요일');
+    }
+  }, [selectedTrashType]);
+
+  useEffect(() => {
+    // Reset weekday when timeline changes
+    setSelectedWeekday('전체 요일');
+  }, [selectedTimeline]);
+
+  useEffect(() => {
+    // Reset timeline and weekday when areas change
+    setSelectedTimeline('전체 시간대');
+    setSelectedWeekday('전체 요일');
+  }, [selectedAreas]);
 
   return (
     <div className="w-[100%] h-screen">
@@ -824,7 +897,7 @@ const ComplaintStats = () => {
             의 민원 통계
           </p>
           <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center border border-red">
+          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
             <div className="mb-10 md:mb-5">
               <SimpleTimeSlotChart
                 data={

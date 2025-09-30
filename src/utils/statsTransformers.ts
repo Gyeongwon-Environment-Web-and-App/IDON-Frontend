@@ -15,10 +15,17 @@ export const transformPosNegToChartData = (
   }
 
   const categoryData = response.data[selectedCategory];
-  return [
-    { name: '부정적', value: categoryData.neg },
-    { name: '긍정적', value: categoryData.pos },
-  ];
+  const chartData: ChartDataItem[] = [];
+
+  // Only include non-zero values
+  if (categoryData.neg > 0) {
+    chartData.push({ name: '부정적', value: categoryData.neg });
+  }
+  if (categoryData.pos > 0) {
+    chartData.push({ name: '긍정적', value: categoryData.pos });
+  }
+
+  return chartData;
 };
 
 export const transformDaysToBarChartData = (

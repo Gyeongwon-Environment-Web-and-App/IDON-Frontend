@@ -94,10 +94,10 @@ const SimpleTimeSlotChartComponent: React.FC<SimpleTimeSlotChartProps> = ({
 
   return (
     <div
-      className={`h-96 w-[300px] md:w-[670px] flex flex-col justify-center border border-green-500 md:flex-row ${className}`}
+      className={`h-96 w-[300px] md:w-[670px] flex flex-col justify-center md:flex-row ${className}`}
     >
-      <div className="flex-1 flex items-center md:w-[450px] border border-red md:ml-5">
-        <div className="w-full h-56 flex flex-col justify-end border border-blue-500">
+      <div className="flex-1 flex items-center md:w-[450px] md:ml-5">
+        <div className="w-full h-56 flex flex-col justify-end">
           {/* Y축 라벨 */}
           <div className="flex justify-evenly items-end h-full pb-8">
             {chartData.bars.map((bar, index) => (

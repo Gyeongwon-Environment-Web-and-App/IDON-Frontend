@@ -20,6 +20,22 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
 
     let currentAngle = 0;
 
+    // Handle single data point case - create a full circle
+    if (data.length === 1) {
+      const item = data[0];
+      return [
+        {
+          ...item,
+          percentage: 100,
+          angle: 360,
+          startAngle: 0,
+          endAngle: 360,
+          color: colors[0],
+          pathData: createFullCirclePath(110, 60),
+        },
+      ];
+    }
+
     return data.map((item, index) => {
       const percentage = (item.value / total) * 100;
       const angle = (item.value / total) * 360;
@@ -51,6 +67,18 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
     );
   }
 
+  // 데이터가 있지만 모든 값이 0인 경우
+  const total = data.reduce((sum, item) => sum + item.value, 0);
+  if (total === 0) {
+    return (
+      <div
+        className={`w-full h-80 flex items-center justify-center ${className}`}
+      >
+        <div className="text-gray-500">데이터 값이 모두 0입니다.</div>
+      </div>
+    );
+  }
+
   return (
     <div className={`flex items-center justify-center ${className}`}>
       <div className="relative w-64 h-64">
@@ -77,9 +105,7 @@ const SimplePieChartComponent: React.FC<SimplePieChartProps> = ({
         {/* 중앙 텍스트 */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="text-center">
-            <div className="text-2xl font-bold text-gray-800">
-              {data.reduce((sum, item) => sum + item.value, 0)}건
-            </div>
+            <div className="text-2xl font-bold text-gray-800">{total}건</div>
             <div className="text-sm text-gray-600">총 민원</div>
           </div>
         </div>
@@ -120,6 +146,31 @@ function createPieSlicePath(
     `A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${x4} ${y4}`,
     'Z',
   ].join(' ');
+}
+
+// 전체 원 경로 생성 함수 (단일 데이터 포인트용)
+function createFullCirclePath(
+  outerRadius: number,
+  innerRadius: number
+): string {
+  const centerX = 110;
+  const centerY = 110;
+
+  // Create outer circle (clockwise)
+  const outerCircle = [
+    `M ${centerX + outerRadius} ${centerY}`,
+    `A ${outerRadius} ${outerRadius} 0 1 1 ${centerX - outerRadius} ${centerY}`,
+    `A ${outerRadius} ${outerRadius} 0 1 1 ${centerX + outerRadius} ${centerY}`,
+  ].join(' ');
+
+  // Create inner circle (counter-clockwise to create hole)
+  const innerCircle = [
+    `M ${centerX + innerRadius} ${centerY}`,
+    `A ${innerRadius} ${innerRadius} 0 1 0 ${centerX - innerRadius} ${centerY}`,
+    `A ${innerRadius} ${innerRadius} 0 1 0 ${centerX + innerRadius} ${centerY}`,
+  ].join(' ');
+
+  return `${outerCircle} ${innerCircle} Z`;
 }
 
 // Memoized component to prevent infinite loops
