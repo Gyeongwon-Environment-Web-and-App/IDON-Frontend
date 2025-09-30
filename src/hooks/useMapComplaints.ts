@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { complaintService } from '@/services/complaintService';
 import type { Complaint } from '@/types/complaint';
+import type { DateRange } from 'react-day-picker';
 
 // Map English filter IDs to Korean category names for API
 const mapCategoryToKorean = (categoryId: string): string => {
@@ -19,6 +20,7 @@ const mapCategoryToKorean = (categoryId: string): string => {
 
 export const useMapComplaints = (
   category?: string,
+  dateRange?: DateRange,
   onCategoryReset?: () => void
 ) => {
   const [complaints, setComplaints] = useState<Complaint[]>([]);
@@ -26,25 +28,19 @@ export const useMapComplaints = (
   const [fetchError, setFetchError] = useState<string | null>(null);
 
   const loadComplaints = useCallback(
-    async (currentCategory?: string) => {
+    async (currentCategory?: string, currentDateRange?: DateRange) => {
       setIsLoading(true);
       setFetchError(null);
       try {
-        let data: Complaint[];
+        const koreanCategory =
+          currentCategory && currentCategory !== 'all'
+            ? mapCategoryToKorean(currentCategory)
+            : undefined;
 
-        if (currentCategory && currentCategory !== 'all') {
-          const koreanCategory = mapCategoryToKorean(currentCategory);
-          data = await complaintService.getComplaintsForMap([koreanCategory]);
-        } else {
-          // For 'all' category, get all categories
-          data = await complaintService.getComplaintsForMap([
-            '일반',
-            '재활용',
-            '음식물',
-            '기타',
-            '반복민원',
-          ]);
-        }
+        const data = await complaintService.getComplaintsByCategoryAndOrDates(
+          currentDateRange,
+          koreanCategory
+        );
 
         const sortedData = data.sort((a, b) => b.id - a.id);
 
@@ -62,15 +58,12 @@ export const useMapComplaints = (
           const koreanCategory = mapCategoryToKorean(currentCategory);
           window.alert(`${koreanCategory} 카테고리의 민원이 없습니다.`);
 
-          // Fetch all complaints when specific category has no data
           try {
-            const allData = await complaintService.getComplaintsForMap([
-              '일반',
-              '재활용',
-              '음식물',
-              '기타',
-              '반복민원',
-            ]);
+            const allData =
+              await complaintService.getComplaintsByCategoryAndOrDates(
+                undefined,
+                undefined
+              );
             const sortedAllData = allData.sort((a, b) => b.id - a.id);
             setComplaints(sortedAllData);
 
@@ -95,13 +88,11 @@ export const useMapComplaints = (
 
           // Fetch all complaints when specific category fails
           try {
-            const allData = await complaintService.getComplaintsForMap([
-              '일반',
-              '재활용',
-              '음식물',
-              '기타',
-              '반복민원',
-            ]);
+            const allData =
+              await complaintService.getComplaintsByCategoryAndOrDates(
+                undefined, // No date range
+                undefined // No category - get all
+              );
             const sortedAllData = allData.sort((a, b) => b.id - a.id);
             setComplaints(sortedAllData);
 
@@ -127,8 +118,8 @@ export const useMapComplaints = (
   );
 
   useEffect(() => {
-    loadComplaints(category);
-  }, [category]);
+    loadComplaints(category, dateRange);
+  }, [category, dateRange]);
 
   const getComplaintById = useCallback(async (id: string) => {
     setIsLoading(true);
@@ -149,7 +140,7 @@ export const useMapComplaints = (
     complaints,
     isLoading,
     fetchError,
-    refetch: () => loadComplaints(category),
+    refetch: () => loadComplaints(category, dateRange),
     getComplaintById,
   };
 };

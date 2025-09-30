@@ -365,7 +365,10 @@ const ComplaintTable: React.FC = () => {
     try {
       setIsCategoryLoading(true);
       const categoryComplaints =
-        await complaintService.getComplaintsByCategoryAndDate(filterType);
+        await complaintService.getComplaintsByCategoryAndOrDates(
+          undefined,
+          filterType
+        );
 
       setFilteredComplaints(categoryComplaints);
     } catch (error) {

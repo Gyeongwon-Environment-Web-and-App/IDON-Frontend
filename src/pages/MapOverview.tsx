@@ -46,6 +46,7 @@ export default function MapOverview() {
   // Fetch complaints data
   const { complaints } = useMapComplaints(
     selectedCategory,
+    dateRange,
     handleCategoryReset
   );
 

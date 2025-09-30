@@ -40,7 +40,7 @@ export interface ComplaintExtended {
   datetime: string;
   content: string;
   status: boolean;
-  categories: string[];
+  category: string; // Changed from categories array to single category string
   type: string;
   route: string;
   bad: boolean;

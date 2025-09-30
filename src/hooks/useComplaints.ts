@@ -29,22 +29,22 @@ export const useComplaints = (dateRange?: DateRange, category?: string) => {
       setIsLoading(true);
       setFetchError(null);
       try {
-        let data: Complaint[];
-        if (currentCategory && currentCategory !== 'all') {
-          const koreanCategory = mapCategoryToKorean(currentCategory);
-          data = await complaintService.getComplaintsByCategoryAndDate(
-            koreanCategory,
-            currentDateRange
-          );
-        } else {
-          data = await complaintService.getComplaints(currentDateRange);
-        }
+        const koreanCategory =
+          currentCategory && currentCategory !== 'all'
+            ? mapCategoryToKorean(currentCategory)
+            : undefined;
+
+        const data = await complaintService.getComplaintsByCategoryAndOrDates(
+          currentDateRange,
+          koreanCategory
+        );
 
         const sortedData = data.sort((a, b) => b.id - a.id);
 
         console.log('Complaints fetched:', {
           complaints: sortedData,
           dateRange: currentDateRange,
+          category: currentCategory,
         });
 
         setComplaints(sortedData);

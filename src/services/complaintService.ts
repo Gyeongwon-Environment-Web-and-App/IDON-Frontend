@@ -4,7 +4,6 @@ import apiClient from '@/lib/api';
 import {
   type Complaint,
   type ComplaintApiResponse,
-  type ComplaintByCategoryApiResponse,
   type ComplaintByIdApiResponse,
   type ComplaintExtended,
   type ComplaintForCategory,
@@ -73,7 +72,7 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    categories: complaintExtended.teams.map((team) => team.category),
+    categories: [complaintExtended.category], // Convert single category to array
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
@@ -169,26 +168,59 @@ const convertMapComplaintToComplaint = (
 };
 
 export const complaintService = {
-  async getComplaints(dateRange?: DateRange): Promise<Complaint[]> {
+  async getComplaintsByCategoryAndOrDates(
+    dateRange?: DateRange,
+    category?: string
+  ): Promise<Complaint[]> {
     try {
       const dateRangeRequest = getDateRangeFromPicker(dateRange);
 
+      const requestBody: {
+        startDate: string;
+        endDate: string;
+        category?: string;
+      } = {
+        startDate: dateRangeRequest.startDate,
+        endDate: dateRangeRequest.endDate,
+      };
+
+      // Only include category if it's provided and not 'all'
+      if (category && category !== 'all') {
+        requestBody.category = category;
+      }
+
+      console.log('🌐 API Call: /complaint/getByCategoryAndOrDates', {
+        requestBody,
+        timestamp: new Date().toISOString(),
+      });
+
       const response = await apiClient.post<ComplaintApiResponse>(
-        '/complaint/getByDates',
-        {
-          startDate: dateRangeRequest.startDate,
-          endDate: dateRangeRequest.endDate,
-        }
+        '/complaint/getByCategoryAndOrDates',
+        requestBody
       );
+
+      console.log('📡 API Response for getByCategoryAndOrDates:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
 
       // Convert the API response to the expected format
       const complaints = response.data.complaints_extended.map(
         convertComplaintExtendedToComplaint
       );
 
+      console.log('🔄 Converted complaints:', {
+        complaints,
+        count: complaints.length,
+        timestamp: new Date().toISOString(),
+      });
+
       return complaints;
     } catch (error) {
-      console.error('Error fetching complaints by date range:', error);
+      console.error(
+        'Error fetching complaints by category and/or dates:',
+        error
+      );
       throw error;
     }
   },
@@ -258,65 +290,6 @@ export const complaintService = {
       });
     } catch (error) {
       console.error(`Error deleting complaints [${ids.join(', ')}]:`, error);
-      throw error;
-    }
-  },
-
-  async getComplaintsByCategory(category: string): Promise<Complaint[]> {
-    try {
-      const response = await apiClient.get<ComplaintByCategoryApiResponse>(
-        `/complaint/getByCategory/${category}`
-      );
-
-      const complaints = response.data.complaints.map(
-        convertComplaintForCategoryToComplaint
-      );
-      console.log(`complaint table fetch by ${category}:`, {
-        count: complaints.length,
-        complaintIds: complaints.map((c) => c.id),
-        complaints: complaints.map((c) => ({
-          id: c.id,
-          type: c.type,
-          category: c.teams?.map((t) => t.category).join(', ') || 'No category',
-          datetime: c.datetime,
-          address: c.address,
-        })),
-      });
-
-      return complaints;
-    } catch (error) {
-      console.error(
-        `Error fetching complaints for category ${category}:`,
-        error
-      );
-      throw error;
-    }
-  },
-
-  async getComplaintsByCategoryAndDate(
-    category: string,
-    dateRange?: DateRange
-  ): Promise<Complaint[]> {
-    try {
-      const categoryComplaints = await this.getComplaintsByCategory(category);
-
-      if (dateRange) {
-        const dateRangeRequest = getDateRangeFromPicker(dateRange);
-        const startDate = new Date(dateRangeRequest.startDate);
-        const endDate = new Date(dateRangeRequest.endDate);
-
-        return categoryComplaints.filter((complaint) => {
-          const complaintDate = new Date(complaint.datetime);
-          return complaintDate >= startDate && complaintDate <= endDate;
-        });
-      }
-
-      return categoryComplaints;
-    } catch (error) {
-      console.error(
-        `Error fetching complaints for category ${category} with date range:`,
-        error
-      );
       throw error;
     }
   },
