@@ -39,6 +39,50 @@ const getDateRangeFromPicker = (
 };
 
 export const statisticsService = {
+  async getAllByCategories(
+    categories: string[],
+    dateRange?: DateRange
+  ): Promise<{ message: string; data: Record<string, { count: number }> }> {
+    try {
+      const { startDate, endDate } = getDateRangeFromPicker(dateRange);
+      const response = await apiClient.post<{
+        message: string;
+        data: Record<string, { count: number }>;
+      }>(`/stat/all_by_categories`, {
+        startDate,
+        endDate,
+        categories,
+      });
+      console.log('statsService-getAllByCategories:', response.data)
+      return response.data;
+    } catch (error) {
+      console.error('카테고리 전체 통계 불러오기 실패', error);
+      throw error;
+    }
+  },
+
+  async getAllByRegions(
+    regions: string[],
+    dateRange?: DateRange
+  ): Promise<{ message: string; data: Record<string, { count: number }> }> {
+    try {
+      const { startDate, endDate } = getDateRangeFromPicker(dateRange);
+      const response = await apiClient.post<{
+        message: string;
+        data: Record<string, { count: number }>;
+      }>(`/stat/all_by_regions`, {
+        startDate,
+        endDate,
+        regions,
+      });
+
+      console.log('statsService-getAllByRegions:', response.data)
+      return response.data;
+    } catch (error) {
+      console.error('지역 전체 통계 불러오기 실패', error);
+      throw error;
+    }
+  },
   async getCategoriesPosNeg(
     categories: string[],
     dateRange?: DateRange

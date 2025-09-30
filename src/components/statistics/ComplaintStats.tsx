@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useComplaintCharts } from '@/hooks/useComplaintCharts';
 import { useComplaintFilters } from '@/hooks/useComplaintFilters';
+import { useInitialStatsForPies } from '@/hooks/useInitialStatsForPies';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 
@@ -60,12 +61,11 @@ const ComplaintStats = () => {
     regionPosNegData,
     regionDaysData,
     regionTimePeriodsData,
-    regionChartData,
     weekdayTimeSlotData,
     timeStats,
     weekdayStats,
-    complaintTypeColors,
-    dongComplaintColors,
+    // complaintTypeColors,
+    // dongComplaintColors,
     complaintDataColors,
     getTrashTypeColor,
     getTrashColor,
@@ -81,6 +81,12 @@ const ComplaintStats = () => {
     selectedTrashType,
     timePeriodByDayData,
     selectedWeekday,
+  });
+
+  // Fetch initial pies from server (categories and regions)
+  const { categoryPie, regionPie } = useInitialStatsForPies({
+    dateRange,
+    selectedAreas,
   });
 
   return (
@@ -324,7 +330,7 @@ const ComplaintStats = () => {
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                  {chartData.complaintTypeData.map((item) => (
+                  {categoryPie.map((item) => (
                     <span
                       key={item.name}
                       className="px-3 py-1 text-xs font-semibold text-white"
@@ -335,12 +341,12 @@ const ComplaintStats = () => {
                   ))}
                 </div>
                 <SimplePieChart
-                  data={chartData.complaintTypeData}
-                  colors={complaintTypeColors}
+                  data={categoryPie}
+                  colors={categoryPie.map((item) => getTrashColor(item.name))}
                 />
               </div>
               <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-                {chartData.complaintTypeData.map((item) => (
+                {categoryPie.map((item) => (
                   <div
                     key={item.name}
                     className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
@@ -372,47 +378,43 @@ const ComplaintStats = () => {
             <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                  {(selectedAreas.length > 0
-                    ? regionChartData
-                    : chartData.dongComplaintData
-                  ).map((item) => (
-                    <span
-                      key={item.name}
-                      className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
-                      style={{ backgroundColor: getRegionColor(item.name) }}
-                    >
-                      {item.name}
-                    </span>
-                  ))}
+                  {(selectedAreas.length > 0 ? regionPie : regionPie).map(
+                    (item) => (
+                      <span
+                        key={item.name}
+                        className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
+                        style={{ backgroundColor: getRegionColor(item.name) }}
+                      >
+                        {item.name}
+                      </span>
+                    )
+                  )}
                 </div>
                 <SimplePieChart
-                  data={
-                    selectedAreas.length > 0
-                      ? regionChartData
-                      : chartData.dongComplaintData
-                  }
-                  colors={dongComplaintColors}
+                  data={regionPie}
+                  colors={regionPie.map((item) => getRegionColor(item.name))}
                 />
               </div>
               <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-                {(selectedAreas.length > 0
-                  ? regionChartData
-                  : chartData.dongComplaintData
-                ).map((item) => (
-                  <div
-                    key={item.name}
-                    className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className="h-3 w-3 rounded-full"
-                        style={{ backgroundColor: getRegionColor(item.name) }}
-                      />
-                      <span className="text-md font-semibold">{item.name}</span>
+                {(selectedAreas.length > 0 ? regionPie : regionPie).map(
+                  (item) => (
+                    <div
+                      key={item.name}
+                      className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="h-3 w-3 rounded-full"
+                          style={{ backgroundColor: getRegionColor(item.name) }}
+                        />
+                        <span className="text-md font-semibold">
+                          {item.name}
+                        </span>
+                      </div>
+                      <p className="text-md font-semibold">{item.value}건</p>
                     </div>
-                    <p className="text-md font-semibold">{item.value}건</p>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           </section>
