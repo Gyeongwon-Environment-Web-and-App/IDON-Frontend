@@ -34,7 +34,6 @@ interface UsePinManagerReturn {
   isGeocoding: boolean;
   geocodedPins: PinData[];
   clearMarkers: () => void;
-  updatePins: () => Promise<void>;
 }
 
 export const usePinManager = ({
@@ -243,118 +242,99 @@ export const usePinManager = ({
     [onPinClick, mapInstance]
   );
 
-  // Update pins on map
-  const updatePins = useCallback(async () => {
-    if (!mapInstance || !isLoaded) {
-      setIsGeocoding(false);
-      return;
-    }
+  // updatePins function removed - functionality moved to consolidated useEffect
 
-    // Always clear existing markers first
-    clearMarkers();
-
-    // If no pins to process, just clear and return
-    if (pins.length === 0) {
-      setIsGeocoding(false);
-      setGeocodedPins([]);
-      return;
-    }
-
-    // Set geocoding state for processing pins
-    setIsGeocoding(true);
-
-    // Separate pins with valid coordinates from those that need geocoding
-    const pinsWithCoords: PinData[] = [];
-    const pinsNeedingGeocoding: PinData[] = [];
-
-    pins.forEach((pin) => {
-      // Check if pin already has valid coordinates
-      if (
-        pin.lat !== 0 &&
-        pin.lng !== 0 &&
-        !isNaN(pin.lat) &&
-        !isNaN(pin.lng)
-      ) {
-        pinsWithCoords.push(pin);
-      } else {
-        pinsNeedingGeocoding.push(pin);
-      }
-    });
-
-    const validPins: PinData[] = [...pinsWithCoords];
-
-    // Only geocode pins that don't have coordinates
-    if (pinsNeedingGeocoding.length > 0) {
-      try {
-        // Get unique addresses from pins that need geocoding
-        const uniqueAddresses = [
-          ...new Set(pinsNeedingGeocoding.map((pin) => pin.address)),
-        ];
-
-        // Batch geocoding for all unique addresses
-        const coordinatesMap = await batchGeocoding(uniqueAddresses);
-
-        // Process geocoded pins
-        pinsNeedingGeocoding.forEach((pin) => {
-          const coordinates = coordinatesMap.get(pin.address);
-
-          if (coordinates) {
-            const pinWithCoords = {
-              ...pin,
-              lat: coordinates.lat,
-              lng: coordinates.lng,
-            };
-            validPins.push(pinWithCoords);
-          }
-        });
-      } catch (error) {
-        console.error('❌ Geocoding failed:', error);
-      }
-    }
-
-    // Store the geocoded pins for marker creation
-    setGeocodedPins(validPins);
-    setIsGeocoding(false);
-  }, [pins, isLoaded, clearMarkers, mapInstance]);
-
-  // Create markers from geocoded pins (separate from geocoding process)
-  const createMarkersFromGeocodedPins = useCallback(() => {
+  // Consolidated effect that handles both geocoding and marker creation
+  useEffect(() => {
     if (!mapInstance || !isLoaded) {
       return;
     }
 
-    // Always clear existing markers first
-    clearMarkers();
+    const processPinsAndCreateMarkers = async () => {
+      // Always clear existing markers first
+      clearMarkers();
 
-    // Only create new markers if there are pins to display
-    if (geocodedPins.length > 0) {
-      geocodedPins.forEach((pin) => {
-        const marker = createMarker(pin);
-        if (marker) {
-          markersRef.current.push(marker);
+      // If no pins to process, just clear and return
+      if (pins.length === 0) {
+        setIsGeocoding(false);
+        setGeocodedPins([]);
+        return;
+      }
+
+      // Set geocoding state for processing pins
+      setIsGeocoding(true);
+
+      // Separate pins with valid coordinates from those that need geocoding
+      const pinsWithCoords: PinData[] = [];
+      const pinsNeedingGeocoding: PinData[] = [];
+
+      pins.forEach((pin) => {
+        // Check if pin already has valid coordinates
+        if (
+          pin.lat !== 0 &&
+          pin.lng !== 0 &&
+          !isNaN(pin.lat) &&
+          !isNaN(pin.lng)
+        ) {
+          pinsWithCoords.push(pin);
+        } else {
+          pinsNeedingGeocoding.push(pin);
         }
       });
-    }
-  }, [geocodedPins, isLoaded, clearMarkers, createMarker, mapInstance]);
 
-  // Update pins when pins prop changes OR when map instance becomes available
-  useEffect(() => {
-    if (mapInstance && isLoaded) {
-      updatePins();
-    }
-  }, [updatePins, mapInstance, isLoaded]);
+      const validPins: PinData[] = [...pinsWithCoords];
 
-  // Update markers when geocoded pins change OR when map instance becomes available
-  useEffect(() => {
-    if (mapInstance && isLoaded) {
-      createMarkersFromGeocodedPins();
-    }
-  }, [createMarkersFromGeocodedPins, mapInstance, isLoaded]);
+      // Only geocode pins that don't have coordinates
+      if (pinsNeedingGeocoding.length > 0) {
+        try {
+          // Get unique addresses from pins that need geocoding
+          const uniqueAddresses = [
+            ...new Set(pinsNeedingGeocoding.map((pin) => pin.address)),
+          ];
+
+          // Batch geocoding for all unique addresses
+          const coordinatesMap = await batchGeocoding(uniqueAddresses);
+
+          // Process geocoded pins
+          pinsNeedingGeocoding.forEach((pin) => {
+            const coordinates = coordinatesMap.get(pin.address);
+
+            if (coordinates) {
+              const pinWithCoords = {
+                ...pin,
+                lat: coordinates.lat,
+                lng: coordinates.lng,
+              };
+              validPins.push(pinWithCoords);
+            }
+          });
+        } catch (error) {
+          console.error('❌ Geocoding failed:', error);
+        }
+      }
+
+      // Store the geocoded pins
+      setGeocodedPins(validPins);
+      setIsGeocoding(false);
+
+      // Create markers from the processed pins
+      if (validPins.length > 0) {
+        validPins.forEach((pin) => {
+          const marker = createMarker(pin);
+          if (marker) {
+            markersRef.current.push(marker);
+          }
+        });
+      }
+    };
+
+    processPinsAndCreateMarkers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pins, mapInstance, isLoaded]);
 
   return {
     isGeocoding,
     geocodedPins,
     clearMarkers,
-    updatePins,
   };
 };

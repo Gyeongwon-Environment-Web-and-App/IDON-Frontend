@@ -128,7 +128,7 @@ export const useMapComplaints = (
 
   useEffect(() => {
     loadComplaints(category);
-  }, [category, loadComplaints]);
+  }, [category]);
 
   const getComplaintById = useCallback(async (id: string) => {
     setIsLoading(true);

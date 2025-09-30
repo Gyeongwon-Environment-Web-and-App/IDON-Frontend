@@ -67,6 +67,11 @@ export default defineConfig({
     minifyWhitespace: true,
   },
   server: {
+    hmr: {
+      port: 5173,
+      host: 'localhost',
+      clientPort: 5173,
+    },
     proxy: {
       '/api/geocode': {
         target: 'https://maps.apigw.ntruss.com',

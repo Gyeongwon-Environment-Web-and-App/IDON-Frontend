@@ -163,7 +163,7 @@ const ComplaintDetail: React.FC = () => {
 
     // Always fetch fresh data, don't rely on cached data
     fetchComplaint();
-  }, [currentComplaintId, getComplaintById, setSelectedComplaint]);
+  }, [currentComplaintId]);
 
   useEffect(() => {
     if (!isPopupOpen && currentComplaintId) {
@@ -179,7 +179,7 @@ const ComplaintDetail: React.FC = () => {
       };
       refreshComplaint();
     }
-  }, [isPopupOpen, currentComplaintId, getComplaintById, setSelectedComplaint]);
+  }, [isPopupOpen, currentComplaintId]);
 
   useEffect(() => {
     if (selectedComplaint) {

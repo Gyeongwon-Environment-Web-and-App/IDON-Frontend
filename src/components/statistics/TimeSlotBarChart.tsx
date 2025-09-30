@@ -1,26 +1,15 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { memo, Suspense, useCallback, useMemo, useState } from 'react';
+
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import type { BarChartProps } from '@/types/stats';
-
-// Dynamic imports for Recharts components to enable tree shaking
-const Bar = lazy(() =>
-  import('recharts').then((module) => ({ default: module.Bar }))
-);
-const BarChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.BarChart }))
-);
-const CartesianGrid = lazy(() =>
-  import('recharts').then((module) => ({ default: module.CartesianGrid }))
-);
-const ResponsiveContainer = lazy(() =>
-  import('recharts').then((module) => ({ default: module.ResponsiveContainer }))
-);
-const XAxis = lazy(() =>
-  import('recharts').then((module) => ({ default: module.XAxis }))
-);
-const YAxis = lazy(() =>
-  import('recharts').then((module) => ({ default: module.YAxis }))
-);
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -94,32 +83,71 @@ const timeSlot = [
   '5:30',
 ];
 
-export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
+const TimeSlotBarChartComponent: React.FC<BarChartProps> = ({
+  data,
+  colors,
+}) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
-  // 데이터에서 카테고리 키들을 추출 (time 제외)
-  const categories = Object.keys(data[0] || {}).filter((key) => key !== 'time');
+  // 데이터에서 카테고리 키들을 추출 (time 제외) - 메모화
+  const categories = useMemo(
+    () =>
+      data && data.length > 0
+        ? Object.keys(data[0] || {}).filter((key) => key !== 'time')
+        : [],
+    [data]
+  );
 
-  // 데이터를 timeSlot 인덱스로 변환 (0.5 단위로 조정하여 tick 사이에 위치)
-  const transformedData = data.map((item, index) => ({
-    ...item,
-    timeIndex: index + 0.5, // 0.5, 1.5, 2.5... 로 설정하여 tick 사이에 위치
-    hoverArea: 1, // 투명한 배경 바를 위한 값
-  }));
+  // 데이터를 timeSlot 인덱스로 변환 (0.5 단위로 조정하여 tick 사이에 위치) - 메모화
+  const transformedData = useMemo(
+    () =>
+      data && data.length > 0
+        ? data.map((item, index) => ({
+            ...item,
+            timeIndex: index + 0.5, // 0.5, 1.5, 2.5... 로 설정하여 tick 사이에 위치
+            hoverArea: 1, // 투명한 배경 바를 위한 값
+          }))
+        : [],
+    [data]
+  );
 
-  // 현재 호버된 인덱스에 따른 툴팁 데이터 생성
-  const currentTooltipData = categories.map((category, index) => {
-    const value = Number(data[hoveredIndex]?.[category] || 0);
-    return {
-      dataKey: category,
-      value: value, // 0이어도 명시적으로 표시
-      color: colors[index % colors.length],
-      payload: {
-        time: data[hoveredIndex]?.time || '8:30~9:30',
-        [category]: value,
-      },
-    };
-  });
+  // 현재 호버된 인덱스에 따른 툴팁 데이터 생성 - 메모화
+  const currentTooltipData = useMemo(
+    () =>
+      categories.map((category, index) => {
+        const value = Number(data?.[hoveredIndex]?.[category] || 0);
+        return {
+          dataKey: category,
+          value: value, // 0이어도 명시적으로 표시
+          color: colors[index % colors.length],
+          payload: {
+            time: data?.[hoveredIndex]?.time || '8:30~9:30',
+            [category]: value,
+          },
+        };
+      }),
+    [categories, data, hoveredIndex, colors]
+  );
+
+  // 마우스 이벤트 핸들러 최적화
+  const handleMouseEnter = useCallback(
+    (event: { payload?: { timeIndex?: number } }) => {
+      const dataIndex = event.payload?.timeIndex
+        ? Math.floor(event.payload.timeIndex - 0.5)
+        : 0;
+      setHoveredIndex((prev) => (prev !== dataIndex ? dataIndex : prev));
+    },
+    []
+  );
+
+  // 데이터 유효성 검사
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-96 w-full md:w-[600px] flex items-center justify-center">
+        <div className="text-gray-500">표시할 데이터가 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-96 w-full md:w-[600px] flex flex-col justify-center md:flex-row xxxs:-mt-7 xxs:-mt-5 xs:mt-0 md:ml-3">
@@ -131,49 +159,46 @@ export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
             </div>
           }
         >
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            className="xxxs:scale-[71%] xxs:scale-[78%] xs:scale-90 md:scale-100 min-h-80"
-          >
-            <BarChart
-              width={1200}
-              height={300}
-              data={transformedData}
-              margin={{
-                top: 0,
-                right: 10,
-                left: -35,
-                bottom: -30,
-              }}
+          <div className="w-[600px] h-[400px]">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              className="xxxs:scale-[71%] xxs:scale-[78%] xs:scale-90 md:scale-100 min-h-80"
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis
-                dataKey="timeIndex"
-                tickFormatter={(value) => timeSlot[Math.floor(value)]}
-                type="number"
-                domain={[0, timeSlot.length - 1]}
-                ticks={timeSlot.map((_, index) => index)}
-                height={60}
-              />
-              <YAxis />
-              {categories.map((category, index) => (
-                <Bar
-                  key={category}
-                  dataKey={category}
-                  stackId="a"
-                  radius={[0, 0, 0, 0]}
-                  fill={colors[index % colors.length]}
-                  onMouseEnter={(event) => {
-                    const dataIndex = event.payload?.timeIndex
-                      ? Math.floor(event.payload.timeIndex - 0.5)
-                      : 0;
-                    setHoveredIndex(dataIndex);
-                  }}
+              <BarChart
+                width={1200}
+                height={300}
+                data={transformedData}
+                margin={{
+                  top: 0,
+                  right: 10,
+                  left: -35,
+                  bottom: -30,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="timeIndex"
+                  tickFormatter={(value) => timeSlot[Math.floor(value)]}
+                  type="number"
+                  domain={[0, timeSlot.length - 1]}
+                  ticks={timeSlot.map((_, index) => index)}
+                  height={60}
                 />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+                <YAxis />
+                {categories.map((category, index) => (
+                  <Bar
+                    key={category}
+                    dataKey={category}
+                    stackId="a"
+                    radius={[0, 0, 0, 0]}
+                    fill={colors[index % colors.length]}
+                    onMouseEnter={handleMouseEnter}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Suspense>
       </div>
 
@@ -184,5 +209,8 @@ export const TimeSlotBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
     </div>
   );
 };
+
+// Memoized component to prevent infinite loops
+export const TimeSlotBarChart = memo(TimeSlotBarChartComponent);
 
 export default TimeSlotBarChart;

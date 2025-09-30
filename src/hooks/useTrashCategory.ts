@@ -14,7 +14,7 @@ import {
   transformTimePeriodsToBarChartData,
 } from '@/utils/statsTransformers';
 
-export const useStatistics = () => {
+export const useTrashCategory = () => {
   const [statisticsData, setStatisticsData] = useState<StatisticsData | null>(
     null
   );
@@ -57,7 +57,7 @@ export const useStatistics = () => {
             ? error.message
             : '쓰레기 상성 통계 불러오기 실패';
         setError(errorMessage);
-        console.log('useStatistics 에러:', error);
+        console.log('useTrashCategory 에러:', error);
       } finally {
         setIsLoading(false);
       }

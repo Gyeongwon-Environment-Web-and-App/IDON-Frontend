@@ -71,12 +71,12 @@ export default function ComplaintForm({
     if (!formData.categories) {
       updateFormData({ categories: [] });
     }
-  }, [formData.categories, updateFormData]);
+  }, [formData.categories]);
 
   // formData.address가 변경될 때 tempAddress 동기화
   useEffect(() => {
     setTempAddress(formData.address);
-  }, [formData.address, setTempAddress]);
+  }, [formData.address]);
 
   // 드라이버 데이터 가져오기 - 주소와 카테고리가 모두 있을 때
   useEffect(() => {
@@ -86,7 +86,7 @@ export default function ComplaintForm({
     if (shouldFetchDriverData) {
       fetchDriverData(formData.address, formData.categories);
     }
-  }, [formData.address, formData.categories, fetchDriverData]);
+  }, [formData.address, formData.categories]);
 
   // Reset map center flag after it's been used (simplified)
   useEffect(() => {

@@ -308,7 +308,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       } catch (error) {
         console.error('Failed to initialize map:', error);
       }
-    }, [isLoaded, center.lat, center.lng, zoom, ref]);
+    }, [isLoaded, center.lat, center.lng, zoom]);
 
     // Update map center and zoom when props change
     useEffect(() => {
@@ -352,12 +352,12 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
       if (showPolygons && selectedCategory) {
         fetchPolygons(selectedCategory);
       }
-    }, [selectedCategory, showPolygons, fetchPolygons]);
+    }, [selectedCategory, showPolygons]);
 
     // Render polygons when data changes
     useEffect(() => {
       renderPolygons();
-    }, [renderPolygons]);
+    }, [polygonData, showPolygons, isLoaded]);
 
     // Load SDK on mount
     useEffect(() => {

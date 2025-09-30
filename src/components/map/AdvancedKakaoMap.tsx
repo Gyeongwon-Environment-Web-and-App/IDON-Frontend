@@ -315,14 +315,14 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
         initializeMap();
       }, 100);
     }
-  }, [isLoaded, isVisible, initializeMap]);
+  }, [isLoaded, isVisible]);
 
   // Handle coordinate updates
   useEffect(() => {
     if (latitude && longitude && mapInstanceRef.current && isLoaded) {
       updateMapWithCoordinates(latitude, longitude);
     }
-  }, [latitude, longitude, isLoaded, updateMapWithCoordinates]);
+  }, [latitude, longitude, isLoaded]);
 
   // Handle address updates
   useEffect(() => {
@@ -335,7 +335,7 @@ const AdvancedKakaoMap: React.FC<AdvancedKakaoMapProps> = ({
     ) {
       geocodeAddress(address);
     }
-  }, [address, latitude, longitude, isLoaded, geocodeAddress]);
+  }, [address, latitude, longitude, isLoaded]);
 
   // Handle visibility changes
   useEffect(() => {

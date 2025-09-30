@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import type { DateRange } from 'react-day-picker';
 
@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { useRegionStatistics } from '@/hooks/useRegionStatistics';
 import { useStatistics } from '@/hooks/useStatistics';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
@@ -17,12 +18,62 @@ import {
   getHybridChartData,
   shouldShowFirstPieChart,
 } from '@/utils/hybridDataSelector';
+import {
+  transformRegionDataToRegionChartData,
+  transformRegionDaysToBarChartData,
+  transformRegionPosNegToChartData,
+  transformRegionTimePeriodsToBarChartData,
+} from '@/utils/regionStatsTransformers';
 
 import triangle from '../../assets/icons/actions/triangle.svg';
 import DateRangePicker from '../common/DateRangePicker';
-import { CustomPieChart } from './CustomPieChart';
-import { TimeSlotBarChart } from './TimeSlotBarChart';
-import WeekDayBarChart from './WeekDayBarChart';
+import { SimplePieChart } from './SimplePieChart';
+import { SimpleTimeSlotChart } from './SimpleTimeSlotChart';
+import { SimpleWeekdayChart } from './SimpleWeekdayChart';
+
+// Enhanced color system with fallbacks - moved outside component for stability
+const ColorMappings = {
+  // Trash types
+  trash: {
+    재활용: '#58CC02',
+    일반: '#59B9FF',
+    기타: '#AF8AFF',
+    음식물: '#F5694A',
+  } as Record<string, string>,
+
+  // Regions/Dongs
+  regions: {
+    쌍문1동: '#72E900',
+    쌍문2동: '#8ADEAB',
+    쌍문3동: '#3CC092',
+    쌍문4동: '#00BA13',
+    방학1동: '#007A0C',
+    방학3동: '#004207',
+  } as Record<string, string>,
+
+  // Complaint types
+  complaints: {
+    '반복 민원': '#FF0000',
+    '일반 민원': '#a8a8a8',
+    부정적: '#FF0000',
+    긍정적: '#a8a8a8',
+  } as Record<string, string>,
+
+  // Special cases
+  special: {
+    전체통계: '#333333',
+  } as Record<string, string>,
+};
+
+// Color getter functions - moved outside component for stability
+const getTrashColor = (name: string) =>
+  ColorMappings.trash[name] || ColorMappings.special[name] || '#000000';
+
+const getRegionColor = (name: string) =>
+  ColorMappings.regions[name] || '#cccccc';
+
+const getComplaintColor = (name: string) =>
+  ColorMappings.complaints[name] || '#cccccc';
 
 // 날짜 포매팅 함수
 const formatDate = (date: Date): string => {
@@ -79,8 +130,10 @@ const ComplaintStats = () => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
   const [selectedTrashType, setSelectedTrashType] =
     useState<string>('쓰레기 종류');
-  const [selectedTimeline, setSelectedTimeline] = useState<string>('8:30-9:30');
-  const [selectedWeekday, setSelectedWeekday] = useState<string>('요일별');
+  const [selectedTimeline, setSelectedTimeline] =
+    useState<string>('전체 시간대');
+  const [selectedWeekday, setSelectedWeekday] = useState<string>('전체 요일');
+
   const {
     transformedData,
     isLoading,
@@ -89,57 +142,54 @@ const ComplaintStats = () => {
     clearStatistics,
   } = useStatistics();
 
-  const chartData = getHybridChartData(transformedData, selectedTrashType);
-  const showFirstPieChart = shouldShowFirstPieChart(selectedTrashType);
+  const {
+    regionData,
+    isLoading: regionLoading,
+    error: regionError,
+    fetchRegionStatistics,
+    clearRegionStatistics,
+  } = useRegionStatistics();
 
-  // Enhanced color system with fallbacks
-  const ColorMappings = {
-    // Trash types
-    trash: {
-      재활용: '#58CC02',
-      일반: '#59B9FF',
-      기타: '#AF8AFF',
-      음식물: '#F5694A',
-    } as Record<string, string>,
+  // 메모화된 차트 데이터 계산 - 안정적인 의존성으로 수정
+  const chartData = useMemo(
+    () => getHybridChartData(transformedData, selectedTrashType),
+    [transformedData, selectedTrashType]
+  );
 
-    // Regions/Dongs
-    regions: {
-      쌍문1동: '#72E900',
-      쌍문2동: '#8ADEAB',
-      쌍문3동: '#3CC092',
-      쌍문4동: '#00BA13',
-      방학1동: '#007A0C',
-      방학3동: '#004207',
-    } as Record<string, string>,
+  const showFirstPieChart = useMemo(
+    () => shouldShowFirstPieChart(selectedTrashType),
+    [selectedTrashType]
+  );
 
-    // Complaint types
-    complaints: {
-      '반복 민원': '#FF0000',
-      '일반 민원': '#a8a8a8',
-      부정적: '#FF0000',
-      긍정적: '#a8a8a8',
-    } as Record<string, string>,
+  // Transform region data for charts - 안정적인 의존성으로 수정
+  const regionPosNegData = useMemo(
+    () => transformRegionPosNegToChartData(regionData.posNeg),
+    [regionData.posNeg]
+  );
 
-    // Special cases
-    special: {
-      전체통계: '#333333',
-    } as Record<string, string>,
-  };
+  const regionDaysData = useMemo(
+    () => transformRegionDaysToBarChartData(regionData.days),
+    [regionData.days]
+  );
 
-  // Color getter functions
-  const getTrashColor = (name: string) =>
-    ColorMappings.trash[name] || ColorMappings.special[name] || '#000000';
-  const getRegionColor = (name: string) =>
-    ColorMappings.regions[name] || '#cccccc';
-  const getComplaintColor = (name: string) =>
-    ColorMappings.complaints[name] || '#cccccc';
+  const regionTimePeriodsData = useMemo(
+    () => transformRegionTimePeriodsToBarChartData(regionData.timePeriods),
+    [regionData.timePeriods]
+  );
+
+  const regionChartData = useMemo(
+    () => transformRegionDataToRegionChartData(regionData.posNeg),
+    [regionData.posNeg]
+  );
+
+  // ColorMappings and color getter functions moved outside component for stability
 
   // Legacy function for dropdown button color
   const getTrashTypeColor = (type: string) => {
     return getTrashColor(type) || 'black';
   };
 
-  const getSelectedAreaDisplay = (areas: string[]) => {
+  const getSelectedAreaDisplay = useCallback((areas: string[]) => {
     if (areas.length === 0) return '전체 지역';
 
     const 쌍문Children = ['쌍문 1동', '쌍문 2동', '쌍문 3동', '쌍문 4동'];
@@ -167,26 +217,69 @@ const ComplaintStats = () => {
     }
 
     return displayParts.join(', ');
-  };
+  }, []);
 
-  const handleAreaSelectionChange = (areas: string[]) => {
-    setSelectedAreas(areas);
-  };
+  const handleAreaSelectionChange = useCallback(
+    async (areas: string[]) => {
+      setSelectedAreas(areas);
 
-  const handleTrashTypeChange = async (trashType: string) => {
-    setSelectedTrashType(trashType);
+      if (areas.length > 0) {
+        // Fetch region statistics when areas are selected
+        await fetchRegionStatistics(areas, selectedTimeline, dateRange);
+      } else {
+        // Clear region statistics when no areas are selected
+        clearRegionStatistics();
+      }
+    },
+    [selectedTimeline, dateRange, fetchRegionStatistics, clearRegionStatistics]
+  );
 
-    if (trashType === '전체통계' || trashType === '쓰레기 종류') {
-      clearStatistics();
-      return;
+  const handleTrashTypeChange = useCallback(
+    async (trashType: string) => {
+      setSelectedTrashType(trashType);
+
+      if (trashType === '전체통계' || trashType === '쓰레기 종류') {
+        clearStatistics();
+        return;
+      }
+
+      await fetchStatistics([trashType], dateRange);
+    },
+    [dateRange, fetchStatistics, clearStatistics]
+  );
+
+  // 가장 많고 적은 민원 시간대 계산 - 안정적인 의존성으로 수정
+  const timeStats = useMemo(() => {
+    if (selectedAreas.length > 0) {
+      return highestComplaintTime(regionTimePeriodsData);
     }
+    return highestComplaintTime(chartData.timeSlotData);
+  }, [selectedAreas.length, regionTimePeriodsData, chartData.timeSlotData]);
 
-    await fetchStatistics([trashType], dateRange);
-  };
+  const weekdayStats = useMemo(() => {
+    if (selectedAreas.length > 0) {
+      return highestComplaintTime(regionDaysData);
+    }
+    return highestComplaintTime(chartData.weekdayData);
+  }, [selectedAreas.length, regionDaysData, chartData.weekdayData]);
 
-  // 가장 많고 적은 민원 시간대 계산
-  const timeStats = highestComplaintTime(chartData.timeSlotData);
-  const weekdayStats = highestComplaintTime(chartData.weekdayData);
+  // 메모화된 색상 배열들 - 안정적인 의존성으로 수정
+  const complaintTypeColors = useMemo(
+    () => chartData.complaintTypeData.map((item) => getTrashColor(item.name)),
+    [chartData.complaintTypeData]
+  );
+
+  const dongComplaintColors = useMemo(() => {
+    const data =
+      selectedAreas.length > 0 ? regionChartData : chartData.dongComplaintData;
+    return data.map((item) => getRegionColor(item.name));
+  }, [selectedAreas.length, regionChartData, chartData.dongComplaintData]);
+
+  const complaintDataColors = useMemo(() => {
+    const data =
+      selectedAreas.length > 0 ? regionPosNegData : chartData.complaintData;
+    return data.map((item) => getComplaintColor(item.name));
+  }, [selectedAreas.length, regionPosNegData, chartData.complaintData]);
 
   return (
     <div className="w-[100%] h-screen">
@@ -271,64 +364,141 @@ const ComplaintStats = () => {
                 className="[&>*]:justify-center !min-w-[80px]"
               >
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
+                    setSelectedTimeline('전체 시간대');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '전체 시간대',
+                        dateRange
+                      );
+                    }
+                  }}
+                >
+                  전체 시간대
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
                     setSelectedTimeline('8:30-9:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '8:30-9:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   8:30-9:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('9:30-10:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '9:30-10:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   9:30-10:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('10:30-11:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '10:30-11:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   10:30-11:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('11:30-12:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '11:30-12:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   11:30-12:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('12:30-13:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '12:30-13:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   12:30-13:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('13:30-14:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '13:30-14:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   13:30-14:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('14:30-15:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '14:30-15:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   14:30-15:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('15:30-16:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '15:30-16:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   15:30-16:30
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedTimeline('16:30-17:30');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        '16:30-17:30',
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   16:30-17:30
@@ -351,36 +521,85 @@ const ComplaintStats = () => {
                 className="[&>*]:justify-center !min-w-[80px]"
               >
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
+                    setSelectedWeekday('전체 요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
+                  }}
+                >
+                  전체 요일
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={async () => {
                     setSelectedWeekday('월요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   월요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedWeekday('화요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   화요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedWeekday('수요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   수요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedWeekday('목요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   목요일
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {
+                  onClick={async () => {
                     setSelectedWeekday('금요일');
+                    if (selectedAreas.length > 0) {
+                      await fetchRegionStatistics(
+                        selectedAreas,
+                        selectedTimeline,
+                        dateRange
+                      );
+                    }
                   }}
                 >
                   금요일
@@ -459,11 +678,9 @@ const ComplaintStats = () => {
                     </span>
                   ))}
                 </div>
-                <CustomPieChart
+                <SimplePieChart
                   data={chartData.complaintTypeData}
-                  colors={chartData.complaintTypeData.map((item) =>
-                    getTrashColor(item.name)
-                  )}
+                  colors={complaintTypeColors}
                 />
               </div>
               <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
@@ -498,7 +715,10 @@ const ComplaintStats = () => {
           <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
             <div className="md:w-[60%] w-[100%] flex">
               <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
-                {chartData.dongComplaintData.map((item) => (
+                {(selectedAreas.length > 0
+                  ? regionChartData
+                  : chartData.dongComplaintData
+                ).map((item) => (
                   <span
                     key={item.name}
                     className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
@@ -508,15 +728,20 @@ const ComplaintStats = () => {
                   </span>
                 ))}
               </div>
-              <CustomPieChart
-                data={chartData.dongComplaintData}
-                colors={chartData.dongComplaintData.map((item) =>
-                  getRegionColor(item.name)
-                )}
+              <SimplePieChart
+                data={
+                  selectedAreas.length > 0
+                    ? regionChartData
+                    : chartData.dongComplaintData
+                }
+                colors={dongComplaintColors}
               />
             </div>
             <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {chartData.dongComplaintData.map((item) => (
+              {(selectedAreas.length > 0
+                ? regionChartData
+                : chartData.dongComplaintData
+              ).map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
@@ -546,7 +771,10 @@ const ComplaintStats = () => {
           <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
             <div className="md:w-[60%] w-[100%] flex">
               <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
-                {chartData.complaintData.map((item) => (
+                {(selectedAreas.length > 0
+                  ? regionPosNegData
+                  : chartData.complaintData
+                ).map((item) => (
                   <span
                     key={item.name}
                     className="px-2 md:px-3 py-1 text-xs font-semibold text-white"
@@ -556,15 +784,20 @@ const ComplaintStats = () => {
                   </span>
                 ))}
               </div>
-              <CustomPieChart
-                data={chartData.complaintData}
-                colors={chartData.complaintData.map((item) =>
-                  getComplaintColor(item.name)
-                )}
+              <SimplePieChart
+                data={
+                  selectedAreas.length > 0
+                    ? regionPosNegData
+                    : chartData.complaintData
+                }
+                colors={complaintDataColors}
               />
             </div>
             <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
-              {chartData.complaintData.map((item) => (
+              {(selectedAreas.length > 0
+                ? regionPosNegData
+                : chartData.complaintData
+              ).map((item) => (
                 <div
                   key={item.name}
                   className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-[#dcdcdc]"
@@ -591,10 +824,14 @@ const ComplaintStats = () => {
             의 민원 통계
           </p>
           <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
-          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+          <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center border border-red">
             <div className="mb-10 md:mb-5">
-              <TimeSlotBarChart
-                data={chartData.timeSlotData}
+              <SimpleTimeSlotChart
+                data={
+                  selectedAreas.length > 0
+                    ? regionTimePeriodsData
+                    : chartData.timeSlotData
+                }
                 colors={
                   selectedTrashType &&
                   selectedTrashType !== '전체통계' &&
@@ -604,7 +841,7 @@ const ComplaintStats = () => {
                 }
               />
             </div>
-            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
+            <div className="flex flex-col items-center md:gap-y-3 w-[95%] ">
               <div className="flex justify-between md:inline">
                 <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
                   가장 많은 민원이 들어온 시간대
@@ -635,8 +872,12 @@ const ComplaintStats = () => {
           <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
           <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
             <div className="md:mb-0 mb-5">
-              <WeekDayBarChart
-                data={chartData.weekdayData}
+              <SimpleWeekdayChart
+                data={
+                  selectedAreas.length > 0
+                    ? regionDaysData
+                    : chartData.weekdayData
+                }
                 colors={
                   selectedTrashType &&
                   selectedTrashType !== '전체통계' &&
@@ -646,7 +887,7 @@ const ComplaintStats = () => {
                 }
               />
             </div>
-            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5">
+            <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
               <div className="flex justify-between md:inline">
                 <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
                   가장 많은 민원이 들어온 요일
@@ -667,17 +908,23 @@ const ComplaintStats = () => {
           </div>
         </section>
 
-        {isLoading && selectedTrashType && selectedTrashType !== '전체통계' && (
+        {(isLoading || regionLoading) && (
           <div className="flex justify-center items-center p-2">
             <div className="text-sm text-gray-600">
-              {selectedTrashType} 통계를 불러오는 중...
+              {selectedAreas.length > 0
+                ? `${selectedAreas.join(', ')} 구역 통계를 불러오는 중...`
+                : selectedTrashType && selectedTrashType !== '전체통계'
+                  ? `${selectedTrashType} 통계를 불러오는 중...`
+                  : '통계를 불러오는 중...'}
             </div>
           </div>
         )}
 
-        {error && (
+        {(error || regionError) && (
           <div className="flex justify-center items-center p-4">
-            <div className="text-sm text-red-600">오류: {error}</div>
+            <div className="text-sm text-red-600">
+              오류: {error || regionError}
+            </div>
           </div>
         )}
       </div>

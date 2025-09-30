@@ -1,26 +1,15 @@
-import React, { lazy, Suspense, useState } from 'react';
+import React, { memo, Suspense, useCallback, useMemo, useState } from 'react';
+
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 import type { BarChartProps } from '@/types/stats';
-
-// Dynamic imports for Recharts components to enable tree shaking
-const Bar = lazy(() =>
-  import('recharts').then((module) => ({ default: module.Bar }))
-);
-const BarChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.BarChart }))
-);
-const CartesianGrid = lazy(() =>
-  import('recharts').then((module) => ({ default: module.CartesianGrid }))
-);
-const ResponsiveContainer = lazy(() =>
-  import('recharts').then((module) => ({ default: module.ResponsiveContainer }))
-);
-const XAxis = lazy(() =>
-  import('recharts').then((module) => ({ default: module.XAxis }))
-);
-const YAxis = lazy(() =>
-  import('recharts').then((module) => ({ default: module.YAxis }))
-);
 
 // Custom TimeSlotTooltip Component
 interface TimeSlotToolTipProps {
@@ -80,25 +69,60 @@ const TimeSlotToolTip = ({ active, payload }: TimeSlotToolTipProps) => {
   return null;
 };
 
-export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
+const WeekDayBarChartComponent: React.FC<BarChartProps> = ({
+  data,
+  colors,
+}) => {
   const [hoveredIndex, setHoveredIndex] = useState<number>(0);
 
-  // 데이터에서 카테고리 키들을 추출 (time 제외)
-  const categories = Object.keys(data[0] || {}).filter((key) => key !== 'time');
+  // 데이터에서 카테고리 키들을 추출 (time 제외) - 메모화
+  const categories = useMemo(
+    () =>
+      data && data.length > 0
+        ? Object.keys(data[0] || {}).filter((key) => key !== 'time')
+        : [],
+    [data]
+  );
 
-  // 현재 호버된 인덱스에 따른 툴팁 데이터 생성
-  const currentTooltipData = categories.map((category, index) => {
-    const value = Number(data[hoveredIndex]?.[category] || 0);
-    return {
-      dataKey: category,
-      value: value, // 0이어도 명시적으로 표시
-      color: colors[index % colors.length],
-      payload: {
-        time: data[hoveredIndex]?.time || '월요일',
-        [category]: value,
-      },
-    };
-  });
+  // 현재 호버된 인덱스에 따른 툴팁 데이터 생성 - 메모화
+  const currentTooltipData = useMemo(
+    () =>
+      categories.map((category, index) => {
+        const value = Number(data?.[hoveredIndex]?.[category] || 0);
+        return {
+          dataKey: category,
+          value: value, // 0이어도 명시적으로 표시
+          color: colors[index % colors.length],
+          payload: {
+            time: data?.[hoveredIndex]?.time || '월요일',
+            [category]: value,
+          },
+        };
+      }),
+    [categories, data, hoveredIndex, colors]
+  );
+
+  // 마우스 이벤트 핸들러 최적화
+  const handleMouseEnter = useCallback(
+    (event: { payload?: { time?: string } }) => {
+      const dataIndex =
+        data?.findIndex((item) => item.time === event.payload?.time) ?? -1;
+      setHoveredIndex((prev) => {
+        const newIndex = dataIndex >= 0 ? dataIndex : 0;
+        return prev !== newIndex ? newIndex : prev;
+      });
+    },
+    [data]
+  );
+
+  // 데이터 유효성 검사
+  if (!data || data.length === 0) {
+    return (
+      <div className="h-96 w-full md:w-[600px] flex items-center justify-center">
+        <div className="text-gray-500">표시할 데이터가 없습니다.</div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-96 w-full md:w-[600px] flex flex-col items-center justify-center md:flex-row mt-1 md:mt-16">
@@ -110,43 +134,38 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
             </div>
           }
         >
-          <ResponsiveContainer
-            width="100%"
-            height="100%"
-            className="xxxs:scale-[75%] xxs:scale-[82%] xs:scale-[85%] md:scale-100 md:ml-0 min-h-80"
-          >
-            <BarChart
-              width={1200}
-              height={300}
-              data={data}
-              margin={{
-                top: 0,
-                right: 10,
-                left: -35,
-                bottom: 5,
-              }}
+          <div className="w-[320px] h-[320px]">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+              className="xxxs:scale-[75%] xxs:scale-[82%] xs:scale-[85%] md:scale-100 md:ml-0 min-h-80"
             >
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="time" type="category" />
-              <YAxis />
-              {categories.map((category, index) => (
-                <Bar
-                  key={category}
-                  dataKey={category}
-                  stackId="a"
-                  barSize={40}
-                  radius={[0, 0, 0, 0]}
-                  fill={colors[index % colors.length]}
-                  onMouseEnter={(event) => {
-                    const dataIndex = data.findIndex(
-                      (item) => item.time === event.payload?.time
-                    );
-                    setHoveredIndex(dataIndex >= 0 ? dataIndex : 0);
-                  }}
-                />
-              ))}
-            </BarChart>
-          </ResponsiveContainer>
+              <BarChart
+                data={data}
+                margin={{
+                  top: 0,
+                  right: 10,
+                  left: -35,
+                  bottom: 5,
+                }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="time" type="category" />
+                <YAxis />
+                {categories.map((category, index) => (
+                  <Bar
+                    key={category}
+                    dataKey={category}
+                    stackId="a"
+                    barSize={40}
+                    radius={[0, 0, 0, 0]}
+                    fill={colors[index % colors.length]}
+                    onMouseEnter={handleMouseEnter}
+                  />
+                ))}
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </Suspense>
       </div>
 
@@ -157,5 +176,8 @@ export const WeekDayBarChart: React.FC<BarChartProps> = ({ data, colors }) => {
     </div>
   );
 };
+
+// Memoized component to prevent infinite loops
+export const WeekDayBarChart = memo(WeekDayBarChartComponent);
 
 export default WeekDayBarChart;

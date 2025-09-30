@@ -60,7 +60,7 @@ export const useComplaints = (dateRange?: DateRange, category?: string) => {
 
   useEffect(() => {
     loadComplaints(dateRange, category);
-  }, [dateRange, category, loadComplaints]);
+  }, [dateRange, category]);
 
   const getComplaintById = useCallback(async (id: string) => {
     setIsLoading(true);
