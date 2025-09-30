@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
+import type { DateRange } from 'react-day-picker';
+
 import { complaintService } from '@/services/complaintService';
 import type { Complaint } from '@/types/complaint';
-import type { DateRange } from 'react-day-picker';
 
 // Map English filter IDs to Korean category names for API
 const mapCategoryToKorean = (categoryId: string): string => {
@@ -27,20 +28,87 @@ export const useMapComplaints = (
   const [isLoading, setIsLoading] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  // Helper function to fetch all complaints and handle common logic
+  const fetchAllComplaints = useCallback(async (): Promise<Complaint[]> => {
+    const allData = await complaintService.getComplaintsByCategoryAndOrDates(
+      undefined,
+      undefined
+    );
+    return allData.sort((a, b) => b.id - a.id);
+  }, []);
+
+  // Helper function to handle empty category response
+  const handleEmptyCategoryResponse = useCallback(
+    async (koreanCategory: string) => {
+      window.alert(`${koreanCategory} 카테고리의 민원이 없습니다.`);
+
+      try {
+        const sortedAllData = await fetchAllComplaints();
+        setComplaints(sortedAllData);
+
+        // Reset category state to "all" when showing all pins
+        if (onCategoryReset) {
+          onCategoryReset();
+        }
+      } catch (fallbackError) {
+        console.error('Failed to fetch all complaints:', fallbackError);
+        setComplaints([]);
+      }
+    },
+    [fetchAllComplaints, onCategoryReset]
+  );
+
+  // Helper function to handle category-specific errors
+  const handleCategoryError = useCallback(
+    async (currentCategory: string, koreanCategory: string) => {
+      if (currentCategory === 'bad') {
+        window.alert('반복민원 데이터를 불러오는데 실패했습니다.');
+        setComplaints([]);
+      } else {
+        window.alert(`${koreanCategory} 카테고리의 민원이 없습니다.`);
+
+        try {
+          const sortedAllData = await fetchAllComplaints();
+          setComplaints(sortedAllData);
+
+          // Reset category state to "all" when showing all pins
+          if (onCategoryReset) {
+            onCategoryReset();
+          }
+        } catch (fallbackError) {
+          console.error('Failed to fetch all complaints:', fallbackError);
+          setComplaints([]);
+        }
+      }
+    },
+    [fetchAllComplaints, onCategoryReset]
+  );
+
   const loadComplaints = useCallback(
     async (currentCategory?: string, currentDateRange?: DateRange) => {
       setIsLoading(true);
       setFetchError(null);
-      try {
-        const koreanCategory =
-          currentCategory && currentCategory !== 'all'
-            ? mapCategoryToKorean(currentCategory)
-            : undefined;
 
-        const data = await complaintService.getComplaintsByCategoryAndOrDates(
-          currentDateRange,
-          koreanCategory
-        );
+      // Cache Korean category mapping to avoid redundant calls
+      const koreanCategory = currentCategory
+        ? mapCategoryToKorean(currentCategory)
+        : undefined;
+
+      try {
+        let data: Complaint[];
+
+        if (currentCategory === 'bad') {
+          data = await complaintService.getComplaintsByNegs(currentDateRange);
+        } else {
+          const categoryForApi =
+            currentCategory && currentCategory !== 'all'
+              ? koreanCategory
+              : undefined;
+          data = await complaintService.getComplaintsByCategoryAndOrDates(
+            currentDateRange,
+            categoryForApi
+          );
+        }
 
         const sortedData = data.sort((a, b) => b.id - a.id);
 
@@ -53,57 +121,18 @@ export const useMapComplaints = (
         if (
           sortedData.length === 0 &&
           currentCategory &&
-          currentCategory !== 'all'
+          currentCategory !== 'all' &&
+          koreanCategory
         ) {
-          const koreanCategory = mapCategoryToKorean(currentCategory);
-          window.alert(`${koreanCategory} 카테고리의 민원이 없습니다.`);
-
-          try {
-            const allData =
-              await complaintService.getComplaintsByCategoryAndOrDates(
-                undefined,
-                undefined
-              );
-            const sortedAllData = allData.sort((a, b) => b.id - a.id);
-            setComplaints(sortedAllData);
-
-            // Reset category state to "all" when showing all pins
-            if (onCategoryReset) {
-              onCategoryReset();
-            }
-            return;
-          } catch (fallbackError) {
-            console.error('Failed to fetch all complaints:', fallbackError);
-            setComplaints([]);
-            return;
-          }
+          await handleEmptyCategoryResponse(koreanCategory);
+          return;
         }
 
         setComplaints(sortedData);
       } catch (error) {
-        // Show alert for specific category errors
-        if (currentCategory && currentCategory !== 'all') {
-          const koreanCategory = mapCategoryToKorean(currentCategory);
-          window.alert(`${koreanCategory} 카테고리의 민원이 없습니다.`);
-
-          // Fetch all complaints when specific category fails
-          try {
-            const allData =
-              await complaintService.getComplaintsByCategoryAndOrDates(
-                undefined, // No date range
-                undefined // No category - get all
-              );
-            const sortedAllData = allData.sort((a, b) => b.id - a.id);
-            setComplaints(sortedAllData);
-
-            // Reset category state to "all" when showing all pins
-            if (onCategoryReset) {
-              onCategoryReset();
-            }
-          } catch (fallbackError) {
-            console.error('Failed to fetch all complaints:', fallbackError);
-            setComplaints([]);
-          }
+        // Handle category-specific errors
+        if (currentCategory && currentCategory !== 'all' && koreanCategory) {
+          await handleCategoryError(currentCategory, koreanCategory);
         } else {
           setComplaints([]);
         }
@@ -114,12 +143,12 @@ export const useMapComplaints = (
         setIsLoading(false);
       }
     },
-    [onCategoryReset]
+    [handleEmptyCategoryResponse, handleCategoryError]
   );
 
   useEffect(() => {
     loadComplaints(category, dateRange);
-  }, [category, dateRange]);
+  }, [category, dateRange, loadComplaints]);
 
   const getComplaintById = useCallback(async (id: string) => {
     setIsLoading(true);

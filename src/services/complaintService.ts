@@ -391,4 +391,61 @@ export const complaintService = {
       throw error;
     }
   },
+
+  async getComplaintsByNegs(dateRange?: DateRange): Promise<Complaint[]> {
+    try {
+      const dateRangeRequest = getDateRangeFromPicker(dateRange);
+
+      const requestBody = {
+        startDate: dateRangeRequest.startDate,
+        endDate: dateRangeRequest.endDate,
+      };
+
+      console.log('🌐 API Call: /map/getComplaintsByNegs', {
+        requestBody,
+        timestamp: new Date().toISOString(),
+      });
+
+      const response = await apiClient.post(
+        '/map/getComplaintsByNegs',
+        requestBody
+      );
+
+      console.log('📡 API Response for getComplaintsByNegs:', {
+        rawResponse: response.data,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Handle different possible response structures
+      let complaints: Complaint[] = [];
+
+      if (response.data.data && Array.isArray(response.data.data)) {
+        // If response has data array (map API structure: {message: 'OK', data: [...]})
+        complaints = response.data.data.map((item: unknown) => {
+          return convertMapComplaintToComplaint(item as MapComplaint);
+        });
+      } else if (Array.isArray(response.data)) {
+        complaints = response.data.map((item: unknown) => {
+          return convertMapComplaintToComplaint(item as MapComplaint);
+        });
+      } else {
+        console.error(
+          'Unexpected API response structure for getComplaintsByNegs:',
+          response.data
+        );
+        throw new Error('Unexpected API response structure');
+      }
+
+      console.log('🔄 Converted complaints for getComplaintsByNegs:', {
+        complaints,
+        count: complaints.length,
+        timestamp: new Date().toISOString(),
+      });
+
+      return complaints;
+    } catch (error) {
+      console.log('complaint service-getComplaintsByNegs:', error);
+      throw error;
+    }
+  },
 };

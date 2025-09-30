@@ -51,6 +51,7 @@ export interface ComplaintExtended {
 }
 
 export interface ComplaintApiResponse {
+  data?: ComplaintExtended[];
   message: string;
   complaints_extended: ComplaintExtended[];
 }
