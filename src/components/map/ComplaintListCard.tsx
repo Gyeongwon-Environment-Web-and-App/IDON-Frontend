@@ -56,17 +56,16 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
           className="rounded-lg w-28 xsm:w-32 md:w-40"
         />
         <div className="py-1">
-          <div className="flex gap-1">
+          <div className="flex gap-1 overflow-hidden">
             <div className="flex gap-1">
               {(() => {
-                // Get all unique categories from teams
                 const teamCategories =
                   complaint.teams
                     ?.map((team) => team.category)
                     ?.filter(
                       (category, index, array) =>
                         array.indexOf(category) === index
-                    ) // Remove duplicates
+                    )
                     ?.filter((category) => category !== 'manager') || [];
 
                 return teamCategories?.map((category, index) => {
@@ -82,11 +81,15 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               })()}
             </div>
             {complaint.source.bad ? (
-              <img src={bad} alt="반복민원 태그" className="w-12 md:w-14" />
+              <img
+                src={bad}
+                alt="반복민원 태그"
+                className="w-12 md:w-14 -ml-1"
+              />
             ) : (
               ''
             )}
-            <p className="font-semibold text-sm md:text-base truncate">
+            <p className="font-semibold text-sm md:text-base truncate min-w-0 flex-1">
               {complaint.content || `${complaint.address.slice(7)} 민원`}
             </p>
           </div>

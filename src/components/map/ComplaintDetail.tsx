@@ -15,6 +15,7 @@ import food from '../../assets/icons/categories/tags/food.svg';
 import general from '../../assets/icons/categories/tags/general.svg';
 import other from '../../assets/icons/categories/tags/other.svg';
 import recycle from '../../assets/icons/categories/tags/recycle.svg';
+import bad from '../../assets/icons/categories/tags/repeat.svg';
 import attentionRed from '../../assets/icons/common/attention_red.svg';
 import fix from '../../assets/icons/common/fix.svg';
 import greenCircle from '../../assets/icons/map_card/green_circle.svg';
@@ -306,12 +307,6 @@ const ComplaintDetail: React.FC = () => {
                 );
 
                 return teamCategories?.map((category, index) => {
-                  console.log(
-                    'Rendering category:',
-                    category,
-                    'at index:',
-                    index
-                  );
                   return (
                     <img
                       key={index}
@@ -322,8 +317,17 @@ const ComplaintDetail: React.FC = () => {
                   );
                 });
               })()}
+              {selectedComplaint?.source.bad ? (
+                <img
+                  src={bad}
+                  alt="반복민원 태그"
+                  className="w-14 md:w-16"
+                />
+              ) : (
+                ''
+              )}
             </div>
-            <p className="text-xl font-semibold">
+            <p className="text-xl font-semibold truncate">
               {selectedComplaint?.content ||
                 `${selectedComplaint?.address.slice(7)} 민원`}
             </p>

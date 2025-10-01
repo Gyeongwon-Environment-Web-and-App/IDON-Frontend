@@ -17,7 +17,11 @@
     "format:check": "prettier --check .",
     "lighthouse": "lighthouse http://localhost:5173 --config-path ./lighthouse.config.js --output html --output-path ./lighthouse-report.html --chrome-flags=\"--headless\"",
     "lighthouse:mobile": "lighthouse http://localhost:5173 --config-path ./lighthouse.config.js --output html --output-path ./lighthouse-mobile-report.html --chrome-flags=\"--headless\" --form-factor=mobile --throttling-method=devtools",
-    "perf:test": "npm run build && npm run preview & sleep 5 && npm run lighthouse && npm run lighthouse:mobile && pkill -f \"vite preview\""
+    "perf:test": "npm run build && npm run preview & sleep 5 && npm run lighthouse && npm run lighthouse:mobile && pkill -f \"vite preview\"",
+    "build:android": "npm run build && npx cap sync android && npx cap build android",
+    "build:ios": "npm run build && npx cap sync ios && npx cap build ios",
+    "build:release:android": "npm run build && npx cap sync android && cd android && ./gradlew assembleRelease",
+    "build:release:ios": "npm run build && npx cap sync ios && npx cap build ios --prod"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.2",

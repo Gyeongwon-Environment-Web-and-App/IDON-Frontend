@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
 
@@ -25,7 +25,7 @@ const ComplaintManage = () => {
   const { logout } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
-  const [createdComplaintId, setCreatedComplaintId] = useState<number>();
+  const lastCreatedComplaintIdRef = useRef<number | undefined>(undefined);
 
   // Get form data from Zustand store
   const { formData, resetForm } = useComplaintFormStore();
@@ -142,8 +142,10 @@ const ComplaintManage = () => {
       const response = await apiClient.post('/complaint/create', complaintData);
 
       console.log('민원 제출 성공:', response.data);
-      setCreatedComplaintId(response.data.id);
 
+      const newComplaintId = response.data.complaint.id;
+      console.log('newComplaintId:', newComplaintId);
+      lastCreatedComplaintIdRef.current = newComplaintId;
       setIsPopupOpen(true);
     } catch (error) {
       console.error('민원 제출 실패:', error);
@@ -167,7 +169,18 @@ const ComplaintManage = () => {
             setIsPopupOpen(false);
             resetForm();
             setShowConfirm(false);
-            navigate(`/map/overview/complaints/${createdComplaintId}`);
+
+            // Use the ref value for immediate access to the complaint ID
+            const complaintId = lastCreatedComplaintIdRef.current;
+            console.log(complaintId);
+            if (complaintId) {
+              navigate(`/map/overview/complaints/${complaintId}`);
+            } else {
+              console.error(
+                'Complaint ID is undefined, redirecting to table view'
+              );
+              navigate('/map/overview');
+            }
           }}
           onSecondClick={() => {
             setIsPopupOpen(false);
