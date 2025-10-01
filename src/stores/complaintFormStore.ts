@@ -5,6 +5,7 @@ import apiClient from '@/lib/api';
 
 import {
   type Complaint,
+  type ComplaintExtended,
   type ComplaintFormData,
   type DriverData,
   type DriverDataResponse,
@@ -46,7 +47,7 @@ interface ComplaintFormState {
   resetDriverData: () => void;
 
   // Edit mode actions
-  populateFormForEdit: (complaintData: Complaint) => void;
+  populateFormForEdit: (complaintData: Complaint | ComplaintExtended) => void;
 }
 
 // Step 2: Initial form data
@@ -114,8 +115,16 @@ export const useComplaintFormStore = create<ComplaintFormState>()((set) => ({
   // Edit mode actions
   populateFormForEdit: (complaintData) =>
     set(() => {
+      // Handle both Complaint and ComplaintExtended types
+      const address =
+        'address' in complaintData
+          ? typeof complaintData.address === 'string'
+            ? complaintData.address
+            : complaintData.address?.address || ''
+          : '';
+
       const formData = {
-        address: complaintData.address || '',
+        address: address,
         datetime: complaintData.datetime || new Date().toISOString(),
         categories: complaintData.category ? [complaintData.category] : [],
         type: complaintData.type || '',
