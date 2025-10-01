@@ -10,7 +10,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useComplaintCharts } from '@/hooks/useComplaintCharts';
 import { useComplaintFilters } from '@/hooks/useComplaintFilters';
-import { useInitialStatsForPies } from '@/hooks/useInitialStats';
+import { useInitialStats } from '@/hooks/useInitialStats';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 
@@ -92,7 +92,7 @@ const ComplaintStats = () => {
     dateRange !== undefined;
 
   // Fetch initial pies from server (categories and regions)
-  const { categoryPie, regionPie, daysBar } = useInitialStatsForPies({
+  const { categoryPie, regionPie, daysBar, posNegPie } = useInitialStats({
     dateRange,
     selectedAreas,
   });
@@ -447,13 +447,13 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length > 0 ? regionPosNegData : chartData.complaintData).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length > 0 ? regionPosNegData : posNegPie).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
                   {(selectedAreas.length > 0
                     ? regionPosNegData
-                    : chartData.complaintData
+                    : posNegPie
                   ).map((item) => (
                     <span
                       key={item.name}
@@ -468,7 +468,7 @@ const ComplaintStats = () => {
                   data={
                     selectedAreas.length > 0
                       ? regionPosNegData
-                      : chartData.complaintData
+                      : posNegPie
                   }
                   colors={complaintDataColors}
                 />
@@ -476,7 +476,7 @@ const ComplaintStats = () => {
               <div className="flex flex-col gap-2 md:w-[40%] w-[100%]">
                 {(selectedAreas.length > 0
                   ? regionPosNegData
-                  : chartData.complaintData
+                  : posNegPie
                 ).map((item) => (
                   <div
                     key={item.name}

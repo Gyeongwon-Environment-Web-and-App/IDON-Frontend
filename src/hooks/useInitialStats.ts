@@ -16,11 +16,13 @@ interface UseInitialStatsForPiesResult {
   categoryPie: PieDatum[];
   regionPie: PieDatum[];
   daysBar: BarChartItem[];
+  posNegPie: PieDatum[];
   loading: boolean;
   error: string | null;
   rawCategories: Record<string, { count: number }> | null;
   rawRegions: Record<string, { count: number }> | null;
   rawDays: Record<string, { count: number }> | null;
+  rawPosNeg: { pos: number; neg: number } | null;
 }
 
 const DEFAULT_CATEGORIES = ['일반', '재활용', '음식물', '기타'];
@@ -39,13 +41,14 @@ const filterOutParentAreas = (areas: string[]): string[] => {
   return areas.filter((area) => !PARENT_AREAS.includes(area));
 };
 
-export function useInitialStatsForPies({
+export function useInitialStats({
   dateRange,
   selectedAreas,
 }: UseInitialStatsForPiesParams): UseInitialStatsForPiesResult {
   const [categoryPie, setCategoryPie] = useState<PieDatum[]>([]);
   const [regionPie, setRegionPie] = useState<PieDatum[]>([]);
   const [daysBar, setDaysBar] = useState<BarChartItem[]>([]);
+  const [posNegPie, setPosNegPie] = useState<PieDatum[]>([]);
   const [rawCategories, setRawCategories] = useState<Record<
     string,
     { count: number }
@@ -58,6 +61,10 @@ export function useInitialStatsForPies({
     string,
     { count: number }
   > | null>(null);
+  const [rawPosNeg, setRawPosNeg] = useState<{
+    pos: number;
+    neg: number;
+  } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -76,35 +83,30 @@ export function useInitialStatsForPies({
       setLoading(true);
       setError(null);
       try {
-        const [categoriesResp, regionsResp, daysResp] = await Promise.all([
-          statisticsService.getAllByCategories(DEFAULT_CATEGORIES, dateRange),
-          statisticsService.getAllByRegions(regionsPayload, dateRange),
-          statisticsService.getAllByDays(dateRange),
-        ]);
+        const [categoriesResp, regionsResp, daysResp, posNegResp] =
+          await Promise.all([
+            statisticsService.getAllByCategories(DEFAULT_CATEGORIES, dateRange),
+            statisticsService.getAllByRegions(regionsPayload, dateRange),
+            statisticsService.getAllByDays(dateRange),
+            statisticsService.getAllByPosNeg(dateRange),
+          ]);
 
         if (!isMounted) return;
 
         const catData = categoriesResp.data || {};
         const regData = regionsResp.data || {};
         const daysData = daysResp.data || {};
+        const posNegData = posNegResp || { pos: 0, neg: 0 };
 
         setRawCategories(catData);
         setRawRegions(regData);
         setRawDays(daysData);
-
-        setCategoryPie(
-          Object.entries(catData).map(([name, v]) => ({
-            name,
-            value: Number(v?.count ?? 0),
-          }))
-        );
+        setRawPosNeg(posNegData);
 
         const regionArray = Object.entries(regData).map(([name, v]) => ({
           name,
           value: Number(v?.count ?? 0),
         }));
-
-        // Sort regions according to the request payload order (regionsPayload)
         const order = regionsPayload;
         const orderedRegionArray = regionArray.sort((a, b) => {
           const ai = order.indexOf(a.name);
@@ -113,16 +115,25 @@ export function useInitialStatsForPies({
           const bx = bi === -1 ? Number.MAX_SAFE_INTEGER : bi;
           return ax - bx;
         });
-
-        setRegionPie(orderedRegionArray);
-
         const dayNames = ['월요일', '화요일', '수요일', '목요일', '금요일'];
         const daysArray = Object.entries(daysData).map(([dayNum, v]) => ({
           time: dayNames[parseInt(dayNum) - 1] || `Day ${dayNum}`,
           count: Number(v?.count ?? 0),
         }));
 
+        setCategoryPie(
+          Object.entries(catData).map(([name, v]) => ({
+            name,
+            value: Number(v?.count ?? 0),
+          }))
+        );
+        setRegionPie(orderedRegionArray);
         setDaysBar(daysArray);
+        setPosNegPie([
+          { name: '일반 민원', value: posNegData.pos },
+          { name: '반복 민원', value: posNegData.neg },
+        ]);
+
       } catch (err: unknown) {
         if (!isMounted) return;
         const msg =
@@ -143,10 +154,12 @@ export function useInitialStatsForPies({
     categoryPie,
     regionPie,
     daysBar,
+    posNegPie,
     loading,
     error,
     rawCategories,
     rawRegions,
     rawDays,
+    rawPosNeg,
   };
 }

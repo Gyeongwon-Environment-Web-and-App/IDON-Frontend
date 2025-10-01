@@ -268,4 +268,23 @@ export const statisticsService = {
       throw error;
     }
   },
+
+  async getAllByPosNeg(
+    dateRange?: DateRange
+  ): Promise<{ pos: number; neg: number }> {
+    try {
+      const { startDate, endDate } = getDateRangeFromPicker(dateRange);
+      const response = await apiClient.post<{
+        message: string;
+        data: { pos: number; neg: number };
+      }>('/stat/all_by_positives_negatives', {
+        startDate,
+        endDate,
+      });
+      return response.data.data;
+    } catch (error) {
+      console.error('statsService-getAllByPosNeg:', error);
+      throw error;
+    }
+  },
 };
