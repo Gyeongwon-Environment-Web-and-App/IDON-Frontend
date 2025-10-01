@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "vercel-build": "npm run build",
     "eject": "react-scripts eject",
     "cap:sync": "npx cap sync",
     "cap:open:ios": "npx cap open ios",
@@ -43,6 +44,7 @@
     "react-router-dom": "^7.6.3",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
+    "vercel": "^48.1.6",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
