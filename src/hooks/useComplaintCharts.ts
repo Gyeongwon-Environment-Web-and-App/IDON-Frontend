@@ -1,6 +1,9 @@
 import { useMemo } from 'react';
 
-import type { TransformedStatisticsData } from '@/types/statistics';
+import type {
+  TimePeriodByDayResponse,
+  TransformedStatisticsData,
+} from '@/types/statistics';
 import type { BarChartItem } from '@/types/stats';
 import {
   getHybridChartData,
@@ -13,6 +16,8 @@ import {
   transformRegionTimePeriodsToBarChartData,
 } from '@/utils/regionStatsTransformers';
 import { transformTimePeriodByDayData } from '@/utils/statTimeByDay';
+
+import type { RegionStatisticsData } from './useRegionStatistics';
 
 // Enhanced color system with fallbacks
 const ColorMappings = {
@@ -105,10 +110,10 @@ const highestComplaintTime = (data: BarChartItem[]) => {
 
 interface UseComplaintChartsParams {
   transformedData: TransformedStatisticsData | null;
-  regionData: any;
+  regionData: RegionStatisticsData;
   selectedAreas: string[];
   selectedTrashType: string;
-  timePeriodByDayData: any;
+  timePeriodByDayData: TimePeriodByDayResponse | null;
   selectedWeekday: string;
 }
 
@@ -164,6 +169,18 @@ export const useComplaintCharts = ({
     return [];
   }, [timePeriodByDayData, selectedWeekday]);
 
+  const trashTypeWeekdayData = useMemo(() => {
+    if (
+      transformedData &&
+      selectedTrashType &&
+      selectedTrashType !== '전체통계' &&
+      selectedTrashType !== '쓰레기 종류'
+    ) {
+      return transformedData.days;
+    }
+    return [];
+  }, [transformedData, selectedTrashType]);
+
   // 가장 많고 적은 민원 시간대 계산
   const timeStats = useMemo(() => {
     if (selectedAreas.length > 0) {
@@ -209,6 +226,7 @@ export const useComplaintCharts = ({
     regionTimePeriodsData,
     regionChartData,
     weekdayTimeSlotData,
+    trashTypeWeekdayData,
 
     // Stats
     timeStats,

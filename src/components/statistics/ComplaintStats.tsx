@@ -1,3 +1,5 @@
+import { useMemo } from 'react';
+
 import { AreaDropdown } from '@/components/ui/AreaDropdown';
 import { Button } from '@/components/ui/button';
 import {
@@ -61,6 +63,7 @@ const ComplaintStats = () => {
     // regionDaysData,
     regionTimePeriodsData,
     weekdayTimeSlotData,
+    trashTypeWeekdayData,
     timeStats,
     // weekdayStats,
     // complaintTypeColors,
@@ -93,6 +96,17 @@ const ComplaintStats = () => {
     dateRange,
     selectedAreas,
   });
+
+  const displayDaysData = useMemo(() => {
+    if (
+      trashTypeWeekdayData.length > 0 &&
+      selectedTrashType !== '쓰레기 종류' &&
+      selectedTrashType !== '전체통계'
+    ) {
+      return trashTypeWeekdayData;
+    }
+    return daysBar;
+  }, [trashTypeWeekdayData, daysBar, selectedTrashType]);
 
   return (
     <div className="w-[100%] h-screen">
@@ -331,7 +345,7 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${categoryPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="text-center md:w-[4rem] px-0 flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
@@ -379,7 +393,7 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${regionPie.reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-no-wrap items-center mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="flex flex-col gap-2 mr-2 mt-2 md:mr-10 md:mt-4">
@@ -433,7 +447,7 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length > 0 ? regionPosNegData : chartData.complaintData).reduce((sum, item) => sum + Number(item.value || 0), 0)}건`}</h1>
             <div className="flex flex-wrap md:flex-nowrap items-center gap-4 mt-2 w-full">
               <div className="md:w-[60%] w-[100%] flex">
                 <div className="inline-flex flex-col gap-2 md:mr-10 text-center mt-4">
@@ -495,7 +509,16 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${timeStats.totalComplaints}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${(selectedAreas.length >
+            0
+              ? regionTimePeriodsData
+              : chartData.timeSlotData
+            ).reduce((sum, item) => {
+              const totalTimeComplaints = Object.keys(item)
+                .filter((key) => key !== 'time')
+                .reduce((sum, key) => sum + Number(item[key]), 0);
+              return sum + totalTimeComplaints;
+            }, 0)}건`}</h1>
             <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
               <div className="mb-10 md:mb-5">
                 <SimpleTimeSlotChart
@@ -534,7 +557,7 @@ const ComplaintStats = () => {
             </div>
           </section>
         )}
-        {showFirstPieChart && selectedWeekday === '전체 요일' && (
+        {selectedWeekday === '전체 요일' && (
           <section className="mt-7 md:mt-10">
             <p className="font-semibold text-8d8d8d">
               최근{' '}
@@ -543,10 +566,18 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${daysBar.reduce((sum, item) => sum + Number(item.count || 0), 0)}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${displayDaysData.reduce((sum, item) => sum + Number(item.count || 0), 0)}건`}</h1>
             <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
               <div className="md:mb-0 mb-5">
-                <SimpleWeekdayChart data={daysBar} colors={['#59B9FF']} />
+                <SimpleWeekdayChart
+                  data={displayDaysData}
+                  colors={
+                    selectedTrashType !== '쓰레기 종류' &&
+                    selectedTrashType !== '전체통계'
+                      ? [getTrashTypeColor(selectedTrashType)]
+                      : ['#59B9FF']
+                  }
+                />
               </div>
               <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
                 <div className="flex justify-between md:inline">
@@ -554,9 +585,9 @@ const ComplaintStats = () => {
                     가장 많은 민원이 들어온 요일
                   </p>
                   <p className="text-black font-semibold text-sm md:text-3xl mb-3">
-                    {daysBar.length > 0
+                    {displayDaysData.length > 0
                       ? (() => {
-                          const maxItem = daysBar.reduce((max, item) =>
+                          const maxItem = displayDaysData.reduce((max, item) =>
                             Number(item.count || 0) > Number(max.count || 0)
                               ? item
                               : max
@@ -571,9 +602,9 @@ const ComplaintStats = () => {
                     가장 적은 민원이 들어온 요일
                   </p>
                   <p className="text-black font-semibold text-sm md:text-3xl">
-                    {daysBar.length > 0
+                    {displayDaysData.length > 0
                       ? (() => {
-                          const minItem = daysBar.reduce((min, item) =>
+                          const minItem = displayDaysData.reduce((min, item) =>
                             Number(item.count || 0) < Number(min.count || 0)
                               ? item
                               : min

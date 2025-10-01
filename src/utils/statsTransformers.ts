@@ -39,10 +39,22 @@ export const transformDaysToBarChartData = (
   const dayData = response.data[selectedCategory];
   const dayNames = ['월요일', '화요일', '수요일', '목요일', '금요일'];
 
-  return dayData.map((item, index) => ({
-    time: dayNames[index] || `Day ${index + 1}`,
-    [selectedCategory]: item.count,
-  }));
+  const dayMap = new Map();
+  dayNames.forEach((name, index) => {
+    dayMap.set(index + 1, { time: name, count: 0 });
+  });
+
+  dayData.forEach((item) => {
+    const dayIndex = parseInt(item.day);
+    if (dayMap.has(dayIndex)) {
+      dayMap.set(dayIndex, {
+        time: dayNames[dayIndex - 1],
+        count: item.count
+      });
+    }    
+  });
+
+  return Array.from(dayMap.values());
 };
 
 export const transformTimePeriodsToBarChartData = (
