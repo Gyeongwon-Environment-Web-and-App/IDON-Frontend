@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 
 import { statisticsService } from '@/services/statisticsService';
+import type { BarChartItem } from '@/types/stats';
 
 type PieDatum = { name: string; value: number };
 
@@ -14,11 +15,12 @@ interface UseInitialStatsForPiesParams {
 interface UseInitialStatsForPiesResult {
   categoryPie: PieDatum[];
   regionPie: PieDatum[];
+  daysBar: BarChartItem[];
   loading: boolean;
   error: string | null;
-  // Reserved for future charts to reuse same fetch window
   rawCategories: Record<string, { count: number }> | null;
   rawRegions: Record<string, { count: number }> | null;
+  rawDays: Record<string, { count: number }> | null;
 }
 
 const DEFAULT_CATEGORIES = ['일반', '재활용', '음식물', '기타'];
@@ -31,12 +33,19 @@ const DEFAULT_REGIONS = [
   '방학3동',
 ];
 
+const PARENT_AREAS = ['쌍문동', '방학동'];
+
+const filterOutParentAreas = (areas: string[]): string[] => {
+  return areas.filter((area) => !PARENT_AREAS.includes(area));
+};
+
 export function useInitialStatsForPies({
   dateRange,
   selectedAreas,
 }: UseInitialStatsForPiesParams): UseInitialStatsForPiesResult {
   const [categoryPie, setCategoryPie] = useState<PieDatum[]>([]);
   const [regionPie, setRegionPie] = useState<PieDatum[]>([]);
+  const [daysBar, setDaysBar] = useState<BarChartItem[]>([]);
   const [rawCategories, setRawCategories] = useState<Record<
     string,
     { count: number }
@@ -45,14 +54,20 @@ export function useInitialStatsForPies({
     string,
     { count: number }
   > | null>(null);
+  const [rawDays, setRawDays] = useState<Record<
+    string,
+    { count: number }
+  > | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const regionsPayload = useMemo(() => {
-    return selectedAreas && selectedAreas.length > 0
-      ? // Normalize possible names like '쌍문 1동' -> '쌍문1동'
-        selectedAreas.map((name) => name.replace(/\s+/g, ''))
-      : DEFAULT_REGIONS;
+    if (selectedAreas && selectedAreas.length > 0) {
+      // '쌍문 1동' -> '쌍문1동'
+      const filteredAreas = filterOutParentAreas(selectedAreas);
+      return filteredAreas.map((name) => name.replace(/\s+/g, ''));
+    }
+    return DEFAULT_REGIONS;
   }, [selectedAreas]);
 
   useEffect(() => {
@@ -61,18 +76,21 @@ export function useInitialStatsForPies({
       setLoading(true);
       setError(null);
       try {
-        const [categoriesResp, regionsResp] = await Promise.all([
+        const [categoriesResp, regionsResp, daysResp] = await Promise.all([
           statisticsService.getAllByCategories(DEFAULT_CATEGORIES, dateRange),
           statisticsService.getAllByRegions(regionsPayload, dateRange),
+          statisticsService.getAllByDays(dateRange),
         ]);
 
         if (!isMounted) return;
 
         const catData = categoriesResp.data || {};
         const regData = regionsResp.data || {};
+        const daysData = daysResp.data || {};
 
         setRawCategories(catData);
         setRawRegions(regData);
+        setRawDays(daysData);
 
         setCategoryPie(
           Object.entries(catData).map(([name, v]) => ({
@@ -97,6 +115,14 @@ export function useInitialStatsForPies({
         });
 
         setRegionPie(orderedRegionArray);
+
+        const dayNames = ['월요일', '화요일', '수요일', '목요일', '금요일'];
+        const daysArray = Object.entries(daysData).map(([dayNum, v]) => ({
+          time: dayNames[parseInt(dayNum) - 1] || `Day ${dayNum}`,
+          count: Number(v?.count ?? 0),
+        }));
+
+        setDaysBar(daysArray);
       } catch (err: unknown) {
         if (!isMounted) return;
         const msg =
@@ -113,5 +139,14 @@ export function useInitialStatsForPies({
     };
   }, [dateRange, dateRange?.from, dateRange?.to, regionsPayload]);
 
-  return { categoryPie, regionPie, loading, error, rawCategories, rawRegions };
+  return {
+    categoryPie,
+    regionPie,
+    daysBar,
+    loading,
+    error,
+    rawCategories,
+    rawRegions,
+    rawDays,
+  };
 }

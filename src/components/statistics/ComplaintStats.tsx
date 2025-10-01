@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useComplaintCharts } from '@/hooks/useComplaintCharts';
 import { useComplaintFilters } from '@/hooks/useComplaintFilters';
-import { useInitialStatsForPies } from '@/hooks/useInitialStatsForPies';
+import { useInitialStatsForPies } from '@/hooks/useInitialStats';
 import { Download, Printer } from '@/lib/icons';
 import type { BarChartItem } from '@/types/stats';
 
@@ -32,7 +32,6 @@ const formatDateRange = (from: Date, to: Date): string => {
 };
 
 const ComplaintStats = () => {
-  // Use the extracted hooks for filters and charts
   const {
     dateRange,
     setDateRange,
@@ -59,11 +58,11 @@ const ComplaintStats = () => {
   const {
     chartData,
     regionPosNegData,
-    regionDaysData,
+    // regionDaysData,
     regionTimePeriodsData,
     weekdayTimeSlotData,
     timeStats,
-    weekdayStats,
+    // weekdayStats,
     // complaintTypeColors,
     // dongComplaintColors,
     complaintDataColors,
@@ -83,8 +82,14 @@ const ComplaintStats = () => {
     selectedWeekday,
   });
 
+  const hasUserInteracted =
+    selectedTrashType !== '쓰레기 종류' ||
+    selectedAreas.length > 0 ||
+    selectedWeekday !== '전체 요일' ||
+    dateRange !== undefined;
+
   // Fetch initial pies from server (categories and regions)
-  const { categoryPie, regionPie } = useInitialStatsForPies({
+  const { categoryPie, regionPie, daysBar } = useInitialStatsForPies({
     dateRange,
     selectedAreas,
   });
@@ -302,7 +307,7 @@ const ComplaintStats = () => {
             </Button>
           </div>
         </header>
-        <div className="mb-4 rounded-lg flex justify-between border border-red">
+        <div className="mb-4 rounded-lg flex justify-between">
           <div>
             <p className="text-base text-gray-600 mb-1">
               현재 조회 중인 지역은
@@ -481,7 +486,7 @@ const ComplaintStats = () => {
             </div>
           </section>
         )}
-        {selectedWeekday === '전체 요일' && (
+        {selectedWeekday === '전체 요일' && hasUserInteracted && (
           <section className="mt-10">
             <p className="font-semibold text-8d8d8d">
               최근{' '}
@@ -529,7 +534,7 @@ const ComplaintStats = () => {
             </div>
           </section>
         )}
-        {selectedWeekday === '전체 요일' && (
+        {showFirstPieChart && selectedWeekday === '전체 요일' && (
           <section className="mt-7 md:mt-10">
             <p className="font-semibold text-8d8d8d">
               최근{' '}
@@ -538,23 +543,10 @@ const ComplaintStats = () => {
                 : formatDate(new Date())}
               의 민원 통계
             </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${weekdayStats.totalComplaints}건`}</h1>
+            <h1 className="font-bold text-xl md:text-3xl mt-1">{`총 ${daysBar.reduce((sum, item) => sum + Number(item.count || 0), 0)}건`}</h1>
             <div className="w-full md:-mt-20 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
               <div className="md:mb-0 mb-5">
-                <SimpleWeekdayChart
-                  data={
-                    selectedAreas.length > 0
-                      ? regionDaysData
-                      : chartData.weekdayData
-                  }
-                  colors={
-                    selectedTrashType &&
-                    selectedTrashType !== '전체통계' &&
-                    selectedTrashType !== '쓰레기 종류'
-                      ? [getTrashColor(selectedTrashType)]
-                      : Object.values(ColorMappings.trash)
-                  }
-                />
+                <SimpleWeekdayChart data={daysBar} colors={['#59B9FF']} />
               </div>
               <div className="flex flex-col items-center md:gap-y-3 w-[95%] md:ml-5 mt-10 md:mt-0">
                 <div className="flex justify-between md:inline">
@@ -562,7 +554,16 @@ const ComplaintStats = () => {
                     가장 많은 민원이 들어온 요일
                   </p>
                   <p className="text-black font-semibold text-sm md:text-3xl mb-3">
-                    {weekdayStats.maxTime} ({weekdayStats.maxComplaints}건)
+                    {daysBar.length > 0
+                      ? (() => {
+                          const maxItem = daysBar.reduce((max, item) =>
+                            Number(item.count || 0) > Number(max.count || 0)
+                              ? item
+                              : max
+                          );
+                          return `${maxItem.time} (${maxItem.count}건)`;
+                        })()
+                      : 'N/A'}
                   </p>
                 </div>
                 <div className="flex justify-between md:inline">
@@ -570,7 +571,16 @@ const ComplaintStats = () => {
                     가장 적은 민원이 들어온 요일
                   </p>
                   <p className="text-black font-semibold text-sm md:text-3xl">
-                    {weekdayStats.minTime} ({weekdayStats.minComplaints}건)
+                    {daysBar.length > 0
+                      ? (() => {
+                          const minItem = daysBar.reduce((min, item) =>
+                            Number(item.count || 0) < Number(min.count || 0)
+                              ? item
+                              : min
+                          );
+                          return `${minItem.time} (${minItem.count}건)`;
+                        })()
+                      : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -578,49 +588,50 @@ const ComplaintStats = () => {
           </section>
         )}
 
-        {/* Dedicated weekday time slot section - only shows when specific weekday is selected */}
-        {selectedWeekday !== '전체 요일' && weekdayTimeSlotData.length > 0 && (
-          <section className="mt-10">
-            <p className="font-semibold text-8d8d8d">
-              {selectedWeekday} 시간대별 민원 통계
-            </p>
-            <h1 className="font-bold text-xl md:text-3xl mt-1">
-              {selectedWeekday} 민원 분포
-            </h1>
-            <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
-              <div className="mb-10 md:mb-5">
-                <SimpleTimeSlotChart
-                  data={weekdayTimeSlotData}
-                  colors={
-                    selectedTrashType &&
-                    selectedTrashType !== '전체통계' &&
-                    selectedTrashType !== '쓰레기 종류'
-                      ? [getTrashTypeColor(selectedTrashType)]
-                      : ['#59B9FF'] // Default blue color
-                  }
-                />
-              </div>
-              <div className="flex flex-col items-center md:gap-y-3 w-[95%]">
-                <div className="flex justify-between md:inline">
-                  <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
-                    {selectedWeekday} 시간대별 민원 현황
-                  </p>
+        {selectedWeekday !== '전체 요일' &&
+          weekdayTimeSlotData.length > 0 &&
+          hasUserInteracted && (
+            <section className="mt-10">
+              <p className="font-semibold text-8d8d8d">
+                {selectedWeekday} 시간대별 민원 통계
+              </p>
+              <h1 className="font-bold text-xl md:text-3xl mt-1">
+                {selectedWeekday} 민원 분포
+              </h1>
+              <div className="mt-5 flex flex-wrap md:flex-nowrap items-center md:justify-between justify-center">
+                <div className="mb-10 md:mb-5">
+                  <SimpleTimeSlotChart
+                    data={weekdayTimeSlotData}
+                    colors={
+                      selectedTrashType &&
+                      selectedTrashType !== '전체통계' &&
+                      selectedTrashType !== '쓰레기 종류'
+                        ? [getTrashTypeColor(selectedTrashType)]
+                        : ['#59B9FF'] // Default blue color
+                    }
+                  />
                 </div>
-                <div className="text-center">
-                  <p className="text-black font-semibold text-sm md:text-lg">
-                    총{' '}
-                    {weekdayTimeSlotData.reduce(
-                      (sum: number, item: BarChartItem) =>
-                        sum + Number(item.count),
-                      0
-                    )}
-                    건
-                  </p>
+                <div className="flex flex-col items-center md:gap-y-3 w-[95%]">
+                  <div className="flex justify-between md:inline">
+                    <p className="text-[#585858] font-semibold text-sm md:text-xl mr-4 md:mr-0">
+                      {selectedWeekday} 시간대별 민원 현황
+                    </p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-black font-semibold text-sm md:text-lg">
+                      총{' '}
+                      {weekdayTimeSlotData.reduce(
+                        (sum: number, item: BarChartItem) =>
+                          sum + Number(item.count),
+                        0
+                      )}
+                      건
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
 
         {(isLoading || regionLoading || timePeriodByDayLoading) && (
           <div className="flex justify-center items-center p-2">

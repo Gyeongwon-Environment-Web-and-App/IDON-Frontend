@@ -9,6 +9,14 @@ import type {
   RegionTimePeriodsResponse,
 } from '@/services/regionStatisticsService';
 
+// Parent areas that should be filtered out from API calls
+const PARENT_AREAS = ['쌍문동', '방학동'];
+
+// Utility function to filter out parent areas from selected areas
+const filterOutParentAreas = (areas: string[]): string[] => {
+  return areas.filter((area) => !PARENT_AREAS.includes(area));
+};
+
 export interface RegionStatisticsData {
   posNeg: RegionPosNegResponse | null;
   days: RegionDaysResponse | null;
@@ -34,13 +42,16 @@ export const useRegionStatistics = () => {
       setError(null);
 
       try {
+        // Filter out parent areas before making API calls
+        const filteredAreas = filterOutParentAreas(selectedAreas);
+
         // Fetch all three API endpoints in parallel
         const [posNegResponse, daysResponse, timePeriodsResponse] =
           await Promise.all([
-            regionStatisticsService.getRegionPosNeg(selectedAreas, dateRange),
-            regionStatisticsService.getRegionDays(selectedAreas, dateRange),
+            regionStatisticsService.getRegionPosNeg(filteredAreas, dateRange),
+            regionStatisticsService.getRegionDays(filteredAreas, dateRange),
             regionStatisticsService.getRegionTimePeriods(
-              selectedAreas,
+              filteredAreas,
               selectedTimeline,
               dateRange
             ),

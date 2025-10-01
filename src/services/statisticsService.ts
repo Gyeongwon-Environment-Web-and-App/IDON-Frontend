@@ -2,6 +2,7 @@ import type { DateRange } from 'react-day-picker';
 
 import apiClient from '@/lib/api';
 import {
+  type AllByDaysResponse,
   type CategoriesDaysRequest,
   type CategoriesDaysResponse,
   type CategoriesPosNegRequest,
@@ -53,7 +54,7 @@ export const statisticsService = {
         endDate,
         categories,
       });
-      console.log('statsService-getAllByCategories:', response.data)
+      console.log('statsService-getAllByCategories:', response.data);
       return response.data;
     } catch (error) {
       console.error('카테고리 전체 통계 불러오기 실패', error);
@@ -76,7 +77,7 @@ export const statisticsService = {
         regions,
       });
 
-      console.log('statsService-getAllByRegions:', response.data)
+      console.log('statsService-getAllByRegions:', response.data);
       return response.data;
     } catch (error) {
       console.error('지역 전체 통계 불러오기 실패', error);
@@ -245,6 +246,25 @@ export const statisticsService = {
       return response.data;
     } catch (error) {
       console.log('statService-getTimePeriodByDay:', error);
+      throw error;
+    }
+  },
+
+  async getAllByDays(dateRange?: DateRange): Promise<AllByDaysResponse> {
+    try {
+      const { startDate, endDate } = getDateRangeFromPicker(dateRange);
+      const response = await apiClient.post<AllByDaysResponse>(
+        '/stat/all_by_days',
+        {
+          startDate,
+          endDate,
+          days: [1, 2, 3, 4, 5],
+        }
+      );
+      console.log('statsService-getAllByDays:', response.data);
+      return response.data;
+    } catch (error) {
+      console.error('요일별 전체 통계 불러오기 실패', error);
       throw error;
     }
   },

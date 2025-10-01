@@ -91,3 +91,16 @@ export interface TimePeriodResponseFormat {
   hour: string;
   count: number;
 }
+
+export interface AllByDaysRequest {
+  startDate: string;
+  endDate: string;
+  days: number[];
+}
+
+export interface AllByDaysResponse {
+  message: string;
+  data: {
+    [day: string]: { count: number };
+  }
+}
