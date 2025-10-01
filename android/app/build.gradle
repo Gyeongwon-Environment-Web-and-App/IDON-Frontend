@@ -4,7 +4,7 @@ android {
     namespace "com.example.app"
     compileSdk rootProject.ext.compileSdkVersion
     defaultConfig {
-        applicationId "com.kyoungwon.app"
+        applicationId "com.kyoungwon.app" 
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
@@ -16,26 +16,30 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            // Signing config will be added when you create your keystore
+            if (file('release-key.keystore').exists()) {
+                storeFile file('release-key.keystore')
+                storePassword System.getenv("KEYSTORE_PASSWORD")
+                keyAlias System.getenv("KEY_ALIAS")
+                keyPassword System.getenv("KEY_PASSWORD")
+            }
+        }
+    }
+    
     buildTypes {
         release {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfig signingConfigs.release
+            if (file('release-key.keystore').exists()) {
+                signingConfig signingConfigs.release
+            }
         }
         debug {
             minifyEnabled false
             debuggable true
-        }
-    }
-    
-    signingConfigs {
-        release {
-            // Signing config will be added when you create your keystore
-            storeFile file('release-key.keystore')
-            storePassword System.getenv("KEYSTORE_PASSWORD")
-            keyAlias System.getenv("KEY_ALIAS")
-            keyPassword System.getenv("KEY_PASSWORD")
         }
     }
 }
