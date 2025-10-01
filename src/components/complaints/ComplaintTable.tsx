@@ -208,7 +208,7 @@ const ComplaintTable: React.FC = () => {
             ?.filter((team) => ALLOWED_CATEGORIES.includes(team.category))
             .map((team) => team.category) || [];
         return (
-          <div className="text-center">
+          <div className="text-center truncate">
             {filteredCategories.length > 0
               ? filteredCategories.join(', ')
               : '상성 없음'}
@@ -221,13 +221,13 @@ const ComplaintTable: React.FC = () => {
       header: '주소',
       cell: ({ row }) => {
         const address: string = row.original.address;
-        const shortAddress = address.split(' ').slice(-2).join(' '); // Get last two parts
+        const shortAddress = address.split(' ').slice(-2).join(' ');
 
         return (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="text-center cursor-pointer">{shortAddress}</div>
+                <div className="text-center cursor-pointer truncate">{shortAddress}</div>
               </TooltipTrigger>
               <TooltipContent>
                 <p className="max-w-md break-words text-base text-black">
@@ -280,7 +280,7 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'teams',
       header: '담당 기사',
       cell: ({ row }) => (
-        <div className="text-center">
+        <div className="text-center truncate">
           {row.original.teams[0]?.drivers[0]?.name || '담당자 없음'}
         </div>
       ),
@@ -396,7 +396,6 @@ const ComplaintTable: React.FC = () => {
     const filtered = storeComplaints.filter((complaint) => {
       const searchLower = searchValue.toLowerCase();
 
-      // Check if search term matches "담당자 없음" for complaints with no drivers
       const hasNoDrivers =
         complaint.teams.length === 0 ||
         complaint.teams.every((team) => team.drivers.length === 0);
