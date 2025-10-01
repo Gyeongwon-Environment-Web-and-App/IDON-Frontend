@@ -30,6 +30,7 @@ export const complaints: Complaint[] = [
       },
     ],
     status: true,
+    bad: false,
     user: {
       name: '김민수',
       serial_no: '1234',
@@ -71,6 +72,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: true,
+    bad: true,
     user: {
       name: '이서준',
       serial_no: '5678',
@@ -119,6 +121,7 @@ export const complaints: Complaint[] = [
       },
     ],
     status: true,
+    bad: false,
     user: {
       name: '박지훈',
       serial_no: '9012',
@@ -167,6 +170,7 @@ export const complaints: Complaint[] = [
       },
     ],
     status: false,
+    bad: true,
     user: {
       name: '최윤아',
       serial_no: '3456',
@@ -208,6 +212,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: false,
+    bad: false,
     user: {
       name: '정하늘',
       serial_no: '7890',
@@ -249,6 +254,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: false,
+    bad: false,
     user: {
       name: '한지호',
       serial_no: '1111',
@@ -290,6 +296,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: false,
+    bad: false,
     user: {
       name: '서지민',
       serial_no: '2222',
@@ -331,6 +338,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: true,
+    bad: false,
     user: {
       name: '김아무개',
       serial_no: '3333',
@@ -372,6 +380,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: true,
+    bad: false,
     user: {
       name: '이영희',
       serial_no: '4444',
@@ -413,6 +422,7 @@ export const complaints: Complaint[] = [
     },
     uploadedFiles: [],
     status: true,
+    bad: true,
     user: {
       name: '박철수',
       serial_no: '5555',

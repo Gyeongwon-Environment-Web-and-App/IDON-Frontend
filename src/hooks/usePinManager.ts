@@ -122,9 +122,9 @@ export const usePinManager = ({
       const kakaoMaps = getKakaoMaps();
       if (!kakaoMaps) return null;
 
-      const imageSrc = getPinImageSrc(pin.category, pin.isRepeat);
+      const imageSrc = getPinImageSrc([pin.category], pin.isRepeat);
       const config =
-        PIN_CONFIGS[getCategoryKey(pin.category)] || PIN_CONFIGS.general;
+        PIN_CONFIGS[getCategoryKey([pin.category])] || PIN_CONFIGS.general;
 
       const imageSize = new kakaoMaps.Size(
         config.size.width,
@@ -147,7 +147,7 @@ export const usePinManager = ({
       });
 
       // Get all valid categories (excluding 'manager')
-      const validCategories = pin.category.filter((cat) => cat !== 'manager');
+      const validCategories = pin.category !== 'manager' ? [pin.category] : [];
       const categoryIconsHtml = validCategories
         .map(
           (tag) =>

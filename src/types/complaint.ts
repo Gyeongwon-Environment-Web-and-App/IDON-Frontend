@@ -126,7 +126,7 @@ export interface Complaint {
   id: number;
   address: string;
   datetime: string;
-  categories: string[];
+  category: string; // Changed from categories array to single category string
   type: string;
   content: string;
   route: string;
@@ -150,6 +150,7 @@ export interface Complaint {
   }>;
   // Fields from API response
   status: boolean;
+  bad: boolean;
   user: User;
   teams: Team[];
 }

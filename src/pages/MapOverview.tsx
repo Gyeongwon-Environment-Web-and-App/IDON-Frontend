@@ -64,7 +64,7 @@ export default function MapOverview() {
         id: 'pin-dummy-test',
         lat: 37.668875236,
         lng: 127.044191742,
-        category: ['일반', '기타'],
+        category: '일반',
         isRepeat: true,
         address: '서울특별시 도봉구 도봉로150다길 3',
         complaintId: 9999,

@@ -55,8 +55,6 @@ const ComplaintDetail: React.FC = () => {
   const { complaintId } = useParams<{ complaintId: string }>();
   const [addressFrequency, setAddressFrequency] = useState<number | null>(null);
   const [phoneFrequency, setPhoneFrequency] = useState<number | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [frequencyLoading, setFrequencyLoading] = useState(false);
   const navigate = useNavigate();
 
   const {
@@ -154,7 +152,7 @@ const ComplaintDetail: React.FC = () => {
         setSelectedComplaint(null);
         const complaint = await getComplaintById(currentComplaintId);
         console.log('ComplaintDetail - Fetched complaint data:', complaint);
-        console.log('ComplaintDetail - Categories:', complaint.categories);
+        console.log('ComplaintDetail - Category:', complaint.category);
         setSelectedComplaint(complaint);
       } catch (error) {
         console.error('Failed to fetch complaint:', error);
@@ -183,7 +181,7 @@ const ComplaintDetail: React.FC = () => {
 
   useEffect(() => {
     if (selectedComplaint) {
-      setFrequencyLoading(true);
+      // setFrequencyLoading(true);
       fetchAddressFrequency(selectedComplaint.address);
 
       const phoneNo = selectedComplaint.source?.phone_no;
@@ -191,7 +189,7 @@ const ComplaintDetail: React.FC = () => {
         fetchPhoneFrequency(phoneNo);
       }
 
-      setFrequencyLoading(false);
+      // setFrequencyLoading(false);
     }
   }, [selectedComplaint]);
 
@@ -288,27 +286,41 @@ const ComplaintDetail: React.FC = () => {
                   selectedComplaint
                 );
                 console.log(
-                  'ComplaintDetail - selectedComplaint.categories:',
-                  selectedComplaint?.categories
+                  'ComplaintDetail - selectedComplaint.teams:',
+                  selectedComplaint?.teams
                 );
-                return selectedComplaint?.categories
-                  ?.filter((category) => category !== 'manager')
-                  ?.map((category, index) => {
-                    console.log(
-                      'Rendering category:',
-                      category,
-                      'at index:',
-                      index
-                    );
-                    return (
-                      <img
-                        key={index}
-                        src={getCategoryIcon(category)}
-                        alt={`${category} 카테고리`}
-                        className="w-14 h-6"
-                      />
-                    );
-                  });
+
+                // Get all unique categories from teams
+                const teamCategories =
+                  selectedComplaint?.teams
+                    ?.map((team) => team.category)
+                    ?.filter(
+                      (category, index, array) =>
+                        array.indexOf(category) === index
+                    ) // Remove duplicates
+                    ?.filter((category) => category !== 'manager') || [];
+
+                console.log(
+                  'ComplaintDetail - teamCategories:',
+                  teamCategories
+                );
+
+                return teamCategories?.map((category, index) => {
+                  console.log(
+                    'Rendering category:',
+                    category,
+                    'at index:',
+                    index
+                  );
+                  return (
+                    <img
+                      key={index}
+                      src={getCategoryIcon(category)}
+                      alt={`${category} 카테고리`}
+                      className="w-14 h-6"
+                    />
+                  );
+                });
               })()}
             </div>
             <p className="text-xl font-semibold">

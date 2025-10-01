@@ -72,9 +72,9 @@ const convertComplaintExtendedToComplaint = (
     id: complaintExtended.id,
     address: complaintExtended.address.address,
     datetime: complaintExtended.datetime,
-    categories: complaintExtended.teams
-      .map((team) => team.category)
-      .filter(Boolean) || ['기타'],
+    category:
+      complaintExtended.teams.map((team) => team.category).filter(Boolean)[0] ||
+      '기타',
     type: complaintExtended.type,
     content: complaintExtended.content,
     route: complaintExtended.route,
@@ -86,6 +86,7 @@ const convertComplaintExtendedToComplaint = (
     },
     uploadedFiles: [], // Not provided in API response
     status: complaintExtended.status,
+    bad: complaintExtended.bad,
     user: complaintExtended.user,
     teams: complaintExtended.teams,
   };
@@ -106,7 +107,8 @@ const convertComplaintForCategoryToComplaint = (
     id: complaintForCategory.id,
     address: complaintForCategory.address.address,
     datetime: complaintForCategory.datetime,
-    categories: complaintForCategory.teams.map((team) => team.category),
+    category:
+      complaintForCategory.teams.map((team) => team.category)[0] || '기타',
     type: complaintForCategory.type,
     content: complaintForCategory.content,
     route: complaintForCategory.route,
@@ -116,6 +118,7 @@ const convertComplaintForCategoryToComplaint = (
     },
     uploadedFiles: [],
     status: complaintForCategory.status,
+    bad: complaintForCategory.bad,
     user: {
       name: complaintForCategory.user.name,
       serial_no: complaintForCategory.user.serial_no,
@@ -140,7 +143,7 @@ const convertMapComplaintToComplaint = (
     id: mapComplaint.id,
     address: mapComplaint.address,
     datetime: mapComplaint.datetime,
-    categories: [mapComplaint.category],
+    category: mapComplaint.category,
     type: mapComplaint.type,
     content: mapComplaint.content,
     route: mapComplaint.route,
@@ -153,6 +156,7 @@ const convertMapComplaintToComplaint = (
     },
     uploadedFiles: [],
     status: mapComplaint.status === 'true',
+    bad: mapComplaint.bad,
     user: {
       name: '',
       serial_no: '',
@@ -256,7 +260,7 @@ export const complaintService = {
 
       console.log('🔄 Converted complaint for getById:', {
         convertedComplaint,
-        categories: convertedComplaint.categories,
+        category: convertedComplaint.category,
         timestamp: new Date().toISOString(),
       });
 

@@ -15,7 +15,6 @@ export default defineConfig({
         manualChunks: {
           // Separate vendor chunks for better caching
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
-          'chart-vendor': ['recharts'],
           'ui-vendor': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
@@ -40,7 +39,6 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router-dom',
-      'recharts',
       '@tanstack/react-table',
       'react-day-picker',
       'date-fns',

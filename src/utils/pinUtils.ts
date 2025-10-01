@@ -35,10 +35,13 @@ export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   },
 };
 
-export const getPinImageSrc = (categories: string[], isRepeat: boolean): string => {
+export const getPinImageSrc = (
+  categories: string[],
+  isRepeat: boolean
+): string => {
   const basePath = '/src/assets/icons/pins/';
-  
-  const validCategories = categories.filter(cat => cat !== 'manager');
+
+  const validCategories = categories.filter((cat) => cat !== 'manager');
   const primaryCategory = validCategories[0] || '기타';
 
   const categoryMap: Record<string, string> = {
@@ -66,7 +69,7 @@ export const complaintToPinData = (complaint: Complaint): PinData => {
     id: `pin-${complaint.id}`,
     lat: hasValidCoordinates ? lat : 0,
     lng: hasValidCoordinates ? lng : 0,
-    category: complaint.categories || '기타',
+    category: complaint.category || '기타',
     isRepeat: complaint.source.bad,
     address: complaint.address,
     complaintId: complaint.id,
@@ -116,18 +119,18 @@ export const complaintToPinDataWithGroup = (
   const lng = complaint.coordinates?.longitude || 0;
 
   const hasValidCoordinates = isValidCoordinate(lat, lng);
-  const hasAnyBadComplaint = allComplaintsInGroup.some(c => c.source.bad);
+  const hasAnyBadComplaint = allComplaintsInGroup.some((c) => c.source.bad);
 
   return {
     id: `pin-${complaint.id}`,
     lat: hasValidCoordinates ? lat : 0,
     lng: hasValidCoordinates ? lng : 0,
-    category: complaint.categories || '기타',
+    category: complaint.category || '기타',
     isRepeat: hasAnyBadComplaint,
     address: complaint.address,
     complaintId: complaint.id,
     content: complaint.content,
     datetime: complaint.datetime,
     status: complaint.status,
-  }
-}
+  };
+};
