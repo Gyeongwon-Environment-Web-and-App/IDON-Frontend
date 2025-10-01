@@ -84,7 +84,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               <img
                 src={bad}
                 alt="반복민원 태그"
-                className="w-12 md:w-14 -ml-1"
+                className="w-12 md:w-14 -ml-1 md:ml-0"
               />
             ) : (
               ''
