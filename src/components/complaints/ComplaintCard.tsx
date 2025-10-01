@@ -104,23 +104,35 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
             <img src={attentionRed} alt="악성민원 태그" className="w-5" />
           )}
         </div>
-        <div className="flex font-bold text-lg">
-          <img
-            src={
-              complaint.teams[0].category === '재활용'
-                ? recycle
-                : complaint.teams[0].category === '음식물'
-                  ? food
-                  : complaint.teams[0].category === '기타'
-                    ? other
-                    : complaint.teams[0].category === '기타'
-                      ? general
-                      : ''
-            }
-            alt="쓰레기 상성 태그"
-            className="mr-2"
-          />
-          {truncateString(complaint.content, 14)}
+        <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1">
+            {complaint.teams.map((team, index) => {
+              const getCategoryIcon = (category: string) => {
+                switch (category) {
+                  case '재활용':
+                    return recycle;
+                  case '음식물':
+                    return food;
+                  case '기타':
+                    return other;
+                  default:
+                    return general;
+                }
+              };
+  
+              return (
+                <img
+                  key={index}
+                  src={getCategoryIcon(team.category)}
+                  alt={`${team.category} 태그`}
+                  className="w-12"
+                />
+              );
+            })}
+          </div>
+          <div className="flex font-bold text-lg ml-1">
+            {complaint.content ? truncateString(complaint.content, 14) : truncateString(complaint.address.slice(7), 14)}
+          </div>
         </div>
       </div>
       <div
