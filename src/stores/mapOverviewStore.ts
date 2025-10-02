@@ -42,7 +42,7 @@ interface MapOverviewState {
   // URL state management
   currentComplaintPath: string | null;
   lastComplaintListPath: string | null;
-  
+
   // New actions
   setCurrentComplaintPath: (path: string | null) => void;
   preserveCurrentPath: () => void;
@@ -61,8 +61,8 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       currentView: null,
       lastComplaintListPath: null,
       currentComplaintPath: null,
-      mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
-      mapZoom: 6,
+      mapCenter: { lat: 37.657463236, lng: 127.035542772 },
+      mapZoom: 5,
 
       // Actions
       setSelectedComplaintId: (id) => set({ selectedComplaintId: id }),
@@ -120,8 +120,9 @@ export const useMapOverviewStore = create<MapOverviewState>()(
 
       openComplaintList: () => {
         const state = get();
-        const targetPath = state.currentComplaintPath || '/map/overview/complaints';
-        
+        const targetPath =
+          state.currentComplaintPath || '/map/overview/complaints';
+
         set({
           selectedComplaintId: null,
           selectedComplaint: null,
@@ -129,7 +130,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           sidebarOpen: true,
           currentView: 'list',
         });
-        
+
         return targetPath;
       },
 
@@ -141,8 +142,8 @@ export const useMapOverviewStore = create<MapOverviewState>()(
           activeSidebar: null,
           currentView: null,
           lastComplaintListPath: null,
-          mapCenter: { lat: 37.6714001064975, lng: 127.041485813197 },
-          mapZoom: 6,
+          mapCenter: { lat: 37.657463236, lng: 127.035542772 },
+          mapZoom: 5,
         }),
     }),
     {

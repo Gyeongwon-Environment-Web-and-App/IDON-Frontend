@@ -36,8 +36,8 @@ interface SimpleKakaoMapProps {
 const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
   (
     {
-      center = { lat: 37.6714001064975, lng: 127.041485813197 },
-      zoom = 6,
+      center = { lat: 37.657463236, lng: 127.035542772 },
+      zoom = 5,
       className = 'w-full h-full',
       style,
       pins = [],
