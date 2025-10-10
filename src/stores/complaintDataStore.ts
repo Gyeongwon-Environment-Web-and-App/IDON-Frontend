@@ -230,7 +230,9 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
           setLoadingComplaints(true);
           setComplaintsError(null);
 
-          const response = await axios.get('/api/complaints');
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000'}/complaints`
+          );
           setComplaints(response.data);
         } catch (error) {
           const errorMessage =
@@ -265,7 +267,9 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
             return;
           }
 
-          const response = await axios.get('/api/areas');
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000'}/areas`
+          );
           const areas = response.data;
 
           setAreas(areas);
@@ -286,7 +290,10 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         try {
           setComplaintsError(null);
 
-          const response = await axios.post('/api/complaints', complaintData);
+          const response = await axios.post(
+            `${import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000'}/complaints`,
+            complaintData
+          );
           const newComplaint = response.data;
 
           addComplaint(newComplaint);
@@ -312,9 +319,12 @@ export const useComplaintDataStore = create<ComplaintDataState>()(
         }
 
         try {
-          const response = await axios.get(`/api/complaints/frequency`, {
-            params: { address },
-          });
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000'}/complaints/frequency`,
+            {
+              params: { address },
+            }
+          );
 
           const frequency = response.data.numberOfComplaints || 0;
           setAddressCache(`frequency-${address}`, frequency);
