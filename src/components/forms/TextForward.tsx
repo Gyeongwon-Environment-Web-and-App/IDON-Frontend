@@ -30,10 +30,13 @@ const TextForward: React.FC<TextForwardProps> = ({
     onChange(updated);
   };
 
-  const handleMobileClick = (option: string) => {
+  const handleMobileClick = (
+    option: string,
+    e?: React.MouseEvent<HTMLButtonElement | HTMLLabelElement>
+  ) => {
     // 이벤트 전파 중단
-    event?.preventDefault();
-    event?.stopPropagation();
+    e?.preventDefault();
+    e?.stopPropagation();
 
     handleCheckboxChange(option);
   };
@@ -52,7 +55,7 @@ const TextForward: React.FC<TextForwardProps> = ({
                   ? 'bg-lighter-green text-dark-gray'
                   : 'bg-white text-black'
               }`}
-              onClick={() => handleMobileClick(option)}
+              onClick={(e) => handleMobileClick(option, e)}
             >
               {option}
             </button>
