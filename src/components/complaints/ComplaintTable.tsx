@@ -490,25 +490,21 @@ const ComplaintTable: React.FC = () => {
     }
     setCurrentPage(page);
   };
-
   const handleFirstPage = () => {
     if (paginationInfo.totalPages > 0) {
       setCurrentPage(1);
     }
   };
-
   const handleLastPage = () => {
     if (paginationInfo.totalPages > 0) {
       setCurrentPage(paginationInfo.totalPages);
     }
   };
-
   const handlePrevPage = () => {
     if (paginationInfo.hasPrevPage) {
       setCurrentPage(currentPage - 1);
     }
   };
-
   const handleNextPage = () => {
     if (paginationInfo.hasNextPage) {
       setCurrentPage(currentPage + 1);
