@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create Axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || '/api/proxy',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -31,9 +31,20 @@ apiClient.interceptors.response.use(
   },
   (error) => {
     console.error('Response interceptor error:', error);
+    console.log('Error details:', {
+      status: error.response?.status,
+      url: error.config?.url,
+      method: error.config?.method,
+      token: localStorage.getItem('userToken') ? 'exists' : 'missing',
+      baseURL: error.config?.baseURL,
+    });
 
     // Handle 401 Unauthorized - redirect to login
-    if (error.response?.status === 401) {
+    // Only clear tokens and redirect if we actually have a token and get a real 401
+    if (error.response?.status === 401 && localStorage.getItem('userToken')) {
+      console.log(
+        '401 Unauthorized - clearing tokens and redirecting to login'
+      );
       localStorage.removeItem('userToken');
       localStorage.removeItem('userData');
       localStorage.removeItem('serial_no');
@@ -48,8 +59,29 @@ apiClient.interceptors.response.use(
       console.error('Network error - check server connection');
     }
 
+    // Handle CORS errors
+    if (error.code === 'ERR_CANCELED' || error.message?.includes('CORS')) {
+      console.error('CORS error - check server CORS configuration');
+    }
+
     return Promise.reject(error);
   }
 );
+
+// Utility function to get current API configuration
+export const getApiConfig = () => {
+  return {
+    baseURL: apiClient.defaults.baseURL,
+    timeout: apiClient.defaults.timeout,
+    hasToken: !!localStorage.getItem('userToken'),
+    token: localStorage.getItem('userToken') ? 'exists' : 'missing',
+  };
+};
+
+// Utility function to update base URL (for debugging)
+export const updateApiBaseURL = (newBaseURL: string) => {
+  apiClient.defaults.baseURL = newBaseURL;
+  console.log('API base URL updated to:', newBaseURL);
+};
 
 export default apiClient;
