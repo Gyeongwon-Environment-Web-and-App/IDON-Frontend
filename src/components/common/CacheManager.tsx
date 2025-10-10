@@ -1,23 +1,13 @@
 import React, { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-  clearServiceWorkerCache,
-  serviceWorkerManager,
-  unregisterServiceWorker,
-  updateServiceWorker,
-} from '@/lib/serviceWorker';
 
 interface CacheInfo {
-  isRegistered: boolean;
-  registration: ServiceWorkerRegistration | null;
   cacheNames: string[];
 }
 
 const CacheManager: React.FC = () => {
   const [cacheInfo, setCacheInfo] = useState<CacheInfo>({
-    isRegistered: false,
-    registration: null,
     cacheNames: [],
   });
   const [isLoading, setIsLoading] = useState(false);
@@ -27,9 +17,6 @@ const CacheManager: React.FC = () => {
   }, []);
 
   const updateCacheInfo = async () => {
-    const isRegistered = serviceWorkerManager.isRegistered();
-    const registration = serviceWorkerManager.getRegistration();
-
     let cacheNames: string[] = [];
     if ('caches' in window) {
       try {
@@ -40,8 +27,6 @@ const CacheManager: React.FC = () => {
     }
 
     setCacheInfo({
-      isRegistered,
-      registration,
       cacheNames,
     });
   };
@@ -49,7 +34,10 @@ const CacheManager: React.FC = () => {
   const handleClearCache = async () => {
     setIsLoading(true);
     try {
-      await clearServiceWorkerCache();
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map((name) => caches.delete(name)));
+      }
       await updateCacheInfo();
       alert('캐시가 성공적으로 삭제되었습니다.');
     } catch (error) {
@@ -57,39 +45,6 @@ const CacheManager: React.FC = () => {
       alert('캐시 삭제에 실패했습니다.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleUpdateServiceWorker = async () => {
-    setIsLoading(true);
-    try {
-      await updateServiceWorker();
-      alert('서비스 워커 업데이트가 요청되었습니다.');
-    } catch (error) {
-      console.error('Failed to update service worker:', error);
-      alert('서비스 워커 업데이트에 실패했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleUnregisterServiceWorker = async () => {
-    if (confirm('서비스 워커를 등록 해제하시겠습니까?')) {
-      setIsLoading(true);
-      try {
-        const result = await unregisterServiceWorker();
-        if (result) {
-          alert('서비스 워커가 성공적으로 등록 해제되었습니다.');
-          await updateCacheInfo();
-        } else {
-          alert('서비스 워커 등록 해제에 실패했습니다.');
-        }
-      } catch (error) {
-        console.error('Failed to unregister service worker:', error);
-        alert('서비스 워커 등록 해제에 실패했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
     }
   };
 
@@ -105,14 +60,8 @@ const CacheManager: React.FC = () => {
       <div className="space-y-2 mb-4">
         <div className="text-sm">
           <span className="font-medium">서비스 워커:</span>
-          <span
-            className={`ml-2 px-2 py-1 rounded text-xs ${
-              cacheInfo.isRegistered
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
-          >
-            {cacheInfo.isRegistered ? '등록됨' : '미등록'}
+          <span className="ml-2 px-2 py-1 rounded text-xs bg-red-100 text-red-800">
+            비활성화됨
           </span>
         </div>
 
@@ -141,24 +90,6 @@ const CacheManager: React.FC = () => {
           variant="outline"
         >
           {isLoading ? '처리 중...' : '캐시 삭제'}
-        </Button>
-
-        <Button
-          onClick={handleUpdateServiceWorker}
-          disabled={isLoading || !cacheInfo.isRegistered}
-          className="w-full text-sm"
-          variant="outline"
-        >
-          {isLoading ? '처리 중...' : '서비스 워커 업데이트'}
-        </Button>
-
-        <Button
-          onClick={handleUnregisterServiceWorker}
-          disabled={isLoading || !cacheInfo.isRegistered}
-          className="w-full text-sm"
-          variant="destructive"
-        >
-          {isLoading ? '처리 중...' : '서비스 워커 등록 해제'}
         </Button>
 
         <Button

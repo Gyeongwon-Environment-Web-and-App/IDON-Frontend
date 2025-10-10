@@ -2,11 +2,15 @@ import axios from 'axios';
 
 // Create Axios instance with base configuration
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224:3000',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://20.200.145.224',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
+  // Add HTTPS configuration for development with self-signed certificates
+  withCredentials: false,
+  // Disable service worker interference for API calls
+  adapter: 'xhr',
 });
 
 // Request interceptor - Add auth token to requests
@@ -56,12 +60,29 @@ apiClient.interceptors.response.use(
 
     // Handle network errors
     if (error.code === 'ERR_NETWORK') {
-      console.error('Network error - check server connection');
+      console.error(
+        'Network error - check server connection and HTTPS certificate'
+      );
+      // Additional logging for HTTPS issues
+      if (error.config?.baseURL?.includes('https://')) {
+        console.error(
+          'HTTPS connection failed - this might be due to SSL certificate issues'
+        );
+      }
     }
 
     // Handle CORS errors
     if (error.code === 'ERR_CANCELED' || error.message?.includes('CORS')) {
       console.error('CORS error - check server CORS configuration');
+    }
+
+    // Handle SSL/TLS errors
+    if (
+      error.message?.includes('certificate') ||
+      error.message?.includes('SSL') ||
+      error.message?.includes('TLS')
+    ) {
+      console.error('SSL/TLS error - check server certificate configuration');
     }
 
     return Promise.reject(error);

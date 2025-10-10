@@ -2,7 +2,6 @@ import { createRoot } from 'react-dom/client';
 
 import App from './App.tsx';
 import './index.css';
-import { registerServiceWorker } from './lib/serviceWorker';
 
 // Environment variable validation
 const validateEnvironmentVariables = () => {
@@ -30,7 +29,6 @@ const validateEnvironmentVariables = () => {
 // Validate environment variables before app initialization
 validateEnvironmentVariables();
 
-// Register service worker for caching and offline support
-registerServiceWorker();
+// Service worker removed to avoid HTTPS conflicts
 
 createRoot(document.getElementById('root')!).render(<App />);
