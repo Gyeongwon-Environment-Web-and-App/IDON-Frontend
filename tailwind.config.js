@@ -23,6 +23,7 @@ module.exports = {
         bababa: '#BABABA',
         a8a8a8: '#A8A8A8',
         a2a2a2: '#A2A2A2',
+        a5a5a5: '#A5A5A5',
         f0f0f0: '#F0F0F0',
         ebebeb: '#EBEBEB',
         '8d8d8d': '#8D8D8D',
