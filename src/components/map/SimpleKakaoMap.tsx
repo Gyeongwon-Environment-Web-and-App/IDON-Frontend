@@ -47,6 +47,48 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
     },
     ref
   ) => {
+    // Dummy pins for testing
+    const dummyPins: PinData[] = [
+      {
+        id: 'dummy-1',
+        lat: 37.656568679,
+        lng: 127.036094441,
+        category: '음식물',
+        isRepeat: false,
+        address: '서울 도봉구 도봉로129길 50',
+        complaintId: 1001,
+        content: '음식물 쓰레기 수거 요청',
+        datetime: '2024-01-15T10:30:00',
+        status: false,
+      },
+      {
+        id: 'dummy-2',
+        lat: 37.671638057,
+        lng: 127.040023393,
+        category: '재활용',
+        isRepeat: true,
+        address: '서울 도봉구 시루봉로 285',
+        complaintId: 1002,
+        content: '재활용품 수거 일정 문의',
+        datetime: '2025-10-9T14:20:00',
+        status: true,
+      },
+      {
+        id: 'dummy-3',
+        lat: 37.671638057,
+        lng: 127.040023393,
+        category: '일반',
+        isRepeat: false,
+        address: '서울 도봉구 시루봉로 285',
+        complaintId: 1003,
+        content: '일반 쓰레기 수거 요청',
+        datetime: '2025-10-10T09:15:00',
+        status: false,
+      },
+    ];
+
+    // Combine dummy pins with provided pins
+    const allPins = [...dummyPins, ...pins];
     const mapId = useId();
     const mapInstanceRef = useRef<KakaoMap | null>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -92,8 +134,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         if (!mapInstanceRef.current || !window.kakao) return null;
 
         try {
-          // Convert GeoJSON MultiPolygon coordinates to Kakao Maps format
-          // MultiPolygon structure: coordinates[0] = first polygon, coordinates[0][0] = first ring
           const coordinates = feature.geometry.coordinates[0][0];
 
           if (!coordinates || coordinates.length < 3) {
@@ -101,7 +141,6 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
             return null;
           }
 
-          // Convert coordinates: GeoJSON is [lng, lat], Kakao Maps is [lat, lng]
           const path = coordinates
             .map((coord) => {
               if (!Array.isArray(coord) || coord.length < 2) {
@@ -325,7 +364,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
 
     const { isGeocoding, clearMarkers } = usePinManager({
       mapInstance: mapInstanceRef.current,
-      pins,
+      pins: allPins,
       onPinClick,
       isLoaded,
     });

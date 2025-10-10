@@ -161,7 +161,7 @@ export const usePinManager = ({
         .join('');
 
       const iwContent =
-        '<div style="display: flex; flex-direction: column; padding: 12px; width: 350px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">' +
+        '<div style="display: flex; flex-direction: column; padding: 12px; width: 350px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);">' +
         '<div style="display: flex; gap: 8px; align-items: center; height: 30px;">' +
         categoryIconsHtml +
         (pin.isRepeat
