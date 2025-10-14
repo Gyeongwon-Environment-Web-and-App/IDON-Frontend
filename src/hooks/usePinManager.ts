@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
 import { formatDateTimeToKorean } from '@/utils/formatDate';
 import { batchGeocoding } from '@/utils/geocoding';
@@ -48,10 +49,20 @@ export const usePinManager = ({
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
 
+  const { selectedComplaintId, setIsGeocoding: setStoreIsGeocoding, setGeocodedPins: setStoreGeocodedPins } = useMapOverviewStore();
+
+  useEffect(() => {
+    setStoreIsGeocoding(isGeocoding);
+  }, [isGeocoding, setStoreIsGeocoding]);
+
+  useEffect(() => {
+    setStoreGeocodedPins(geocodedPins);
+  }, [geocodedPins, setStoreGeocodedPins]);
+
   // Create stable hash of pins to prevent unnecessary effect re-runs
   const pinsHash = useMemo(() => {
-    return JSON.stringify(
-      pins.map((p) => ({
+    return JSON.stringify({
+      pins: pins.map((p) => ({
         id: p.id,
         lat: p.lat,
         lng: p.lng,
@@ -62,9 +73,10 @@ export const usePinManager = ({
         content: p.content,
         datetime: p.datetime,
         complaintId: p.complaintId,
-      }))
-    );
-  }, [pins]);
+      })),
+      selectedComplaintId: selectedComplaintId,
+    });
+  }, [pins, selectedComplaintId]);
 
   // Type guards for Kakao Maps objects
   const isKakaoMarker = (
@@ -145,15 +157,20 @@ export const usePinManager = ({
       const teamCategories =
         pin.teams?.map((team) => team.category).filter(Boolean) || [];
       const imageSrc = getPinImageSrc(teamCategories, pin.isRepeat);
+      const isSelected = selectedComplaintId === pin.complaintId.toString();
       const config =
         PIN_CONFIGS[getCategoryKey(teamCategories)] || PIN_CONFIGS.general;
 
-      const imageSize = new kakaoMaps.Size(
-        config.size.width,
-        config.size.height
-      );
+      const size = isSelected
+        ? config.selectedSize || config.size
+        : config.size;
+      const offset = isSelected
+        ? config.selectedOffset || config.offset
+        : config.offset;
+
+      const imageSize = new kakaoMaps.Size(size.width, size.height);
       const imageOption = {
-        offset: new kakaoMaps.Point(config.offset.x, config.offset.y),
+        offset: new kakaoMaps.Point(offset.x, offset.y),
       };
 
       const markerImage = new kakaoMaps.MarkerImage(
@@ -269,7 +286,7 @@ export const usePinManager = ({
 
       return markerData;
     },
-    [onPinClick, mapInstance]
+    [onPinClick, mapInstance, selectedComplaintId]
   );
 
   // updatePins function removed - functionality moved to consolidated useEffect
@@ -382,6 +399,7 @@ export const usePinManager = ({
         return prevHash === newHash ? prevPins : validPins;
       });
 
+      setGeocodedPins(validPins);
       setIsGeocoding(false);
 
       // Create markers from the processed pins
@@ -397,7 +415,7 @@ export const usePinManager = ({
 
     processPinsAndCreateMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pinsHash, isLoaded]); // Removed mapInstance from deps to prevent infinite loops
+  }, [pinsHash, isLoaded]);
 
   return {
     isGeocoding,

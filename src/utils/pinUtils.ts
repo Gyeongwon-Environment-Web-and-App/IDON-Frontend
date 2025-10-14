@@ -2,7 +2,7 @@ import type { Complaint } from '@/types/complaint';
 import type { MapPinConfig, PinData } from '@/types/map';
 
 // Helper function to validate coordinates
-const isValidCoordinate = (lat: number, lng: number): boolean => {
+export const isValidCoordinate = (lat: number, lng: number): boolean => {
   return (
     lat !== 0 &&
     lng !== 0 &&
@@ -20,18 +20,26 @@ export const PIN_CONFIGS: Record<string, MapPinConfig> = {
   recycle: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
+    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedOffset: { x: 27, y: 67.5 },
   },
   food: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
+    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedOffset: { x: 27, y: 67.5 },
   },
   general: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
+    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedOffset: { x: 27, y: 67.5 },
   },
   others: {
     size: { width: 36, height: 45 },
     offset: { x: 18, y: 45 },
+    selectedSize: { width: 54, height: 67.5 }, // 1.5x larger
+    selectedOffset: { x: 27, y: 67.5 },
   },
 };
 

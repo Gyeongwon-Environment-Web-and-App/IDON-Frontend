@@ -14,6 +14,7 @@ import {
   complaintToPinDataWithGroup,
   getRepresentativeComplaint,
   groupComplaintsByAddress,
+  isValidCoordinate
 } from '@/utils/pinUtils';
 
 export default function MapOverview() {
@@ -37,6 +38,13 @@ export default function MapOverview() {
     openComplaintList,
     clearSelectedComplaint,
     setActiveSidebar,
+    selectedComplaintId,
+    selectedPinCoordinates,
+    centerMapOnSelectedPin,
+    setSelectedPinCoordinates,
+    centerMapOnSelectedPinWithRetry,
+    isGeocoding,
+    geocodedPins,
   } = useMapOverviewStore();
 
   // Callback to reset category to 'all'
@@ -89,8 +97,29 @@ export default function MapOverview() {
   //! 핀 클릭 이벤트
   const handlePinClick = (event: PinClickEvent) => {
     const { pin } = event;
+
+    setSelectedPinCoordinates({ lat: pin.lat, lng: pin.lng });
+
     navigate(`/map/overview/complaints/${pin.complaintId}`);
   };
+
+  useEffect(() => {
+    if (selectedComplaintId && selectedPinCoordinates) {
+      centerMapOnSelectedPinWithRetry();
+    }
+  }, [selectedComplaintId, selectedPinCoordinates, centerMapOnSelectedPinWithRetry])
+
+  useEffect(() => {
+    if (selectedComplaintId && !isGeocoding && geocodedPins.length > 0) {
+      // Retry centering when geocoding is complete
+      centerMapOnSelectedPinWithRetry();
+    }
+  }, [selectedComplaintId, isGeocoding, geocodedPins, centerMapOnSelectedPinWithRetry]);
+
+  const findPinCoordinatesByComplaintId = useCallback((complaintId: string) => {
+    const pin = pins.find(p => p.complaintId.toString() === complaintId);
+    return pin ? { lat: pin.lat, lng: pin.lng } : null;
+  }, [pins]);
 
   // Handle URL parameter changes and route-based navigation
   useEffect(() => {
@@ -103,6 +132,11 @@ export default function MapOverview() {
       openComplaintDetail(complaintId);
       setSidebarOpen(true);
       setActiveSidebar('complaint');
+
+      const pinCoordinates = findPinCoordinatesByComplaintId(complaintId);
+      if (pinCoordinates) {
+        setSelectedPinCoordinates(pinCoordinates);
+      }
     } else if (pathname.includes('/complaints') && !complaintId) {
       // Navigate to complaint list view
       setCurrentView('list');
@@ -115,6 +149,7 @@ export default function MapOverview() {
       clearSelectedComplaint();
       setSidebarOpen(false);
       setActiveSidebar(null);
+      setSelectedPinCoordinates(null);
     }
   }, [
     location.pathname,
@@ -126,7 +161,23 @@ export default function MapOverview() {
     clearSelectedComplaint,
     setSidebarOpen,
     setActiveSidebar,
+    setSelectedPinCoordinates,
+    findPinCoordinatesByComplaintId,
   ]);
+
+  useEffect(() => {
+    if (selectedComplaintId && geocodedPins.length > 0) {
+      // Check if we can now center on the selected pin
+      const selectedPin = geocodedPins.find(
+        pin => pin.complaintId.toString() === selectedComplaintId
+      );
+      
+      if (selectedPin && isValidCoordinate(selectedPin.lat, selectedPin.lng)) {
+        setSelectedPinCoordinates({ lat: selectedPin.lat, lng: selectedPin.lng });
+        centerMapOnSelectedPin();
+      }
+    }
+  }, [selectedComplaintId, geocodedPins, setSelectedPinCoordinates, centerMapOnSelectedPin]);
 
   // Handle sidebar change and sync with URL
   const handleSidebarChange = (isOpen: boolean) => {

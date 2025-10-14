@@ -153,7 +153,6 @@ const ComplaintDetail: React.FC = () => {
         setSelectedComplaint(null);
         const complaint = await getComplaintById(currentComplaintId);
         console.log('ComplaintDetail - Fetched complaint data:', complaint);
-        console.log('ComplaintDetail - Category:', complaint.category);
         setSelectedComplaint(complaint);
       } catch (error) {
         console.error('Failed to fetch complaint:', error);
@@ -171,7 +170,6 @@ const ComplaintDetail: React.FC = () => {
         try {
           const updatedComplaint = await getComplaintById(currentComplaintId);
           setSelectedComplaint(updatedComplaint);
-          console.log('민원 상태 업데이트&새로고침:', updatedComplaint.status);
         } catch (error) {
           console.error('민원 상태 업데이트&새로고침 실패:', error);
         }
@@ -282,15 +280,6 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-2 items-center">
             <div className="flex gap-1">
               {(() => {
-                console.log(
-                  'ComplaintDetail - selectedComplaint:',
-                  selectedComplaint
-                );
-                console.log(
-                  'ComplaintDetail - selectedComplaint.teams:',
-                  selectedComplaint?.teams
-                );
-
                 // Get all unique categories from teams
                 const teamCategories =
                   selectedComplaint?.teams
@@ -300,11 +289,6 @@ const ComplaintDetail: React.FC = () => {
                         array.indexOf(category) === index
                     ) // Remove duplicates
                     ?.filter((category) => category !== 'manager') || [];
-
-                console.log(
-                  'ComplaintDetail - teamCategories:',
-                  teamCategories
-                );
 
                 return teamCategories?.map((category, index) => {
                   return (

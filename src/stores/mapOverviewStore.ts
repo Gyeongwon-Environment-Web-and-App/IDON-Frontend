@@ -3,12 +3,21 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import type { Complaint } from '@/types/complaint';
+import type { PinData } from '@/types/map';
+
+// import { is } from 'date-fns/locale';
 
 // Define map overview state interface
 interface MapOverviewState {
   // Selected complaint state
   selectedComplaintId: string | null;
   selectedComplaint: Complaint | null;
+
+  selectedPinCoordinates: { lat: number; lng: number } | null;
+
+  // Geocoding state tracking
+  isGeocoding: boolean;
+  geocodedPins: PinData[];
 
   // Sidebar state
   sidebarOpen: boolean;
@@ -25,6 +34,17 @@ interface MapOverviewState {
   setActiveSidebar: (sidebar: 'complaint' | 'vehicle' | 'stats' | null) => void;
   setMapCenter: (center: { lat: number; lng: number }) => void;
   setMapZoom: (zoom: number) => void;
+  setSelectedPinCoordinates: (
+    coordinates: { lat: number; lng: number } | null
+  ) => void;
+
+  // Geocoding state actions
+  setIsGeocoding: (isGeocoding: boolean) => void;
+  setGeocodedPins: (pins: PinData[]) => void;
+
+  // Centering actions
+  centerMapOnSelectedPin: () => void;
+  centerMapOnSelectedPinWithRetry: () => void;
 
   // Helper actions
   clearSelectedComplaint: () => void;
@@ -49,6 +69,19 @@ interface MapOverviewState {
   restoreComplaintPath: () => string | null;
 }
 
+const isValidCoordinate = (lat: number, lng: number): boolean => {
+  return (
+    lat !== 0 &&
+    lng !== 0 &&
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180
+  );
+};
+
 // Create the map overview store
 export const useMapOverviewStore = create<MapOverviewState>()(
   persist(
@@ -64,11 +97,80 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       mapCenter: { lat: 37.657463236, lng: 127.035542772 },
       mapZoom: 5,
 
+      selectedPinCoordinates: null,
+      isGeocoding: false,
+      geocodedPins: [],
+
       // Actions
       setSelectedComplaintId: (id) => set({ selectedComplaintId: id }),
 
       setSelectedComplaint: (complaint) =>
         set({ selectedComplaint: complaint }),
+
+      setSelectedPinCoordinates: (coordinates) =>
+        set({ selectedPinCoordinates: coordinates }),
+
+      // Geocoding actions
+      setIsGeocoding: (isGeocoding) => set({ isGeocoding }),
+      setGeocodedPins: (pins) => set({ geocodedPins: pins }),
+
+      centerMapOnSelectedPin: () => {
+        const state = get();
+        if (state.selectedPinCoordinates) {
+          const { lat, lng } = state.selectedPinCoordinates;
+
+          if (isValidCoordinate(lat, lng)) {
+            set({
+              mapCenter: state.selectedPinCoordinates,
+              mapZoom: 5,
+            });
+          } else {
+            console.warn('Invalid pin coordinates - mapOverviewStore', {
+              lat,
+              lng,
+            });
+          }
+        }
+      },
+
+      centerMapOnSelectedPinWithRetry() {
+        const state = get();
+
+        if (state.isGeocoding) {
+          console.log('Geocoding in progress, will retry centering');
+          return;
+        }
+
+        if (state.selectedComplaintId && state.geocodedPins.length > 0) {
+          const selectedPin = state.geocodedPins.find(
+            (pin) => pin.complaintId.toString() === state.selectedComplaintId
+          );
+
+          if (
+            selectedPin &&
+            isValidCoordinate(selectedPin.lat, selectedPin.lng)
+          ) {
+            set({
+              mapCenter: { lat: selectedPin.lat, lng: selectedPin.lng },
+              mapZoom: 5,
+            });
+            console.log('center map on geocoded pin');
+            return;
+          }
+        }
+
+        if (state.selectedPinCoordinates) {
+          const { lat, lng } = state.selectedPinCoordinates;
+          if (isValidCoordinate(lat, lng)) {
+            set({
+              mapCenter: state.selectedPinCoordinates,
+              mapZoom: 3,
+            });
+            return;
+          }
+        }
+        console.warn('unable to center map - invalid coordinates');
+      },
 
       setSidebarOpen: (open) => set({ sidebarOpen: open }),
 
@@ -152,6 +254,7 @@ export const useMapOverviewStore = create<MapOverviewState>()(
       partialize: (state) => ({
         mapCenter: state.mapCenter,
         mapZoom: state.mapZoom,
+        selectedPinCoordinates: state.selectedPinCoordinates,
       }),
     }
   )

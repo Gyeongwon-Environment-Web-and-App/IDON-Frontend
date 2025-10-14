@@ -33,6 +33,8 @@ export interface MapPinConfig {
     x: number;
     y: number;
   };
+  selectedSize?: { width: number; height: number };
+  selectedOffset?: { x: number; y: number };
 }
 
 export interface PinClickEvent {
