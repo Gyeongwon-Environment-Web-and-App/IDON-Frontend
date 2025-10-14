@@ -9,6 +9,7 @@ import SimpleKakaoMap from '@/components/map/SimpleKakaoMap';
 import { useMapComplaints } from '@/hooks/useMapComplaints';
 import { useMapOverviewStore } from '@/stores/mapOverviewStore';
 import type { PinClickEvent, PinData } from '@/types/map';
+import { getEnglishId, getKoreanLabel } from '@/utils/categoryMapping';
 import {
   complaintToPinDataWithGroup,
   getRepresentativeComplaint,
@@ -54,26 +55,19 @@ export default function MapOverview() {
     setSelectedCategory(category);
   };
 
+  const handleKoreanCategoryChange = (koreanLabel: string) => {
+    const englishId = getEnglishId(koreanLabel);
+    setSelectedCategory(englishId);
+  };
+
+  const currentKoreanLabel = getKoreanLabel(selectedCategory);
+
   // 민원 -> 지도 핀
   const pins = useMemo((): PinData[] => {
     const pinData: PinData[] = [];
 
     // Add real complaints if available
     if (complaints && complaints.length > 0) {
-      const dummyPin: PinData = {
-        id: 'pin-dummy-test',
-        lat: 37.668875236,
-        lng: 127.044191742,
-        category: '일반',
-        isRepeat: true,
-        address: '서울특별시 도봉구 도봉로150다길 3',
-        complaintId: 9999,
-        content: '더미 핀 테스트용 민원내용을 추가하기 내용이 길어지면?',
-        datetime: '2024-01-15T10:30:00',
-        status: true,
-      };
-      pinData.push(dummyPin);
-
       // 동일한 주소 그룹으로 묶기
       const groupedComplaints = groupComplaintsByAddress(complaints);
 
@@ -156,6 +150,8 @@ export default function MapOverview() {
       <MapSideMenu
         onSidebarChange={handleSidebarChange}
         dateRange={dateRange}
+        selectedCategory={currentKoreanLabel}
+        onCategoryChange={handleKoreanCategoryChange}
       />
       <MapFilters
         sidebarOpen={sidebarOpen}

@@ -10,20 +10,23 @@ import ComplaintListCard from './ComplaintListCard';
 
 interface ComplaintListContainerProps {
   dateRange?: DateRange;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
   dateRange,
+  selectedCategory,
+  onCategoryChange
 }) => {
   const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
-  const [selectedTrash, setSelectedTrash] = useState<string>('');
 
   const { complaints, isLoading, fetchError } = useComplaints(dateRange);
 
   const filtered = useMemo(() => {
-    if (!selectedTrash) return complaints;
-    return complaints.filter(complaint => complaint.teams.some(team => team.category === selectedTrash));
-  }, [selectedTrash, complaints])
+    if (!selectedCategory || selectedCategory === '전체') return complaints;
+    return complaints.filter(complaint => complaint.teams.some(team => team.category === selectedCategory));
+  }, [selectedCategory, complaints])
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);
@@ -70,7 +73,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
             type="button"
             className={`
               flex-1 px-4 font-bold
-              ${selectedTrash === label ? 'bg-lighter-green' : ''}
+              ${selectedCategory === label ? 'bg-lighter-green' : ''}
               ${idx === 0 ? 'rounded-l' : ''}
               ${idx === arr.length - 1 ? 'rounded-r' : ''}
               focus:outline-none
@@ -79,7 +82,7 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
               borderRight:
                 idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
             }}
-            onClick={() => setSelectedTrash(t => t === label ? '' : label)}
+            onClick={() => onCategoryChange?.(label)}
           >
             {label}
           </button>

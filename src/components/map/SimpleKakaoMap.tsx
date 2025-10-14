@@ -60,6 +60,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         content: '음식물 쓰레기 수거 요청',
         datetime: '2024-01-15T10:30:00',
         status: false,
+        teams: [],
       },
       {
         id: 'dummy-2',
@@ -72,6 +73,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         content: '재활용품 수거 일정 문의',
         datetime: '2025-10-9T14:20:00',
         status: true,
+        teams: [],
       },
       {
         id: 'dummy-3',
@@ -84,6 +86,7 @@ const SimpleKakaoMap = forwardRef<HTMLDivElement, SimpleKakaoMapProps>(
         content: '일반 쓰레기 수거 요청',
         datetime: '2025-10-10T09:15:00',
         status: false,
+        teams: [],
       },
     ];
 

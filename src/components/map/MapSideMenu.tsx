@@ -23,15 +23,18 @@ type SidebarType = 'complaint' | 'vehicle' | 'stats' | null;
 interface MapSideMenuProps {
   onSidebarChange: (isOpen: boolean) => void;
   dateRange?: DateRange;
+  selectedCategory?: string;
+  onCategoryChange?: (category: string) => void;
 }
 
 const MapSideMenu: React.FC<MapSideMenuProps> = ({
   onSidebarChange,
   dateRange,
+  selectedCategory,
+  onCategoryChange,
 }) => {
   const [lastOpenedSidebar, setLastOpenedSidebar] = useState<SidebarType>(null);
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [selectedTrash, setSelectedTrash] = useState<string>('');
 
   const { complaintId } = useParams<{ complaintId?: string }>();
   const navigate = useNavigate();
@@ -107,7 +110,11 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
     complaint: complaintId ? (
       <ComplaintDetail />
     ) : (
-      <ComplaintListContainer dateRange={dateRange} />
+      <ComplaintListContainer
+        dateRange={dateRange}
+        selectedCategory={selectedCategory}
+        onCategoryChange={onCategoryChange}
+      />
     ),
     vehicle: (
       <div className="">
@@ -120,7 +127,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
               type="button"
               className={`
               flex-1 px-4 font-bold
-              ${selectedTrash === label ? 'bg-lighter-green' : ''}
+              ${selectedCategory === label ? 'bg-lighter-green' : ''}
               ${idx === 0 ? 'rounded-l' : ''}
               ${idx === arr.length - 1 ? 'rounded-r' : ''}
               focus:outline-none
@@ -129,7 +136,7 @@ const MapSideMenu: React.FC<MapSideMenuProps> = ({
                 borderRight:
                   idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
               }}
-              onClick={() => setSelectedTrash(label)}
+              onClick={() => onCategoryChange?.(label)}
             >
               {label}
             </button>
