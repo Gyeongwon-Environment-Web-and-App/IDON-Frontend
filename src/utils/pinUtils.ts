@@ -76,6 +76,7 @@ export const complaintToPinData = (complaint: Complaint): PinData => {
     content: complaint.content,
     datetime: complaint.datetime,
     status: complaint.status,
+    teams: complaint.teams || [],
   };
 };
 
@@ -132,5 +133,6 @@ export const complaintToPinDataWithGroup = (
     content: complaint.content,
     datetime: complaint.datetime,
     status: complaint.status,
+    teams: complaint.teams ?? [],
   };
 };

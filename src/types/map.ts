@@ -1,3 +1,14 @@
+interface Team {
+  id: number;
+  category: string;
+  team_nm: string;
+  drivers: Driver[];
+}
+
+interface Driver {
+  name: string;
+}
+
 // Map-related types for pin management
 export interface PinData {
   id: string;
@@ -10,6 +21,7 @@ export interface PinData {
   content: string;
   datetime: string;
   status: boolean;
+  teams: Team[];
 }
 
 export interface MapPinConfig {

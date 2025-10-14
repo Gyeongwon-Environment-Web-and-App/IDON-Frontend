@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { PinClickEvent, PinData } from '@/types/map';
 import { formatDateTimeToKorean } from '@/utils/formatDate';
@@ -43,8 +43,28 @@ export const usePinManager = ({
   isLoaded,
 }: UsePinManagerProps): UsePinManagerReturn => {
   const markersRef = useRef<unknown[]>([]);
+  const infoWindowRef = useRef<unknown>(null);
+  const lastPinsHashRef = useRef<string>('');
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
+
+  // Create stable hash of pins to prevent unnecessary effect re-runs
+  const pinsHash = useMemo(() => {
+    return JSON.stringify(
+      pins.map((p) => ({
+        id: p.id,
+        lat: p.lat,
+        lng: p.lng,
+        status: p.status,
+        category: p.category,
+        isRepeat: p.isRepeat,
+        address: p.address,
+        content: p.content,
+        datetime: p.datetime,
+        complaintId: p.complaintId,
+      }))
+    );
+  }, [pins]);
 
   // Type guards for Kakao Maps objects
   const isKakaoMarker = (
@@ -122,9 +142,11 @@ export const usePinManager = ({
       const kakaoMaps = getKakaoMaps();
       if (!kakaoMaps) return null;
 
-      const imageSrc = getPinImageSrc([pin.category], pin.isRepeat);
+      const teamCategories =
+        pin.teams?.map((team) => team.category).filter(Boolean) || [];
+      const imageSrc = getPinImageSrc(teamCategories, pin.isRepeat);
       const config =
-        PIN_CONFIGS[getCategoryKey([pin.category])] || PIN_CONFIGS.general;
+        PIN_CONFIGS[getCategoryKey(teamCategories)] || PIN_CONFIGS.general;
 
       const imageSize = new kakaoMaps.Size(
         config.size.width,
@@ -147,7 +169,10 @@ export const usePinManager = ({
       });
 
       // Get all valid categories (excluding 'manager')
-      const validCategories = pin.category !== 'manager' ? [pin.category] : [];
+      const validCategories =
+        pin.teams
+          ?.map((team) => team.category)
+          .filter((category) => category && category !== 'manager') || [];
       const categoryIconsHtml = validCategories
         .map(
           (tag) =>
@@ -194,14 +219,10 @@ export const usePinManager = ({
         '</div>' +
         '</div>';
 
-      const infowindow = new kakaoMaps.InfoWindow({
-        content: iwContent,
-      });
-
       const markerData = {
         marker,
-        infowindow,
         pin,
+        iwContent,
       };
 
       // Add event listeners
@@ -215,22 +236,31 @@ export const usePinManager = ({
           onPinClick({ pin, marker, map: mapInstance });
         }
         // Close info window after navigation
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (infowindow as any).close();
+        if (infoWindowRef.current) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infoWindowRef.current as any).close();
+        }
       });
 
-      // Mouseover event
+      // Mouseover event - use shared InfoWindow
       addEventListener('mouseover', () => {
-        if (mapInstance) {
+        if (mapInstance && infoWindowRef.current) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (infowindow as any).open(mapInstance as any, marker as any);
+          const infoWindow = infoWindowRef.current as any;
+          // Only update content if it's different to avoid unnecessary re-renders
+          if (infoWindow.getContent?.() !== iwContent) {
+            infoWindow.setContent(iwContent);
+          }
+          infoWindow.open(mapInstance, marker);
         }
       });
 
       // Mouseout event
       addEventListener('mouseout', () => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (infowindow as any).close();
+        if (infoWindowRef.current) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (infoWindowRef.current as any).close();
+        }
       });
 
       if (isKakaoMarker(marker)) {
@@ -250,9 +280,23 @@ export const usePinManager = ({
       return;
     }
 
+    // Prevent unnecessary re-runs by checking if pins actually changed
+    if (lastPinsHashRef.current === pinsHash) {
+      return;
+    }
+    lastPinsHashRef.current = pinsHash;
+
     const processPinsAndCreateMarkers = async () => {
       // Always clear existing markers first
       clearMarkers();
+
+      // Create shared InfoWindow if it doesn't exist
+      if (!infoWindowRef.current && window.kakao?.maps) {
+        const kakaoMaps = getKakaoMaps();
+        if (kakaoMaps) {
+          infoWindowRef.current = new kakaoMaps.InfoWindow({ content: '' });
+        }
+      }
 
       // If no pins to process, just clear and return
       if (pins.length === 0) {
@@ -313,8 +357,31 @@ export const usePinManager = ({
         }
       }
 
-      // Store the geocoded pins
-      setGeocodedPins(validPins);
+      // Only update state if values actually changed
+      setGeocodedPins((prevPins) => {
+        const prevHash = JSON.stringify(
+          prevPins.map((p) => ({
+            id: p.id,
+            lat: p.lat,
+            lng: p.lng,
+            status: p.status,
+            category: p.category,
+            isRepeat: p.isRepeat,
+          }))
+        );
+        const newHash = JSON.stringify(
+          validPins.map((p) => ({
+            id: p.id,
+            lat: p.lat,
+            lng: p.lng,
+            status: p.status,
+            category: p.category,
+            isRepeat: p.isRepeat,
+          }))
+        );
+        return prevHash === newHash ? prevPins : validPins;
+      });
+
       setIsGeocoding(false);
 
       // Create markers from the processed pins
@@ -330,7 +397,7 @@ export const usePinManager = ({
 
     processPinsAndCreateMarkers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pins, mapInstance, isLoaded]);
+  }, [pinsHash, isLoaded]); // Removed mapInstance from deps to prevent infinite loops
 
   return {
     isGeocoding,
