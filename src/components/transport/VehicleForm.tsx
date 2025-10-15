@@ -38,12 +38,9 @@ const VehicleForm: React.FC = () => {
   const { vehicleId } = useParams();
   const isEditMode = Boolean(vehicleId);
 
-  const getBrokenData = () => {
-    if (!formData.broken) {
-      return false;
-    }
-    return formData.broken;
-  };
+  // const handleFileUpdate = (fileUpdates: { uploadedFiles: Array<{name: string, url: string, type: string, size: number}> }) => {
+  //   updateFormData({ uploadedFiles: fileUpdates.uploadedFiles });
+  // };
 
   const updateFormData = (updates: Partial<VehicleFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -67,7 +64,7 @@ const VehicleForm: React.FC = () => {
       !formData.ton.trim() ||
       !formData.vehicleYear.trim() ||
       !formData.vehicleCategory.trim() ||
-      !formData.vehicleArea.join().trim() ||
+      formData.vehicleArea.length === 0 || formData.vehicleArea.every(area => !area.trim()) ||
       !formData.selectedMainDriver
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
@@ -183,10 +180,11 @@ const VehicleForm: React.FC = () => {
           <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
             <GenericFileAttach
-              formData={formData}
+              formData={{ uploadedFiles: formData.uploadedFiles}}
+              // ! 여기 나중에 수정필요
               setFormData={(updates) => {
                 if (typeof updates === 'function') {
-                  updateFormData(updates(formData));
+                  updateFormData(updates(formData)); // Using stale formData
                 } else {
                   updateFormData(updates);
                 }
@@ -279,7 +277,6 @@ const VehicleForm: React.FC = () => {
                         checked={formData.selectedTeamMembers.some(
                           (d) => d.phoneNum === driver.phoneNum
                         )}
-                        onChange={() => {}}
                         className="mr-2 text-base"
                       />
                       {driver.name} ({driver.phoneNum})
@@ -362,7 +359,6 @@ const VehicleForm: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={formData.vehicleArea.includes(label)}
-                      onChange={() => {}}
                       className="mr-2 w-4 h-4 cursor-pointer"
                     />
                     {label}
@@ -390,7 +386,6 @@ const VehicleForm: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={formData.vehicleArea.includes(label)}
-                    onChange={() => {}}
                     className="mr-2 w-4 h-4 cursor-pointer"
                   />
                   {label}
@@ -407,7 +402,7 @@ const VehicleForm: React.FC = () => {
               type="checkbox"
               id="malicious"
               className="w-5 h-5 accent-red mr-2"
-              checked={getBrokenData()}
+              checked={formData.broken}
               onChange={(e) =>
                 updateFormData({
                   broken: e.target.checked,
