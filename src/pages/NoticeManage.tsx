@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { useLocation, useNavigate } from 'react-router-dom';
+
+import NoticeDetail from '@/components/notice/NoticeDetail';
+import NoticeForm from '@/components/notice/NoticeForm';
+import NoticeTable from '@/components/notice/NoticeTable';
 
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
-import NoticeDetail from '@/components/notice/NoticeDetail';
-import NoticeForm from '@/components/notice/NoticeForm';
-import NoticeTable from '@/components/notice/NoticeTable';
 import { useAuthStore } from '../stores/authStore';
 
 const NoticeManage: React.FC = () => {
@@ -21,6 +22,23 @@ const NoticeManage: React.FC = () => {
     'table'
   );
 
+  // URL 변경 감지하여 탭 업데이트
+  useEffect(() => {
+    const getDefaultTab = () => {
+      if (location.pathname.includes('/form')) {
+        return 'form';
+      } else if (location.pathname.includes('/table')) {
+        return 'table';
+      } else if (location.pathname.includes('/detail')) {
+        return 'detail';
+      }
+      return 'table';
+    };
+
+    const newTab = getDefaultTab();
+    setActiveTab(newTab);
+  }, [location.pathname, setActiveTab]);
+
   const handleTabClick = (nextTab: 'table' | 'detail' | 'form') => {
     if (activeTab === 'form' && nextTab !== 'form' && hasUnsavedChanges) {
       const confirmLeave = window.confirm(
@@ -31,7 +49,7 @@ const NoticeManage: React.FC = () => {
 
     // URL 업데이트
     if (nextTab === 'form') {
-      navigate('/notice/table');
+      navigate('/notice/form');
     } else if (nextTab === 'table') {
       navigate('/notice/table');
     } else if (nextTab === 'detail') {
@@ -91,7 +109,7 @@ const NoticeManage: React.FC = () => {
           }
         >
           {/* 민원 등록 콘텐츠 */}
-          <div className=''>
+          <div className="">
             {activeTab === 'table' && (
               <>
                 <NoticeTable />

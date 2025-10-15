@@ -262,7 +262,10 @@ const MainPage: React.FC = () => {
           ))}
         </div>
         <div className="h-full mt-7 md:mt-10 mx-4 md:mx-0 4xl:pt-5 mb-24 md:mb-10">
-          <div className="flex justify-between bg-[#C8F2CE] w-full md:min-w-64 px-3 py-1 rounded">
+          <div
+            className="flex justify-between bg-[#C8F2CE] w-full md:min-w-64 px-3 py-1 rounded cursor-pointer"
+            onClick={() => navigate('/notice/table')}
+          >
             <div className="flex gap-1 font-semibold text-lg">
               공지사항
               <img src={notice} alt="공지사항 아이콘" />

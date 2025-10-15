@@ -59,9 +59,7 @@ const ComplaintManage = () => {
     setActiveTab(newTab);
   }, [location.pathname, setActiveTab]);
 
-  // Reset popup and confirmation states when navigating to different pages
   useEffect(() => {
-    // If we're not on the complaint pages, reset the states
     if (!location.pathname.includes('/complaints/')) {
       setIsPopupOpen(false);
       setShowConfirm(false);
