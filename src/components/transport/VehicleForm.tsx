@@ -1,9 +1,22 @@
 import React, { useState } from 'react';
 
+import { ChevronDown, X } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { drivers } from '@/data/vehicleData';
 import type { VehicleFormData } from '@/types/transport';
 
+import attention from '../../assets/icons/common/attention.svg';
+import attentionRed from '../../assets/icons/common/attention_red.svg';
 import GenericFileAttach from '../forms/GenericFileAttach';
 
 // ! 수정 모드를 위해 interface로 prop 지정 필요
@@ -17,11 +30,20 @@ const VehicleForm: React.FC = () => {
     vehicleCategory: '',
     uploadedFiles: [],
     drivers: [],
+    selectedMainDriver: null,
+    selectedTeamMembers: [],
     vehicleArea: [],
     broken: false,
   });
   const { vehicleId } = useParams();
   const isEditMode = Boolean(vehicleId);
+
+  const getBrokenData = () => {
+    if (!formData.broken) {
+      return false;
+    }
+    return formData.broken;
+  };
 
   const updateFormData = (updates: Partial<VehicleFormData>) => {
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -36,7 +58,8 @@ const VehicleForm: React.FC = () => {
       !formData.ton.trim() ||
       !formData.vehicleYear.trim() ||
       !formData.vehicleCategory.trim() ||
-      !formData.vehicleArea.join().trim()
+      !formData.vehicleArea.join().trim() ||
+      !formData.selectedMainDriver
     ) {
       alert('필수 입력창을 모두 입력해주세요.');
       return;
@@ -160,6 +183,173 @@ const VehicleForm: React.FC = () => {
                 }
               }}
             />
+          </div>
+
+          {/* 기사님 선택 */}
+          <label className="col-span-1 font-bold">
+            기사님 선택
+            <span className="text-red pr-0"> *</span>
+          </label>
+          <div className="col-span-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="font-bold border border-light-border justify-between w-[80%]"
+                >
+                  담당기사 선택하기
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                <DropdownMenuRadioGroup
+                  value={formData.selectedMainDriver?.phoneNum || ''}
+                  onValueChange={(phoneNum) => {
+                    const driver = drivers.find((d) => d.phoneNum === phoneNum);
+                    updateFormData({ selectedMainDriver: driver || null });
+                  }}
+                >
+                  {drivers.map((driver) => (
+                    <DropdownMenuRadioItem
+                      key={driver.phoneNum}
+                      value={driver.phoneNum}
+                      className="text-base"
+                    >
+                      {driver.name} ({driver.phoneNum})
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          <div className="col-span-1">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="font-bold border border-light-border justify-between w-[80%]"
+                >
+                  팀원 선택하기
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-full">
+                {drivers
+                  .filter(
+                    (driver) =>
+                      driver.phoneNum !== formData.selectedMainDriver?.phoneNum
+                  )
+                  .map((driver) => (
+                    <DropdownMenuItem
+                      key={driver.phoneNum}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        const isSelected = formData.selectedTeamMembers.some(
+                          (d) => d.phoneNum === driver.phoneNum
+                        );
+                        if (isSelected) {
+                          updateFormData({
+                            selectedTeamMembers:
+                              formData.selectedTeamMembers.filter(
+                                (d) => d.phoneNum !== driver.phoneNum
+                              ),
+                          });
+                        } else {
+                          updateFormData({
+                            selectedTeamMembers: [
+                              ...formData.selectedTeamMembers,
+                              driver,
+                            ],
+                          });
+                        }
+                      }}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={formData.selectedTeamMembers.some(
+                          (d) => d.phoneNum === driver.phoneNum
+                        )}
+                        onChange={() => {}}
+                        className="mr-2 text-base"
+                      />
+                      {driver.name} ({driver.phoneNum})
+                    </DropdownMenuItem>
+                  ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
+          {(formData.selectedMainDriver ||
+            formData.selectedTeamMembers.length > 0) && (
+            <div className="col-span-3 flex flex-wrap">
+              {formData.selectedMainDriver && (
+                <div className="flex items-center mr-4">
+                  <span className="text-base font-medium p-0 mr-2">
+                    담당기사: {formData.selectedMainDriver.name} (
+                    {formData.selectedMainDriver.phoneNum})
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer hover:bg-white p-0"
+                    onClick={() => updateFormData({ selectedMainDriver: null })}
+                  >
+                    <X className="h-4 w-4 text-red" />
+                  </Button>
+                </div>
+              )}
+              {formData.selectedTeamMembers.map((driver) => (
+                <div key={driver.phoneNum} className="flex items-center mr-4">
+                  <span className="text-base mr-2">
+                    팀원: {driver.name} ({driver.phoneNum})
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="cursor-pointer hover:bg-white p-0"
+                    onClick={() =>
+                      updateFormData({
+                        selectedTeamMembers:
+                          formData.selectedTeamMembers.filter(
+                            (d) => d.phoneNum !== driver.phoneNum
+                          ),
+                      })
+                    }
+                  >
+                    <X className="h-4 w-4 text-red" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 악성 민원 체크 */}
+          <div className="col-span-1"></div>
+          <div className="col-span-1 flex items-center">
+            <input
+              tabIndex={15}
+              type="checkbox"
+              id="malicious"
+              className="w-5 h-5 accent-red mr-2"
+              checked={getBrokenData()}
+              onChange={(e) =>
+                updateFormData({
+                  broken: e.target.checked,
+                })
+              }
+            />
+            <label
+              htmlFor="malicious"
+              className={`flex items-center text-[1rem] ${formData.broken ? 'text-red' : ''}`}
+            >
+              <img
+                src={formData.broken ? attentionRed : attention}
+                alt="느낌표"
+                className="w-6 h-6 mr-1"
+              />
+              고장
+            </label>
           </div>
         </div>
       </div>

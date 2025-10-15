@@ -31,6 +31,9 @@ export interface VehicleFormData {
     size: number;
   }>;
   drivers: VehicleDriver[];
-  vehicleArea: [];
-  broken: boolean;
+  vehicleArea: string[];
+  broken?: boolean;
+
+  selectedMainDriver: VehicleDriver | null;
+  selectedTeamMembers: VehicleDriver[];
 }

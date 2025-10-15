@@ -8,6 +8,8 @@ import DriverInfo from '@/components/transport/DriverInfo';
 import VehicleForm from '@/components/transport/VehicleForm';
 import VehicleInfo from '@/components/transport/VehicleInfo';
 
+import driverIcon from '../assets/icons/common/driver.svg';
+import truckIcon from '../assets/icons/common/truck.svg';
 import Header from '../components/common/Header';
 import Popup from '../components/forms/Popup';
 import PageLayout from '../components/layout/PageLayout';
@@ -92,7 +94,13 @@ const TransportManage: React.FC = () => {
       <div className="flex md:justify-center md:items-center justify-start items-start pt-2 md:pt-4 pb-[7rem] md:pb-5 w-full">
         <PageLayout
           title="차량 관리"
-          icon=""
+          icon={
+            activeTab === 'vehicleInfo' || activeTab === 'vehicleForm' ? (
+              <img src={truckIcon} alt="차량 아이콘" className="w-8 h-8" />
+            ) : (
+              <img src={driverIcon} alt="기사 아이콘" className="w-8 h-8" />
+            )
+          }
           tabs={[
             { label: '차량 정보', value: 'vehicleInfo' },
             { label: '차량 등록 / 수정', value: 'vehicleForm' },
