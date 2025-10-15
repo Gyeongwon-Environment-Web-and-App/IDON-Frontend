@@ -1,4 +1,4 @@
-export interface Driver {
+export interface DriverFormData {
   name: string;
   phoneNum: string;
   category: string;

@@ -20,7 +20,6 @@ const VehicleForm: React.FC = () => {
     vehicleArea: [],
     broken: false,
   });
-  // const [focus, setFocus] = useState({ routeInput: false });
   const { vehicleId } = useParams();
   const isEditMode = Boolean(vehicleId);
 
@@ -149,7 +148,7 @@ const VehicleForm: React.FC = () => {
           </div>
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold">파일 첨부</label>
+          <label className="col-span-1 font-bold">사진 첨부</label>
           <div className="col-span-2">
             <GenericFileAttach
               formData={formData}
