@@ -68,7 +68,7 @@ export const drivers: VehicleDriver[] = [
 export const vehicles: VehicleFormData[] = [
   {
     vehicleType: '포터',
-    vehicleNum: '서울 12가 3456',
+    vehicleNum: '12가 3456',
     ton: '1T',
     vehicleYear: '2020',
     vehicleCategory: '생활',
@@ -81,7 +81,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '마이티',
-    vehicleNum: '서울 34나 7890',
+    vehicleNum: '34나 7890',
     ton: '3.5T',
     vehicleYear: '2019',
     vehicleCategory: '음식물',
@@ -94,7 +94,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '뉴파워',
-    vehicleNum: '서울 56다 1234',
+    vehicleNum: '56다 1234',
     ton: '5T',
     vehicleYear: '2021',
     vehicleCategory: '재활용',
@@ -107,7 +107,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '포터',
-    vehicleNum: '서울 78라 5678',
+    vehicleNum: '78라 5678',
     ton: '1T',
     vehicleYear: '2022',
     vehicleCategory: '클린',
@@ -120,7 +120,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '마이티',
-    vehicleNum: '서울 90마 9012',
+    vehicleNum: '90마 9012',
     ton: '3.5T',
     vehicleYear: '2018',
     vehicleCategory: '수송',
@@ -133,7 +133,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '뉴파워',
-    vehicleNum: '서울 12바 3456',
+    vehicleNum: '12바 3456',
     ton: '25T',
     vehicleYear: '2020',
     vehicleCategory: '생활',
@@ -146,7 +146,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '포터',
-    vehicleNum: '서울 34사 7890',
+    vehicleNum: '34사 7890',
     ton: '1T',
     vehicleYear: '2023',
     vehicleCategory: '음식물',
@@ -159,7 +159,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '마이티',
-    vehicleNum: '서울 56아 1234',
+    vehicleNum: '56아 1234',
     ton: '3.5T',
     vehicleYear: '2019',
     vehicleCategory: '재활용',
@@ -172,7 +172,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '뉴파워',
-    vehicleNum: '서울 78자 5678',
+    vehicleNum: '78자 5678',
     ton: '5T',
     vehicleYear: '2021',
     vehicleCategory: '클린',
@@ -185,7 +185,7 @@ export const vehicles: VehicleFormData[] = [
   },
   {
     vehicleType: '포터',
-    vehicleNum: '서울 90차 9012',
+    vehicleNum: '90차 9012',
     ton: '1T',
     vehicleYear: '2022',
     vehicleCategory: '수송',
