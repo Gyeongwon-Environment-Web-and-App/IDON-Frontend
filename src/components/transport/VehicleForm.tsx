@@ -49,6 +49,15 @@ const VehicleForm: React.FC = () => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
+  const toggleVehicleArea = (area: string) => {
+    const isSelected = formData.vehicleArea.includes(area);
+    updateFormData({
+      vehicleArea: isSelected
+        ? formData.vehicleArea.filter((a) => a !== area)
+        : [...formData.vehicleArea, area],
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -81,8 +90,8 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleType}
             onChange={(e) => updateFormData({ vehicleType: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left"
-            placeholder=""
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            placeholder="예시: 봉고, 동양, AM 등"
           />
 
           {/* 차량번호*/}
@@ -94,8 +103,8 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleNum}
             onChange={(e) => updateFormData({ vehicleNum: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left"
-            placeholder=""
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 text-left text-base"
+            placeholder="예시: 12다 3456"
           />
 
           {/* 톤 수 */}
@@ -135,8 +144,8 @@ const VehicleForm: React.FC = () => {
             type="text"
             value={formData.vehicleYear}
             onChange={(e) => updateFormData({ vehicleYear: e.target.value })}
-            className="col-span-2 rounded border border-light-border px-3 py-1.5 mb-0 text-left"
-            placeholder=""
+            className="col-span-2 rounded border border-light-border px-3 py-1.5 mb-0 text-left text-base"
+            placeholder="예시: 2013년형"
           />
 
           {/* 수거 종류 */}
@@ -323,6 +332,72 @@ const VehicleForm: React.FC = () => {
               ))}
             </div>
           )}
+
+          {/* 담당 구역 */}
+          <label className="col-span-1 font-bold">
+            담당 구역
+            <span className="text-red pr-0"> *</span>
+          </label>
+          <div className="col-span-2">
+            <div
+              className={`flex text-sm border border-light-border rounded mb-2`}
+            >
+              {['쌍문1동', '쌍문2동', '쌍문3동', '쌍문4동'].map(
+                (label, idx, arr) => (
+                  <button
+                    key={label}
+                    type="button"
+                    className={`
+                    flex-1 flex items-center justify-center px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    ${formData.vehicleArea.includes(label) ? 'bg-lighter-green' : ''}
+                    ${idx === 0 ? 'rounded-l' : ''}
+                    ${idx === arr.length - 1 ? 'rounded-r' : ''}
+                  `}
+                    style={{
+                      borderRight:
+                        idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+                    }}
+                    onClick={() => toggleVehicleArea(label)}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.vehicleArea.includes(label)}
+                      onChange={() => {}}
+                      className="mr-2 w-4 h-4 cursor-pointer"
+                    />
+                    {label}
+                  </button>
+                )
+              )}
+            </div>
+            <div className={`flex text-sm border border-light-border rounded w-[50%]`}>
+              {['방학1동', '방학2동'].map((label, idx, arr) => (
+                <button
+                  key={label}
+                  type="button"
+                  className={`
+                    flex-1 flex items-center justify-center px-4 font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
+                    ${formData.vehicleArea.includes(label) ? 'bg-lighter-green' : ''}
+                    ${idx === 0 ? 'rounded-l' : ''}
+                    ${idx === arr.length - 1 ? 'rounded-r' : ''}
+                  `}
+                  style={{
+                    borderRight:
+                      idx !== arr.length - 1 ? '1px solid #ACACAC' : 'none',
+                  }}
+                  onClick={() => toggleVehicleArea(label)}
+                >
+                  <input
+                    type="checkbox"
+                    checked={formData.vehicleArea.includes(label)}
+                    onChange={() => {}}
+                    className="mr-2 w-4 h-4 cursor-pointer"
+                  />
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* 악성 민원 체크 */}
           <div className="col-span-1"></div>
