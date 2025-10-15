@@ -124,9 +124,9 @@ export interface ComplaintFormData {
 // Main Complaint interface
 export interface Complaint {
   id: number;
-  address: string;
+  address: Address;
   datetime: string;
-  category: string; // Changed from categories array to single category string
+  category: string;
   type: string;
   content: string;
   route: string;

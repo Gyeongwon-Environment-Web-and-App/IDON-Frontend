@@ -95,7 +95,7 @@ export const groupComplaintsByAddress = (
   const grouped = new Map<string, Complaint[]>();
 
   complaints.forEach((complaint) => {
-    const address = complaint.address;
+    const address = complaint.address.address;
     if (!grouped.has(address)) {
       grouped.set(address, []);
     }

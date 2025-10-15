@@ -119,7 +119,7 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
                     return general;
                 }
               };
-  
+
               return (
                 <img
                   key={index}
@@ -131,7 +131,9 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
             })}
           </div>
           <div className="flex font-bold text-lg ml-1">
-            {complaint.content ? truncateString(complaint.content, 14) : truncateString(complaint.address.slice(7), 14)}
+            {complaint.content
+              ? truncateString(complaint.content, 14)
+              : truncateString(complaint.address?.address?.slice(7), 14)}
           </div>
         </div>
       </div>

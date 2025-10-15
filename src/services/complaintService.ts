@@ -2,6 +2,7 @@ import type { DateRange } from 'react-day-picker';
 
 import apiClient from '@/lib/api';
 import {
+  type Address,
   type Complaint,
   type ComplaintApiResponse,
   type ComplaintByIdApiResponse,
@@ -12,7 +13,7 @@ import {
 // Map API response structure
 interface MapComplaint {
   id: number;
-  address: string;
+  address: Address;
   phone_no: string;
   category: string;
   truck_no: string;
@@ -70,7 +71,7 @@ const convertComplaintExtendedToComplaint = (
 
   return {
     id: complaintExtended.id,
-    address: complaintExtended.address.address,
+    address: complaintExtended.address,
     datetime: complaintExtended.datetime,
     category:
       complaintExtended.teams.map((team) => team.category).filter(Boolean)[0] ||
@@ -105,7 +106,7 @@ const convertComplaintForCategoryToComplaint = (
 
   return {
     id: complaintForCategory.id,
-    address: complaintForCategory.address.address,
+    address: complaintForCategory.address,
     datetime: complaintForCategory.datetime,
     category:
       complaintForCategory.teams.map((team) => team.category)[0] || '기타',

@@ -49,7 +49,11 @@ export const usePinManager = ({
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [geocodedPins, setGeocodedPins] = useState<PinData[]>([]);
 
-  const { selectedComplaintId, setIsGeocoding: setStoreIsGeocoding, setGeocodedPins: setStoreGeocodedPins } = useMapOverviewStore();
+  const {
+    selectedComplaintId,
+    setIsGeocoding: setStoreIsGeocoding,
+    setGeocodedPins: setStoreGeocodedPins,
+  } = useMapOverviewStore();
 
   useEffect(() => {
     setStoreIsGeocoding(isGeocoding);
@@ -212,7 +216,8 @@ export const usePinManager = ({
             '" alt="반복민원" style="width: 67px; flex-shrink: 0;" />'
           : '') +
         '<p style="font-weight: 600; font-size: 18px; margin: 0; color: black; flex: 1; line-height: 1.4; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;">' +
-        (pin.content || `${pin.address.slice(7)} 민원`) +
+        (pin.content ||
+          `${pin.address?.address?.slice(7) || '주소 없음'} 민원`) +
         '</p>' +
         '</div>' +
         '<p style="font-size: 16px; font-weight: 600; color: #7C7C7C; margin: 4px 0;">' +
@@ -223,7 +228,7 @@ export const usePinManager = ({
         ICON_PATHS.pin +
         '" alt="위치" style="width: 14px; height: 14px; margin-right: 4px;" />' +
         '<p style="font-size: 16px; font-weight: 600; color: black; margin: 0;">' +
-        pin.address.slice(6) +
+        (pin.address?.address?.slice(6) || '주소 없음') +
         '</p>' +
         '</div>' +
         '<div style="display: flex; align-items: center;">' +
@@ -350,7 +355,11 @@ export const usePinManager = ({
         try {
           // Get unique addresses from pins that need geocoding
           const uniqueAddresses = [
-            ...new Set(pinsNeedingGeocoding.map((pin) => pin.address)),
+            ...new Set(
+              pinsNeedingGeocoding
+                .map((pin) => pin.address?.address)
+                .filter(Boolean)
+            ),
           ];
 
           // Batch geocoding for all unique addresses
@@ -358,15 +367,18 @@ export const usePinManager = ({
 
           // Process geocoded pins
           pinsNeedingGeocoding.forEach((pin) => {
-            const coordinates = coordinatesMap.get(pin.address);
+            const addressString = pin.address?.address;
+            if (addressString) {
+              const coordinates = coordinatesMap.get(addressString);
 
-            if (coordinates) {
-              const pinWithCoords = {
-                ...pin,
-                lat: coordinates.lat,
-                lng: coordinates.lng,
-              };
-              validPins.push(pinWithCoords);
+              if (coordinates) {
+                const pinWithCoords = {
+                  ...pin,
+                  lat: coordinates.lat,
+                  lng: coordinates.lng,
+                };
+                validPins.push(pinWithCoords);
+              }
             }
           });
         } catch (error) {

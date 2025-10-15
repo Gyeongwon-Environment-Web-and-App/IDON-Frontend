@@ -1,3 +1,5 @@
+import type { Address as ComplaintAddress } from "@/types/complaint";
+
 interface AddressElement {
   types: string[];
   longName: string;
@@ -76,18 +78,22 @@ export class AddressService {
 
   // Get coordinates from address string
   static async getCoordinatesFromAddress(
-    address: string
+    address: string | ComplaintAddress
   ): Promise<{ x: string; y: string } | null> {
     if (!this.isKakaoSDKLoaded()) {
       console.error('❌ 카카오맵 SDK가 로드되지 않았습니다.');
       return null;
     }
 
+    const addressString = typeof address === 'string' 
+    ? address 
+    : address.address;
+
     return new Promise((resolve) => {
       const geocoder = new window.kakao.maps.services.Geocoder();
 
       geocoder.addressSearch(
-        address,
+        addressString,
         (result: KakaoAddressResult[], status: string) => {
           if (
             status === window.kakao.maps.services.Status.OK &&

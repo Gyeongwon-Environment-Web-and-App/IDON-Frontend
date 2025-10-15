@@ -25,8 +25,14 @@ const ComplaintListContainer: React.FC<ComplaintListContainerProps> = ({
 
   const filtered = useMemo(() => {
     if (!selectedCategory || selectedCategory === '전체') return complaints;
-    return complaints.filter(complaint => complaint.teams.some(team => team.category === selectedCategory));
-  }, [selectedCategory, complaints])
+    return complaints.filter(complaint => {
+      const categoryMatch = complaint.teams.some(team => team.category === selectedCategory);
+
+      const regionMatch = selectedAreas.length === 0 || selectedAreas.includes(complaint.address.region_nm)
+
+      return categoryMatch && regionMatch;
+    });
+  }, [selectedCategory, complaints, selectedAreas]);
 
   const handleAreaSelectionChange = (areas: string[]) => {
     setSelectedAreas(areas);

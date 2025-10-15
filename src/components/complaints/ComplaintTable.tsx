@@ -220,7 +220,7 @@ const ComplaintTable: React.FC = () => {
       accessorKey: 'address',
       header: '주소',
       cell: ({ row }) => {
-        const address: string = row.original.address;
+        const address: string = row.original.address.address;
         const shortAddress = address.split(' ').slice(-2).join(' ');
 
         return (
@@ -405,7 +405,7 @@ const ComplaintTable: React.FC = () => {
         complaint.datetime.toLowerCase().includes(searchLower) ||
         complaint.type.toLowerCase().includes(searchLower) ||
         complaint.content.toLowerCase().includes(searchLower) ||
-        complaint.address.toLowerCase().includes(searchLower) ||
+        complaint.address.address.toLowerCase().includes(searchLower) ||
         complaint.source.phone_no.toLowerCase().includes(searchLower) ||
         complaint.route.toLowerCase().includes(searchLower) ||
         complaint.teams.some(

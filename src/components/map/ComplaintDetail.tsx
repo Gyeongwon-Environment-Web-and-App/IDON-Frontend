@@ -181,7 +181,7 @@ const ComplaintDetail: React.FC = () => {
   useEffect(() => {
     if (selectedComplaint) {
       // setFrequencyLoading(true);
-      fetchAddressFrequency(selectedComplaint.address);
+      fetchAddressFrequency(selectedComplaint.address.address);
 
       const phoneNo = selectedComplaint.source?.phone_no;
       if (phoneNo) {
@@ -313,7 +313,7 @@ const ComplaintDetail: React.FC = () => {
             </div>
             <p className="text-xl font-semibold truncate">
               {selectedComplaint?.content ||
-                `${selectedComplaint?.address.slice(7)} 민원`}
+                `${selectedComplaint?.address?.address?.slice(7)} 민원`}
             </p>
             <button
               className="flex p-0 w-[3.2rem]"
@@ -342,7 +342,7 @@ const ComplaintDetail: React.FC = () => {
           <div className="flex gap-1 md:gap-2 items-center">
             <img src={pin} alt="주소 핀" className="w-4 md:w-5 h-4 md:h-5" />
             <label className="text-base md:text-lg font-semibold">
-              {selectedComplaint?.address || '주소 정보 없음'}
+              {selectedComplaint?.address?.address || '주소 정보 없음'}
             </label>
           </div>
 

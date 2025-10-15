@@ -1,3 +1,5 @@
+import type { Address } from "./complaint";
+
 interface Team {
   id: number;
   category: string;
@@ -16,7 +18,7 @@ export interface PinData {
   lng: number;
   category: string;
   isRepeat: boolean;
-  address: string;
+  address: Address;
   complaintId: number;
   content: string;
   datetime: string;

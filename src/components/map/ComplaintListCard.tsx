@@ -90,7 +90,8 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
               ''
             )}
             <p className="font-semibold text-sm md:text-base truncate min-w-0 flex-1">
-              {complaint.content || `${complaint.address.slice(7)} 민원`}
+              {complaint.content ||
+                `${complaint.address.address.slice(7)} 민원`}
             </p>
           </div>
           <p className="text-xs md:text-sm font-semibold text-[#7C7C7C] mt-1">
@@ -99,7 +100,7 @@ const ComplaintListCard: React.FC<ComplaintListCardProps> = ({ complaint }) => {
           <div className="flex items-center pb-1">
             <img src={pin} alt="핀 아이콘" className="mt-1 mr-0.5" />
             <p className="text-xs md:text-sm text-black font-semibold mt-1">
-              {complaint.address.slice(6)}
+              {complaint.address.address.slice(6)}
             </p>
           </div>
           <div className="flex items-center">
