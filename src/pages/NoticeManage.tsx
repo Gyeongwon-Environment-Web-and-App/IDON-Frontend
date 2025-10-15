@@ -42,7 +42,7 @@ const NoticeManage: React.FC = () => {
   const handleTabClick = (nextTab: 'table' | 'detail' | 'form') => {
     if (activeTab === 'form' && nextTab !== 'form' && hasUnsavedChanges) {
       const confirmLeave = window.confirm(
-        '작성 중인 민원이 있습니다. 정말 나가시겠습니까?'
+        '작성 중인 공지사항이 있습니다. 정말 나가시겠습니까?'
       );
       if (!confirmLeave) return;
     }

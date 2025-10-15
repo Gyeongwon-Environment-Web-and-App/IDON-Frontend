@@ -39,14 +39,14 @@ const NoticeForm: React.FC = () => {
       return;
     }
 
-    console.log('Notice form submitted:', formData);
+    console.log('공지사항 전송완료:', formData);
     // Handle form submission logic here
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <div className="rounded-lg border border-a5a5a5">
-        <div className="grid grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-4 gap-y-3 items-center px-10 pt-10 text-lg">
+        <div className="grid grid-cols-[150px_1fr_1fr_1fr_150px] gap-x-4 gap-y-7 items-center px-10 pt-10 text-lg">
           {/* 제목 */}
           <label className="col-span-1 font-bold">
             제목
@@ -56,17 +56,17 @@ const NoticeForm: React.FC = () => {
             type="text"
             value={formData.title}
             onChange={(e) => updateFormData({ title: e.target.value })}
-            className="col-span-4 rounded border border-light-border px-3 py-1.5 mb-0 text-left"
+            className="col-span-4 rounded border border-light-border text-base px-3 py-1.5 text-left"
             placeholder="제목을 입력하세요"
           />
 
           {/* 공지구분 */}
-          <label className="col-span-1 font-bold pt-5">
+          <label className="col-span-1 font-bold">
             공지구분
             <span className="text-red pr-0"> *</span>
           </label>
           <div
-            className={`flex col-span-3 mt-5 text-sm border border-light-border rounded`}
+            className={`flex col-span-3 text-sm border border-light-border rounded`}
           >
             {['안내사항', '정보', '구청', '주민센터'].map((label, idx, arr) => (
               <button
@@ -91,7 +91,7 @@ const NoticeForm: React.FC = () => {
           <input
             type="text"
             placeholder={focus.routeInput ? '' : '직접 입력'}
-            className={`col-span-1 border border-light-border px-3 py-1.5 mb-0 mt-5 rounded text-left text-base`}
+            className={`col-span-1 border border-light-border px-3 py-1.5 mb-0 rounded text-left text-base`}
             onChange={(e) => updateFormData({ category: e.target.value })}
             onFocus={() => setFocus({ routeInput: true })}
             onBlur={() => setFocus({ routeInput: false })}
@@ -99,7 +99,7 @@ const NoticeForm: React.FC = () => {
           />
 
           {/* 파일 첨부 */}
-          <label className="col-span-1 font-bold py-5 pt-5">파일 첨부</label>
+          <label className="col-span-1 font-bold">파일 첨부</label>
           <div className="col-span-3">
             <GenericFileAttach
               formData={formData}
