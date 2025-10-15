@@ -48,7 +48,14 @@ const menuItems = [
       { name: '전체 통계', route: '/complaints/stats' },
     ],
   },
-  { label: '통계', submenu: [] },
+  {
+    label: '공지사항',
+    submenu: [
+      { name: '공지 목록', route: '/notice/table' },
+      { name: '공지 상세', route: '/notice/detail' },
+      { name: '공지 작성 / 수정', route: '/notice/form' },
+    ],
+  },
 ];
 
 export default function Header({ onLogout }: HeaderProps) {
