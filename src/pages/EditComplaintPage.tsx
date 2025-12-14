@@ -7,6 +7,11 @@ import { complaintService } from '@/services/complaintService';
 import { uploadFilesToCloudflare } from '@/services/fileUploadService';
 import { useComplaintFormStore } from '@/stores/complaintFormStore';
 import type { Complaint } from '@/types/complaint';
+import {
+  prepareOriginalComplaintData,
+  prepareUpdateData,
+  processFilesForEdit,
+} from '@/utils/complaintEditHelpers';
 
 import Header from '../components/common/Header';
 import ComplaintForm from '../components/complaints/ComplaintForm';
@@ -69,140 +74,31 @@ const EditComplaintPage: React.FC = () => {
     }
 
     try {
-      let objectInfos:
-        | Array<{ objectKey: string; filenameOriginal: string }>
-        | undefined;
-
-      // Process files: Get new keys for all files (both existing and new)
-      if (formData.uploadedFiles && formData.uploadedFiles.length > 0) {
-        // Convert all files to File objects
-        const filesToUpload: File[] = [];
-
-        for (const fileData of formData.uploadedFiles) {
-          if (fileData.file) {
-            // New file that was selected
-            filesToUpload.push(fileData.file);
-          } else if (fileData.url && fileData.previewUrl) {
-            // Existing file - download from presigned URL and convert to File
-            try {
-              const response = await fetch(fileData.previewUrl);
-              if (!response.ok) {
-                throw new Error(
-                  `Failed to download file: ${response.statusText}`
-                );
-              }
-              const blob = await response.blob();
-              const file = new File(
-                [blob],
-                fileData.name || fileData.url.split('/').pop() || 'file',
-                { type: blob.type || 'application/octet-stream' }
-              );
-              filesToUpload.push(file);
-            } catch (error) {
-              console.error('Failed to download existing file:', error);
-              throw new Error('기존 파일을 불러오는데 실패했습니다.');
-            }
-          }
-        }
-
-        // Get new keys and upload all files
-        if (filesToUpload.length > 0) {
-          console.log('Uploading files with new keys:', filesToUpload.length);
-          const uploadedFiles = await uploadFilesToCloudflare(
-            filesToUpload,
-            'complaint'
-          );
-
-          // Create objectInfos from uploaded files with new keys
-          objectInfos = uploadedFiles.map((uploaded) => ({
-            objectKey: uploaded.key, // New key from Cloudflare
-            filenameOriginal: uploaded.originalName,
+      // Process files - only upload new files, keep existing ones
+      const objectInfos = await processFilesForEdit(
+        formData.uploadedFiles || [],
+        async (files: File[], category: string) => {
+          const uploaded = await uploadFilesToCloudflare(files, category);
+          return uploaded.map((u) => ({
+            key: u.key,
+            originalName: u.originalName,
           }));
-
-          console.log('Files uploaded with new keys:', objectInfos);
         }
+      );
+
+      // Prepare update data using helper functions
+      const updateData = prepareUpdateData(formData, originalComplaint);
+      if (objectInfos) {
+        updateData.objectInfos = objectInfos;
       }
 
-      // Extract address string from Address object or use formData address
-      const addressString =
-        typeof originalComplaint.address === 'string'
-          ? originalComplaint.address
-          : originalComplaint.address?.address || formData.address || '';
-
-      // Convert coordinates from latitude/longitude to x_coord/y_coord
-      // Note: In Kakao Maps, x = longitude, y = latitude
-      const coordinates =
-        formData.coordinates || originalComplaint.coordinates
-          ? {
-              x_coord:
-                formData.coordinates?.longitude ||
-                originalComplaint.coordinates?.longitude ||
-                0,
-              y_coord:
-                formData.coordinates?.latitude ||
-                originalComplaint.coordinates?.latitude ||
-                0,
-            }
-          : undefined;
-
-      // Convert single category to categories array
-      const categories = formData.categories?.length
-        ? formData.categories
-        : originalComplaint.category
-          ? [originalComplaint.category]
-          : [];
-
-      // Prepare update data according to new API requirements
-      const updateData = {
-        address: addressString,
-        ...(coordinates && { coordinates }),
-        datetime: formData.datetime || originalComplaint.datetime || '',
-        phone_no: formData.source?.phone_no || originalComplaint.source?.phone_no || '',
-        content: formData.content || '',
-        type: formData.type || '',
-        route: formData.route || '',
-        // Note: status is not updated in edit mode, only in status change
-        source: {
-          phone_no: formData.source?.phone_no || originalComplaint.source?.phone_no || '',
-          bad: formData.source?.bad ?? originalComplaint.source?.bad ?? false,
-        },
-        categories: categories,
-        ...(objectInfos && { objectInfos }),
-      };
-
       // Prepare original complaint data for comparison
-      const originalAddressString =
-        typeof originalComplaint.address === 'string'
-          ? originalComplaint.address
-          : originalComplaint.address?.address || '';
+      const originalData = prepareOriginalComplaintData(originalComplaint);
 
-      const originalCoordinates = originalComplaint.coordinates
-        ? {
-            x_coord: originalComplaint.coordinates.longitude || 0,
-            y_coord: originalComplaint.coordinates.latitude || 0,
-          }
-        : undefined;
-
-      const originalData = {
-        address: originalAddressString,
-        ...(originalCoordinates && { coordinates: originalCoordinates }),
-        datetime: originalComplaint.datetime || '',
-        phone_no: originalComplaint.source?.phone_no || '',
-        content: originalComplaint.content || '',
-        type: originalComplaint.type || '',
-        route: originalComplaint.route || '',
-        status: originalComplaint.status,
-        source: originalComplaint.source
-          ? {
-              phone_no: originalComplaint.source.phone_no || '',
-              bad: originalComplaint.source.bad ?? false,
-            }
-          : undefined,
-        categories: originalComplaint.category ? [originalComplaint.category] : [],
-        presigned_links: originalComplaint.presigned_links || [],
-      };
-
-      console.log('Updating complaint:', originalComplaint.id, updateData);
+      console.log('Updating complaint:', originalComplaint.id, {
+        updateData,
+        originalData,
+      });
 
       // Call the update API with original data for comparison
       await complaintService.updateComplaint(
@@ -214,7 +110,6 @@ const EditComplaintPage: React.FC = () => {
       console.log('Complaint updated successfully');
 
       // Navigate back to the complaint detail view with timestamp to force refresh
-      // This ensures the ComplaintDetail component refetches the updated data
       navigate(
         `/map/overview/complaints/${originalComplaint.id}?refresh=${Date.now()}`
       );

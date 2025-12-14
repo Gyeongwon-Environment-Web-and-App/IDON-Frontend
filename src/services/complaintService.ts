@@ -333,12 +333,29 @@ export const complaintService = {
       const payload = computeComplaintDiff(originalComplaint, updates);
 
       if (Object.keys(payload).length === 0) {
+        console.log('No changes detected, skipping update');
         return;
       }
+
+      console.log('Updating complaint - Request details:', {
+        method: 'PATCH',
+        url: `/complaint/edit/${id}`,
+        payload,
+        payloadKeys: Object.keys(payload),
+      });
 
       await apiClient.patch(`/complaint/edit/${id}`, payload);
     } catch (error) {
       console.error(`Error updating complaint ${id}:`, error);
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as {
+          response?: { status?: number; data?: unknown };
+        };
+        console.error('API Error details:', {
+          status: axiosError.response?.status,
+          data: axiosError.response?.data,
+        });
+      }
       throw error;
     }
   },

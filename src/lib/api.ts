@@ -65,17 +65,41 @@ apiClient.interceptors.request.use(
     const token = getStorageItemSync('userToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      // Only warn for non-auth endpoints that typically require tokens
+      // Skip warning for login/auth endpoints that legitimately don't have tokens
+      const isAuthEndpoint =
+        config.url?.includes('/auth/') ||
+        config.url?.includes('/login') ||
+        config.url?.includes('/register');
+
+      if (!isAuthEndpoint) {
+        console.warn('API Request made without token:', {
+          method: config.method,
+          url: config.url,
+        });
+      }
     }
 
-    // Log request details for debugging (especially on iOS)
-    // console.log('API Request:', {
-    //   method: config.method,
-    //   url: config.url,
-    //   baseURL: config.baseURL,
-    //   fullURL: `${config.baseURL}${config.url}`,
-    //   headers: config.headers,
-    //   timestamp: new Date().toISOString(),
-    // });
+    // Log request details for debugging (especially for PATCH requests)
+    if (config.method === 'patch' || config.url?.includes('/complaint/edit/')) {
+      console.log('API Request (PATCH):', {
+        method: config.method,
+        url: config.url,
+        baseURL: config.baseURL,
+        fullURL: `${config.baseURL}${config.url}`,
+        hasToken: !!token,
+        tokenLength: token?.length || 0,
+        headers: {
+          ...config.headers,
+          Authorization: token
+            ? `Bearer ${token.substring(0, 20)}...`
+            : 'missing',
+        },
+        data: config.data,
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // Initialize retry count if not present
     const configWithRetry = config as InternalAxiosRequestConfig & {
