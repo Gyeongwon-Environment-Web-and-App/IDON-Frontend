@@ -52,7 +52,7 @@ export function extractCategories(complaint: Complaint): string[] {
  * Extract phone number from source, with fallback
  */
 export function extractPhoneNumber(
-  source?: Complaint['source'],
+  source?: { phone_no?: string } | undefined,
   fallback?: string
 ): string {
   return source?.phone_no || fallback || '';
