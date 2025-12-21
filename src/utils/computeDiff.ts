@@ -263,15 +263,33 @@ export function computeComplaintDiff(
 ): ComplaintPatchPayload {
   const payload: ComplaintPatchPayload = {};
 
-  // Handle address
-  if (current.address !== undefined && current.address !== original.address) {
-    payload.address = current.address;
-  }
+  // Detect changes in categories and address first
+  const categoriesChanged =
+    current.categories !== undefined &&
+    !areCategoriesEqual(original.categories, current.categories);
+  const addressChanged =
+    current.address !== undefined && current.address !== original.address;
 
-  // Handle coordinates
-  if (current.coordinates !== undefined) {
-    if (!areCoordinatesEqual(original.coordinates, current.coordinates)) {
+  // If either categories or address changed, include both in payload
+  if (categoriesChanged || addressChanged) {
+    // Include categories if available
+    if (current.categories !== undefined) {
+      payload.categories = current.categories;
+    }
+    // Include address if available
+    if (current.address !== undefined) {
+      payload.address = current.address;
+    }
+    // If address changed, also include coordinates
+    if (addressChanged && current.coordinates !== undefined) {
       payload.coordinates = current.coordinates;
+    }
+  } else {
+    // If neither changed, handle coordinates separately (for other cases)
+    if (current.coordinates !== undefined) {
+      if (!areCoordinatesEqual(original.coordinates, current.coordinates)) {
+        payload.coordinates = current.coordinates;
+      }
     }
   }
 
@@ -305,13 +323,6 @@ export function computeComplaintDiff(
   if (current.source !== undefined) {
     if (!areSourcesEqual(original.source, current.source)) {
       payload.source = current.source;
-    }
-  }
-
-  // Handle categories
-  if (current.categories !== undefined) {
-    if (!areCategoriesEqual(original.categories, current.categories)) {
-      payload.categories = current.categories;
     }
   }
 

@@ -29,6 +29,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   onRowClick?: (row: TData) => void;
   clickableColumnIds?: string[];
+  maxWidth?: string;
 }
 
 export function DataTable<TData, TValue>({
@@ -36,6 +37,7 @@ export function DataTable<TData, TValue>({
   data,
   onRowClick,
   clickableColumnIds,
+  maxWidth,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
@@ -65,7 +67,7 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full">
+    <div className={`w-full ${maxWidth ? `max-w-[${maxWidth}]` : ''}`}>
       <div className="rounded-md border">
         <Table>
           <TableHeader className="bg-darker-green">

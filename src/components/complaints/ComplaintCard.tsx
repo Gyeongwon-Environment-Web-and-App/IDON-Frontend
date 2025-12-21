@@ -74,6 +74,14 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
     }
   };
 
+  const ALLOWED_CATEGORIES = ['음식물', '재활용', '생활', '기타'];
+
+  // Get valid categories from categories array (only include if in ALLOWED_CATEGORIES)
+  const categories = complaint.categories || [];
+  const validCategories = categories.filter((cat) =>
+    ALLOWED_CATEGORIES.includes(cat)
+  );
+
   return (
     <div
       className="bg-white border border-[#A2A2A2] rounded-lg flex justify-between cursor-pointer hover:bg-gray-50"
@@ -106,29 +114,35 @@ const ComplaintCard: React.FC<ComplaintCardProps> = ({
         </div>
         <div className="flex items-center gap-1">
           <div className="flex items-center gap-1 max-w-[6.5rem] xs:max-w-48 flex-wrap h-full flex-shrink-0">
-            {complaint.teams.map((team, index) => {
-              const getCategoryIcon = (category: string) => {
-                switch (category) {
-                  case '재활용':
-                    return recycle;
-                  case '음식물':
-                    return food;
-                  case '기타':
-                    return other;
-                  default:
-                    return general;
-                }
-              };
+            {validCategories.length === 0 ? (
+              <div className="bg-gray-400 text-white text-[10px] font-semibold rounded flex items-center justify-center w-12 h-[21px] leading-tight text-center px-1">
+                성상 없음
+              </div>
+            ) : (
+              validCategories.map((category, index) => {
+                const getCategoryIcon = (category: string) => {
+                  switch (category) {
+                    case '재활용':
+                      return recycle;
+                    case '음식물':
+                      return food;
+                    case '기타':
+                      return other;
+                    default:
+                      return general;
+                  }
+                };
 
-              return (
-                <img
-                  key={index}
-                  src={getCategoryIcon(team.category)}
-                  alt={`${team.category} 태그`}
-                  className="w-12"
-                />
-              );
-            })}
+                return (
+                  <img
+                    key={index}
+                    src={getCategoryIcon(category)}
+                    alt={`${category} 태그`}
+                    className="w-12"
+                  />
+                );
+              })
+            )}
           </div>
           <div className="flex font-bold text-lg ml-1">
             {complaint.content

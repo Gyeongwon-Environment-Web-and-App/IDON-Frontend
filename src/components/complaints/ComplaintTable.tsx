@@ -278,9 +278,15 @@ const ComplaintTable: React.FC = () => {
     {
       accessorKey: 'content',
       header: '민원 내용',
-      cell: ({ row }) => (
-        <div className="text-left truncate">{row.getValue('content')}</div>
-      ),
+      cell: ({ row }) => {
+        const content = row.getValue('content') as string;
+        const detail = row.getValue('type') as string;
+        const truncated =
+          detail || content.length > 8
+            ? content.substring(0, 8) + '...'
+            : content;
+        return <div className="text-left">{truncated}</div>;
+      },
     },
     {
       accessorKey: 'user.phone_no',
@@ -560,6 +566,34 @@ const ComplaintTable: React.FC = () => {
 
     const pages = [];
     const maxVisiblePages = 10;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    return pages;
+  };
+
+  const generateMobilePageNumbers = () => {
+    const { totalPages, currentPage } = paginationInfo;
+
+    // Handle edge cases
+    if (totalPages <= 0) {
+      return [];
+    }
+
+    if (totalPages === 1) {
+      return [1];
+    }
+
+    const pages = [];
+    const maxVisiblePages = 5; // Show fewer pages on mobile
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
@@ -902,6 +936,7 @@ const ComplaintTable: React.FC = () => {
           </div>
         ) : (
           <DataTable
+            maxWidth="1200px"
             columns={columns}
             data={paginatedComplaints.map((complaint) => ({
               ...complaint,
@@ -955,7 +990,66 @@ const ComplaintTable: React.FC = () => {
         )}
       </div>
 
-      {/* 페이지네이션 */}
+      {/* 페이지네이션 - 모바일 버전 */}
+      {paginationInfo.totalPages > 0 && (
+        <div className="lg:hidden flex items-center justify-center mt-8">
+          <div className="flex items-center space-x-1">
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleFirstPage}
+              disabled={!paginationInfo.hasPrevPage}
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handlePrevPage}
+              disabled={!paginationInfo.hasPrevPage}
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+
+            <div className="flex items-center space-x-1">
+              {generateMobilePageNumbers().map((page) => (
+                <Button
+                  key={page}
+                  variant={page === currentPage ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => handlePageChange(page)}
+                  className="w-7 h-7 border-none outline-none shadow-none text-xs"
+                >
+                  {page}
+                </Button>
+              ))}
+            </div>
+
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleNextPage}
+              disabled={!paginationInfo.hasNextPage}
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="border-none outline-none shadow-none"
+              onClick={handleLastPage}
+              disabled={!paginationInfo.hasNextPage}
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 페이지네이션 - 데스크톱 버전 */}
       {paginationInfo.totalPages > 0 && (
         <div className="hidden lg:flex items-center justify-center mt-8">
           <div className="flex items-center space-x-2">
